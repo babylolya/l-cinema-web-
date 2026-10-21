@@ -114,5 +114,4 @@ html.web .ctiles { gap: 22px; padding-top: 18px; }
 html.web .cstk { height: 64px; }
 @media (max-width: 900px) {
   html.web .th-halloween .stk-b { left: -3%; top: -14%; bottom: auto; height: 34%; }
-  html.web .th-christmas .stk-a { height: 108%; bottom: -10%; }
 }

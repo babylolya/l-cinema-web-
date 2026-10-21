@@ -364,14 +364,14 @@ html.mac body { -webkit-user-select: none; user-select: none; }
 @keyframes stkfloat { 0%, 100% { transform: none; } 50% { transform: translateY(-6px) rotate(4deg); } }
 @keyframes stkpop { from { opacity: 0; transform: scale(0.3) rotate(-20deg); } to { opacity: 1; transform: none; } }
 
-.th-halloween .stk-a { height: 92%; right: -4%; top: -30%; }
+.th-halloween .stk-a { height: 88%; right: 1%; top: -30%; }
 .th-halloween .stk-b { height: 36%; left: -2%; bottom: 10%; }
-.th-christmas .stk-a { height: 118%; right: 3%; bottom: -16%; }
-.th-christmas .stk-b { height: 46%; right: 36%; top: 20%; }
+.th-christmas .stk-a { height: 116%; right: 5%; top: -24%; }
+.th-christmas .stk-b { height: 34%; right: 36%; top: 6%; }
 .th-christmas .stk-c { height: 24%; left: 4%; top: -8%; }
-.th-love .stk-a { height: 70%; right: 18%; top: 22%; }
-.th-love .stk-b { height: 36%; right: 4%; top: -8%; }
-.th-love .stk-c { height: 22%; right: 5%; bottom: 8%; }
+.th-love .stk-a { height: 62%; right: 22%; top: 19%; }
+.th-love .stk-b { height: 30%; right: 5%; top: 9%; }
+.th-love .stk-c { height: 20%; right: 9%; bottom: 14%; }
 
 /* sticker next to a collection page title */
 .ctrow { display: flex; align-items: center; gap: 14px; }
