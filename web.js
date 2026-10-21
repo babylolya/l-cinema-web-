@@ -218,6 +218,15 @@
     var all = items().filter(function (x) { return x.filmId === filmId && x.url; });
     var i = 0; all.forEach(function (x, n) { if (x.key === key) i = n; });
     if (!all.length) { alert('У этого фильма нет ссылки на файл'); return; }
+    var it = all[i], id = driveId(it.url);
+    if (id) {
+      // on iPhone Google's own player (Drive app or page) works best and goes full screen properly
+      P.last[filmId] = { key: it.key, t: Date.now() };
+      if (all.length > 1 && i > 0) { var prev = all[i - 1]; P.progress[prev.key] = { pos: 0, done: true, t: Date.now() }; }
+      saveP(); pushSoon(); refreshUi();
+      window.open('https://drive.google.com/file/d/' + id + '/view', '_blank');
+      return;
+    }
     openPlayer(all.slice(i), 0, filmId);
   }
   function playLoop(url) {
@@ -237,7 +246,7 @@
     sync: function () { sync(); },
     download: noop, downloadAll: noop, remove: noop, installUpdate: noop,
     play: play, restart: function (f, k) { P.progress[k] = { pos: 0, done: false, t: Date.now() }; saveP(); play(f, k); },
-    playLoop: function (u) { var s = screensavers().filter(function (x) { return x.url === u; })[0]; playLoop(s && s.drive ? 'https://drive.google.com/file/d/' + s.drive + '/view' : u); },
+    playLoop: function (u) { var s = screensavers().filter(function (x) { return x.url === u; })[0]; if (s && s.drive) { window.open('https://drive.google.com/file/d/' + s.drive + '/view', '_blank'); return; } playLoop(u); },
     openYoutube: function (id) { window.open('https://www.youtube.com/watch?v=' + id, '_blank'); },
     setRating: function (id, r) { setLocal(id, 'rating', r); },
     setLiked: function (id, v) { setLocal(id, 'liked', v); },
