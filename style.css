@@ -350,3 +350,29 @@ html.mac body { -webkit-user-select: none; user-select: none; }
 .grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 30px 26px; }
 .grid .poster { height: 320px; }
 .part .pnum { font-size: 14px; }
+
+/* ---------- 3D stickers on collection tiles ---------- */
+.ctiles { padding-top: 22px; }
+.ctile { position: relative; overflow: visible; }
+.ctitle, .csub { position: relative; z-index: 2; }
+.stk { position: absolute; z-index: 3; pointer-events: none; width: auto; opacity: 0; transform: scale(0.3) rotate(-20deg);
+  transition: opacity .25s ease, transform .45s cubic-bezier(.34, 1.7, .5, 1); filter: drop-shadow(0 8px 14px rgba(0,0,0,0.45)); }
+.ctile:focus .stk, html.mac .ctile:hover .stk { opacity: 1; transform: none; }
+.ctile:focus .stk-b, html.mac .ctile:hover .stk-b { transition-delay: .08s; }
+.ctile:focus .stk-c, html.mac .ctile:hover .stk-c { transition-delay: .16s; }
+.ctile:focus .stk, html.mac .ctile:hover .stk { animation: stkfloat 3.2s ease-in-out .5s infinite; }
+@keyframes stkfloat { 0%, 100% { transform: none; } 50% { transform: translateY(-6px) rotate(4deg); } }
+@keyframes stkpop { from { opacity: 0; transform: scale(0.3) rotate(-20deg); } to { opacity: 1; transform: none; } }
+
+.th-halloween .stk-a { height: 92%; right: -4%; top: -30%; }
+.th-halloween .stk-b { height: 36%; left: -2%; bottom: 10%; }
+.th-christmas .stk-a { height: 118%; right: 3%; bottom: -16%; }
+.th-christmas .stk-b { height: 46%; right: 36%; top: 20%; }
+.th-christmas .stk-c { height: 24%; left: 4%; top: -8%; }
+.th-love .stk-a { height: 70%; right: 18%; top: 22%; }
+.th-love .stk-b { height: 36%; right: 4%; top: -8%; }
+.th-love .stk-c { height: 22%; right: 5%; bottom: 8%; }
+
+/* sticker next to a collection page title */
+.ctrow { display: flex; align-items: center; gap: 14px; }
+.cstk { height: 92px; width: auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.45)); animation: stkpop .6s cubic-bezier(.34, 1.7, .5, 1) both, stkfloat 3.4s ease-in-out .6s infinite; }

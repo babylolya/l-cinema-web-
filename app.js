@@ -231,10 +231,24 @@
     var h = '<section class="section"><div class="head"><h2 class="h2">Подборки</h2></div><div class="ctiles">';
     for (var i = 0; i < cs.length; i++) {
       var c = cs[i], n = collFilms(c).length;
-      h += '<button class="ctile th-' + esc(c.theme || 'default') + '" data-f data-key="coll-' + esc(c.id) + '" data-act="coll:' + esc(c.id) + '">' +
+      h += '<button class="ctile th-' + esc(c.theme || 'default') + '" data-f data-key="coll-' + esc(c.id) + '" data-act="coll:' + esc(c.id) + '">' + stickers(c.theme) +
         '<span class="ctitle">' + esc(c.title) + '</span><span class="csub">' + esc(c.subtitle || '') + (n ? ' · ' + n + ' шт.' : (c.auto === 'liked' ? ' · ставь ♥' : ' · скоро')) + '</span></button>';
     }
     return h + '</div></section>';
+  }
+
+  // decorative 3D stickers that pop out of a collection tile on hover / remote focus
+  var STK = {
+    halloween: [['pumpkin', 'a'], ['pumpkin', 'b']],
+    christmas: [['mailbox', 'a'], ['snow', 'b'], ['snow', 'c']],
+    love: [['heart', 'a'], ['heart', 'b'], ['heart', 'c']]
+  };
+  var PAGE_STK = { halloween: 'glitter', christmas: 'cane', love: 'heart' };
+  function stkSrc(n) { return 'stk/' + n + (n === 'snow' ? '.svg' : '.webp'); }
+  function stickers(theme) {
+    var l = STK[theme] || [], h = '';
+    for (var i = 0; i < l.length; i++) h += '<img class="stk stk-' + l[i][1] + '" src="' + stkSrc(l[i][0]) + '" alt="">';
+    return h;
   }
 
   function collection() {
@@ -242,7 +256,7 @@
     if (!c) return emptyScreen();
     var list = collFilms(c);
     var h = '<div class="topline"><div><button class="btn small" data-f data-key="c-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>' +
-      '<h1 class="title-glow coll-title">' + esc(c.title) + '</h1><div class="sub">' + esc(c.subtitle || '') + '</div></div>' + statusLine() + '</div>';
+      '<div class="ctrow"><h1 class="title-glow coll-title">' + esc(c.title) + '</h1>' + (PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '') + '</div><div class="sub">' + esc(c.subtitle || '') + '</div></div>' + statusLine() + '</div>';
     if (!list.length) return h + '<div class="empty glass"><h1>Скоро здесь будет кино</h1><p>Скажи Claude, какие фильмы положить в «' + esc(c.title) + '», и они появятся здесь.</p></div>';
     var grid = '<div class="grid">';
     for (var i = 0; i < list.length; i++) grid += card(list[i], 'coll');

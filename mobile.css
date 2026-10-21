@@ -61,7 +61,7 @@ body.playing { overflow: hidden; }
 
   /* collections */
   html.web .ctiles { grid-template-columns: 1fr; gap: 10px; }
-  html.web .ctile { height: 86px; padding: 14px 18px; border-radius: 18px; }
+  html.web .ctile { height: 104px; padding: 14px 18px; border-radius: 18px; }
   html.web .ctitle { font-size: 20px; }
   html.web .csub { font-size: 12px; }
 
@@ -99,4 +99,20 @@ body.playing { overflow: hidden; }
   html.web .thumb { height: 110px; }
   html.web .empty { padding: 24px 18px; }
   html.web .empty h1 { font-size: 22px; }
+}
+
+/* phone: no hover, so stickers pop in by themselves and keep floating */
+html.web .ctiles { gap: 22px; padding-top: 18px; }
+@media (hover: none) {
+  html.web .stk { opacity: 1; transform: none; animation: stkpop .6s cubic-bezier(.34, 1.7, .5, 1) both, stkfloat 3.2s ease-in-out .6s infinite; }
+  html.web .stk-b { animation-delay: .1s, .7s; }
+  html.web .stk-c { animation-delay: .2s, .8s; }
+}
+@media (hover: hover) {
+  html.web .ctile:hover .stk { opacity: 1; transform: none; animation: stkfloat 3.2s ease-in-out .5s infinite; }
+}
+html.web .cstk { height: 64px; }
+@media (max-width: 900px) {
+  html.web .th-halloween .stk-b { left: -3%; top: -14%; bottom: auto; height: 34%; }
+  html.web .th-christmas .stk-a { height: 108%; bottom: -10%; }
 }
