@@ -258,18 +258,6 @@ h1, h2, h3 { margin: 0; font-family: Unbounded, sans-serif; }
 .themed.th-halloween { background: linear-gradient(120deg, rgba(123,44,191,0.35), rgba(255,122,26,0.28)); border: 1px solid rgba(255,140,60,0.35); }
 .themed.th-christmas { background: linear-gradient(120deg, rgba(200,16,46,0.32), rgba(12,122,67,0.32)); border: 1px solid rgba(220,60,80,0.35); }
 
-body.theme-halloween {
-  background:
-    radial-gradient(700px 600px at 15% 0%, rgba(140,50,220,0.75), transparent 70%),
-    radial-gradient(700px 600px at 100% 100%, rgba(255,122,26,0.70), transparent 70%),
-    linear-gradient(135deg, #1a0630 0%, #2c0b4f 45%, #4a1a12 100%);
-}
-body.theme-christmas {
-  background:
-    radial-gradient(700px 600px at 10% 0%, rgba(210,20,50,0.70), transparent 70%),
-    radial-gradient(700px 600px at 100% 100%, rgba(16,140,75,0.70), transparent 70%),
-    linear-gradient(135deg, #2a0510 0%, #1d0a12 50%, #052a17 100%);
-}
 body.theme-halloween .coll-title { text-shadow: 0 0 24px rgba(255,122,26,0.9); }
 body.theme-christmas .coll-title { text-shadow: 0 0 24px rgba(255,60,80,0.8); }
 
@@ -315,12 +303,6 @@ body.theme-christmas .coll-title { text-shadow: 0 0 24px rgba(255,60,80,0.8); }
 .ctiles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; }
 .ctile { width: auto; }
 .th-love.ctile { background: linear-gradient(135deg, #5b16c9 0%, #b02bd8 45%, #ff4fd8 100%); box-shadow: 0 0 26px rgba(255,79,216,0.35); }
-body.theme-love {
-  background:
-    radial-gradient(700px 600px at 10% 0%, rgba(255,79,216,0.65), transparent 70%),
-    radial-gradient(700px 600px at 100% 100%, rgba(110,40,255,0.65), transparent 70%),
-    linear-gradient(135deg, #1e0628 0%, #14081f 50%, #0f0a2a 100%);
-}
 body.theme-love .coll-title { text-shadow: 0 0 24px rgba(255,79,216,0.9); }
 
 /* Mac: mouse hover looks like the remote's focus, room for the window buttons */
@@ -376,3 +358,38 @@ html.mac body { -webkit-user-select: none; user-select: none; }
 /* sticker next to a collection page title */
 .ctrow { display: flex; align-items: center; gap: 14px; }
 .cstk { height: 92px; width: auto; filter: drop-shadow(0 8px 16px rgba(0,0,0,0.45)); animation: stkpop .6s cubic-bezier(.34, 1.7, .5, 1) both, stkfloat 3.4s ease-in-out .6s infinite; }
+
+/* ---------- collection pages: full-screen animated gradient ---------- */
+body.theme-halloween, body.theme-christmas, body.theme-love { background: transparent; }
+body.theme-halloween::before, body.theme-christmas::before, body.theme-love::before,
+body.theme-halloween::after, body.theme-christmas::after, body.theme-love::after {
+  content: ''; position: fixed; left: -30%; top: -30%; width: 160%; height: 160%; z-index: -1; pointer-events: none;
+  will-change: transform; }
+body.theme-halloween::before, body.theme-christmas::before, body.theme-love::before { animation: bgflowA 16s ease-in-out infinite alternate; }
+body.theme-halloween::after, body.theme-christmas::after, body.theme-love::after { animation: bgflowB 21s ease-in-out infinite alternate; opacity: .9; }
+@keyframes bgflowA { 0% { transform: translate(0, 0) rotate(0deg) scale(1); } 50% { transform: translate(7%, -5%) rotate(10deg) scale(1.08); } 100% { transform: translate(-6%, 6%) rotate(-8deg) scale(1.04); } }
+@keyframes bgflowB { 0% { transform: translate(0, 0) rotate(0deg); } 50% { transform: translate(-8%, 6%) rotate(-12deg); } 100% { transform: translate(6%, -7%) rotate(9deg); } }
+
+body.theme-halloween::before { background:
+  radial-gradient(circle 46vmax at 30% 26%, rgba(150,55,235,0.85), transparent 72%),
+  radial-gradient(circle 41vmax at 72% 62%, rgba(90,20,170,0.7), transparent 72%),
+  linear-gradient(160deg, #1a0630 0%, #2c0b4f 50%, #3a1210 100%); }
+body.theme-halloween::after { background:
+  radial-gradient(circle 44vmax at 70% 76%, rgba(255,122,26,0.75), transparent 72%),
+  radial-gradient(circle 28vmax at 26% 70%, rgba(255,80,40,0.35), transparent 72%); }
+
+body.theme-christmas::before { background:
+  radial-gradient(circle 46vmax at 28% 26%, rgba(215,20,52,0.8), transparent 72%),
+  radial-gradient(circle 34vmax at 70% 40%, rgba(150,10,35,0.55), transparent 72%),
+  linear-gradient(160deg, #2a0510 0%, #1d0a12 50%, #05261a 100%); }
+body.theme-christmas::after { background:
+  radial-gradient(circle 44vmax at 72% 76%, rgba(16,150,80,0.75), transparent 72%),
+  radial-gradient(circle 25vmax at 30% 72%, rgba(255,215,140,0.16), transparent 72%); }
+
+body.theme-love::before { background:
+  radial-gradient(circle 46vmax at 28% 26%, rgba(255,79,216,0.7), transparent 72%),
+  radial-gradient(circle 34vmax at 70% 40%, rgba(176,43,216,0.5), transparent 72%),
+  linear-gradient(160deg, #1e0628 0%, #14081f 50%, #0f0a2a 100%); }
+body.theme-love::after { background:
+  radial-gradient(circle 44vmax at 72% 76%, rgba(110,40,255,0.7), transparent 72%),
+  radial-gradient(circle 25vmax at 30% 70%, rgba(255,90,150,0.3), transparent 72%); }
