@@ -192,9 +192,12 @@
     P.last[filmId] = { key: it.key, t: Date.now() }; saveP();
     var id = driveId(it.url);
     var next = i + 1 < list.length;
+    // Safari often can't start Google's player inside a page, so the Drive app / page is one tap away
     var media = id
-      ? '<iframe src="https://drive.google.com/file/d/' + id + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe>'
-      : '<video src="' + it.url.replace(/"/g, '&quot;') + '" controls autoplay playsinline></video>';
+      ? '<div class="pwrap"><iframe src="https://drive.google.com/file/d/' + id + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
+        '<a class="btn pri pdrive" href="https://drive.google.com/file/d/' + id + '/view" target="_blank" rel="noopener">▶ Открыть в Google Диске</a>' +
+        '<p class="phint">Если видео не запускается здесь, нажми кнопку — фильм откроется в приложении Google Диск или в новой вкладке.</p>'
+      : '<div class="pwrap"><video src="' + it.url.replace(/"/g, '&quot;') + '" controls autoplay playsinline></video></div>';
     box.innerHTML = '<div class="pbar"><button class="btn small" id="pClose">← Назад</button><b>' + it.title.replace(/</g, '&lt;') + '</b>' +
       (next ? '<button class="btn small pri" id="pNext">Следующая серия →</button>' : (list.length > 1 || !id ? '' : '<button class="btn small" id="pDone">Досмотрела</button>')) + '</div>' + media;
     box.hidden = false; document.body.classList.add('playing');
@@ -220,7 +223,9 @@
   function playLoop(url) {
     var id = driveId(url);
     box.innerHTML = '<div class="pbar"><button class="btn small" id="pClose">← Назад</button></div>' +
-      (id ? '<iframe src="https://drive.google.com/file/d/' + id + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe>' : '<video src="' + url + '" autoplay loop muted playsinline></video>');
+      (id ? '<div class="pwrap"><iframe src="https://drive.google.com/file/d/' + id + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
+        '<a class="btn pri pdrive" href="https://drive.google.com/file/d/' + id + '/view" target="_blank" rel="noopener">▶ Открыть в Google Диске</a>'
+        : '<div class="pwrap"><video src="' + url + '" autoplay loop muted playsinline></video></div>');
     box.hidden = false; document.body.classList.add('playing');
     document.getElementById('pClose').onclick = closePlayer;
   }
