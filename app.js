@@ -244,7 +244,7 @@
     love: [['heart', 'a'], ['heart', 'b'], ['heart', 'c']]
   };
   var PAGE_STK = { halloween: 'glitter', christmas: 'cane', love: 'heart' };
-  function stkSrc(n) { return 'stk/' + n + (n === 'snow' ? '.svg' : '.webp'); }
+  function stkSrc(n) { return 'stk/' + n + '.webp'; }
   function stickers(theme) {
     var l = STK[theme] || [], h = '';
     for (var i = 0; i < l.length; i++) h += '<img class="stk stk-' + l[i][1] + '" src="' + stkSrc(l[i][0]) + '" alt="">';
