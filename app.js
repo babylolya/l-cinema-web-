@@ -335,7 +335,11 @@
     var films = S.films;
     var byAdded = function (a, b) { return String(b.addedAt || '').localeCompare(String(a.addedAt || '')); };
     // a new random order each time the app is opened (stays the same while you scroll)
-    var fresh = films.filter(isNew).slice().sort(function (x, y) { return hash(x.id + SEED) - hash(y.id + SEED); });
+    // the most recently added day comes first, shuffled within each day
+    var fresh = films.filter(isNew).slice().sort(function (x, y) {
+      var d = String(y.addedAt || '').slice(0, 10).localeCompare(String(x.addedAt || '').slice(0, 10));
+      return d || (hash(x.id + SEED) - hash(y.id + SEED));
+    });
     var cont = films.filter(function (f) { return resume(f).active; }).sort(function (a, b) { return (b.lastAt || 0) - (a.lastAt || 0); });
     var want = films.filter(isWant);
     var seen = films.filter(watched).sort(function (a, b) { return String(b.watchedOn || '').localeCompare(String(a.watchedOn || '')); }).slice(0, 15);
