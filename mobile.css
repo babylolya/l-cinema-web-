@@ -1,0 +1,99 @@
+/* L-CINEMA on iPhone: the same look, laid out for a phone held in the hand */
+html.web, html.web body { height: auto; min-height: 100%; overflow: auto; -webkit-text-size-adjust: 100%; }
+html.web body { overscroll-behavior: none; }
+html.web [data-f]:focus { outline: none; box-shadow: none; }
+html.web .card:focus .poster { outline: none; box-shadow: none; transform: none; }
+html.web button { -webkit-tap-highlight-color: transparent; }
+
+/* setup screen */
+#setup { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; padding: 20px; }
+#setup[hidden] { display: none; }
+.setup { width: 100%; max-width: 440px; border-radius: 26px; padding: 26px 22px; display: flex; flex-direction: column; gap: 14px; }
+.setup h1 { font-size: 28px; text-shadow: 0 0 22px rgba(255,79,216,0.6); }
+.setup p { margin: 0; font-size: 15px; line-height: 1.5; color: #D4CBE0; }
+.setup label { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--muted); }
+.setup input { height: 48px; border-radius: 14px; border: 1px solid rgba(255,255,255,0.18); background: rgba(9,7,15,0.6); color: var(--text); font: 500 16px Manrope, sans-serif; padding: 0 14px; }
+
+/* player */
+#player { position: fixed; inset: 0; z-index: 100; background: #000; display: flex; flex-direction: column; }
+#player[hidden] { display: none; }
+#player .pbar { display: flex; align-items: center; gap: 10px; padding: calc(env(safe-area-inset-top) + 8px) 12px 8px; background: #09070F; }
+#player .pbar b { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+#player iframe, #player video { flex: 1; width: 100%; border: 0; background: #000; }
+body.playing { overflow: hidden; }
+
+@media (max-width: 900px) {
+  html.web #app { display: block; height: auto; padding: calc(env(safe-area-inset-top) + 10px) 14px calc(env(safe-area-inset-bottom) + 86px); }
+  html.web #main { overflow: visible; padding: 0; gap: 18px; }
+
+  /* menu becomes a bar at the bottom */
+  html.web .nav { position: fixed; z-index: 50; left: 10px; right: 10px; bottom: calc(env(safe-area-inset-bottom) + 8px); width: auto; height: 64px;
+    flex-direction: row; justify-content: space-around; padding: 0 6px; border-radius: 22px; background: rgba(20,16,28,0.94); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px); }
+  html.web .nav .logo, html.web .nav .spacer { display: none; }
+  html.web .ni { width: 46px; height: 46px; border-radius: 14px; }
+
+  html.web .topline { min-height: 0; }
+  html.web .title-glow { font-size: 26px; }
+
+  /* top panel */
+  html.web .hero { height: 250px; border-radius: 22px; }
+  html.web .hero .info { padding: 18px; gap: 8px; }
+  html.web .hero h1 { font-size: 26px; }
+  html.web .hero .meta { font-size: 13px; }
+  html.web .hero .kicker { font-size: 11px; }
+  html.web .hero .pst { display: none; }
+  html.web .btn { height: 44px; padding: 0 16px; font-size: 15px; border-radius: 14px; }
+  html.web .btn.small { height: 38px; padding: 0 12px; font-size: 14px; }
+  html.web .dot { width: 22px; }
+
+  /* rows and posters */
+  html.web .section .head .h2 { font-size: 20px; }
+  html.web .sub { font-size: 14px; }
+  html.web .row { gap: 12px; margin: -10px -14px 0; padding: 10px 14px 6px; -webkit-overflow-scrolling: touch; }
+  html.web .card { width: 124px; gap: 6px; }
+  html.web .poster { width: 124px; height: 180px; border-radius: 14px; font-size: 13px; padding: 8px; }
+  html.web .ct { font-size: 14px; }
+  html.web .cm { font-size: 12px; }
+  html.web .overlay { font-size: 11px; padding: 6px; left: 6px; right: 6px; bottom: 6px; }
+
+  /* collections */
+  html.web .ctiles { grid-template-columns: 1fr; gap: 10px; }
+  html.web .ctile { height: 86px; padding: 14px 18px; border-radius: 18px; }
+  html.web .ctitle { font-size: 20px; }
+  html.web .csub { font-size: 12px; }
+
+  /* genres: list on top, films below */
+  html.web .split { flex-direction: column; gap: 14px; }
+  html.web .side { width: auto; flex-direction: row; overflow-x: auto; padding: 8px; gap: 6px; border-radius: 18px; align-self: stretch; }
+  html.web .side h1 { display: none; }
+  html.web .gbtn { height: 40px; flex-shrink: 0; gap: 8px; font-size: 14px; padding: 0 12px; }
+  html.web .content .topline { flex-direction: column; align-items: flex-start; gap: 10px; }
+  html.web .grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px 10px; }
+  html.web .grid .poster { height: auto; aspect-ratio: 2 / 3; }
+  html.web .chips { gap: 8px; }
+  html.web .chip { height: 36px; padding: 0 14px; font-size: 13px; }
+
+  /* film page */
+  html.web .film { flex-direction: column; gap: 16px; }
+  html.web .film .big { width: 160px; height: 240px; font-size: 16px; border-radius: 16px; }
+  html.web .film h1 { font-size: 28px; }
+  html.web .film .meta { font-size: 14px; }
+  html.web .film .desc { font-size: 15px; }
+  html.web .panel { padding: 16px; border-radius: 20px; }
+  html.web .rate { gap: 10px; flex-wrap: wrap; }
+  html.web .star { width: 42px; height: 42px; padding: 3px; }
+  html.web .stars { gap: 2px; }
+  html.web .panel .ph { flex-direction: column; align-items: flex-start; gap: 4px; }
+  html.web .ep { padding: 10px 12px; font-size: 14px; }
+
+  /* diary, library, screensavers */
+  html.web .stats { flex-wrap: wrap; gap: 10px; }
+  html.web .stat { min-width: 0; flex: 1 1 40%; padding: 12px 14px; }
+  html.web .stat b { font-size: 24px; }
+  html.web .li { gap: 10px; padding: 12px; font-size: 14px; }
+  html.web .li .d { width: 70px; font-size: 12px; }
+  html.web .savers { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+  html.web .thumb { height: 110px; }
+  html.web .empty { padding: 24px 18px; }
+  html.web .empty h1 { font-size: 22px; }
+}

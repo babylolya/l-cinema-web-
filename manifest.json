@@ -1,0 +1,9 @@
+{
+  "name": "L-CINEMA",
+  "short_name": "L-CINEMA",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#09070F",
+  "theme_color": "#09070F",
+  "icons": [{ "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }, { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" }]
+}
