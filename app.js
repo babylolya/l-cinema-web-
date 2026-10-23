@@ -335,7 +335,6 @@
   function heroStickers(f) {
     var t = filmTheme(f);
     if (t === 'halloween') return '<img class="hstk hs-a" src="stk/pumpkin.webp" alt="">' +
-      '<span class="hbat hb-1"><img src="stk/bat.webp" alt=""></span><span class="hbat hb-2"><img src="stk/bat.webp" alt=""></span><span class="hbat hb-3"><img src="stk/bat.webp" alt=""></span>' +
       '<img class="hstk hcandy hc-1" src="stk/candy.webp" alt=""><img class="hstk hcandy hc-2" src="stk/candy.webp" alt="">';
     // Christmas: the picture slowly frosts over from the corners while it waits to turn
     if (t === 'christmas') return '<div class="frost"><img src="stk/frost.webp" alt=""></div>';
