@@ -97,7 +97,7 @@ body.playing { overflow: hidden; }
   html.web .stat b { font-size: 24px; }
   html.web .li { gap: 10px; padding: 12px; font-size: 14px; }
   html.web .li .d { width: 70px; font-size: 12px; }
-  html.web .savers { grid-template-columns: 1fr 1fr; gap: 14px 10px; }
+  html.web .savers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 12px; }
   html.web .thumb { height: 110px; }
   html.web .empty { padding: 24px 18px; }
   html.web .empty h1 { font-size: 22px; }
@@ -180,4 +180,15 @@ html.web .ctiles { gap: 22px; padding-top: 18px; }
   html.web .cmeta { gap: 8px; }
   html.web .cmeta .csub { font-size: 12px; }
   html.web .cchip { font-size: 11px; padding: 3px 9px; }
+}
+
+@media (max-width: 900px) {
+  html.web .thumb { border-radius: 16px; }
+  html.web .thumb .kind { width: 30px; height: 30px; right: 8px; bottom: 8px; }
+  html.web .thumb .kind svg { width: 12px; height: 12px; }
+  html.web .tile .ct { font-size: 14px; }
+}
+html.web body { min-height: 100vh; min-height: 100dvh; }
+@media (max-width: 900px) {
+  html.web .tile .ct { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
 }

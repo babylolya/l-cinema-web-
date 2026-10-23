@@ -525,3 +525,12 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 .th-love.ctile:focus, html.mac .th-love.ctile:hover { box-shadow: 0 0 36px rgba(255,79,216,0.6), inset 0 1px 0 rgba(255,255,255,0.25); }
 .cchip { position: relative; z-index: 2; align-self: flex-start; margin-bottom: 2px; }
 .ctile .csub { position: relative; z-index: 2; opacity: 0.9; }
+
+/* ---------- screensavers ---------- */
+.thumb { border-radius: 20px; border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 14px 34px rgba(0,0,0,0.45); }
+.thumb::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(70% 100% at 0% 0%, rgba(255,255,255,0.14), transparent 55%), linear-gradient(0deg, rgba(0,0,0,0.35), transparent 45%); }
+.thumb .kind { z-index: 1; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border-radius: 50%;
+  background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.thumb .kind svg { fill: #fff; width: 16px; height: 16px; margin-left: 2px; }
+.tile .ct { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

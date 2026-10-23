@@ -640,7 +640,7 @@
       var sv = list[i];
       var img = sv.thumb ? '<img src="' + esc(sv.thumb) + '" alt="" onerror="this.remove()">' : '';
       h += '<div class="tile" data-f tabindex="0" data-key="sv-' + i + '" data-act="saver:' + i + '">' +
-        '<div class="thumb' + (sv.pixel === false ? '' : ' px') + '">' + img + '<span class="kind">' + (sv.type === 'image' ? 'картинка' : (sv.type === 'youtube' ? 'YouTube' : 'видео')) + '</span></div>' +
+        '<div class="thumb' + (sv.pixel === false ? '' : ' px') + '">' + img + '<span class="kind">' + (sv.type === 'image' ? 'картинка' : I.play) + '</span></div>' +
         '<div class="ct">' + esc(sv.title || ('Заставка ' + (i + 1))) + '</div></div>';
     }
     return h + '</div>';
