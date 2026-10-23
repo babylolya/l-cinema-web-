@@ -749,7 +749,10 @@
     if (view.name === 'coll') { var cc = collById(view.id); theme = cc ? 'theme-' + (cc.theme || 'default') : ''; }
     document.body.className = theme;
     var oldVid = document.querySelector('.svvid');
-    root.innerHTML = nav() + '<main id="main">' + updateBanner() + screen() + '</main>' + (full >= 0 ? fullScreen() : '');
+    var scr = screen();
+    var rp = rateFor && view.name === 'film' ? ratePrompt() : '';
+    if (rp) scr = '<div class="under">' + scr.replace(/ data-f/g, '') + '</div>';
+    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '');
     var newVid = document.querySelector('.svvid');
     if (oldVid && newVid && oldVid.getAttribute('data-src') === newVid.getAttribute('data-src')) newVid.parentNode.replaceChild(oldVid, newVid);
     main = document.getElementById('main');
@@ -870,6 +873,7 @@
         var g = byId(arg); if (!g) return;
         A.setStatus(arg, watched(g) ? 'new' : 'watched'); refresh(true); return;
       }
+      case 'rpclose': rateFor = ''; render('f-play', false); return;
       case 'want': {
         var w = byId(arg); if (!w) return;
         A.setStatus(arg, isWant(w) ? 'new' : 'want'); refresh(true); return;
@@ -877,8 +881,39 @@
     }
   }
 
+  // after a film ends: open its card with a rating window on top
+  var rateFor = '';
+  function checkFinished() {
+    var id = S.justFinished;
+    if (!id) return false;
+    if (A.clearFinished) A.clearFinished();
+    S.justFinished = '';
+    if (!byId(id)) return false;
+    rateFor = id; full = -1;
+    if (!(view.name === 'film' && view.id === id)) { stack.push(view); view = { name: 'film', id: id }; }
+    render('rp-3', false);
+    return true;
+  }
+  function ratePrompt() {
+    var f = byId(rateFor);
+    if (!f) return '';
+    var r = f.rating || 0, stars = '';
+    for (var n = 1; n <= 5; n++) {
+      var w = r >= n ? 100 : (r >= n - 0.5 ? 50 : 0);
+      stars += '<button class="rpstar" data-f data-key="rp-' + n + '" data-act="rate:' + esc(f.id) + ':' + n + '" aria-label="' + n + '">' +
+        '<span class="e">★</span><span class="o" style="width:' + w + '%">★</span></button>';
+    }
+    return '<div class="rpwrap"><div class="rpbox glass">' +
+      '<div class="rppost" style="background:' + color(f) + '">' + posterInner(f) + '</div>' +
+      '<div class="rpinfo"><span class="ckick">Фильм закончился</span><h2>' + esc(f.title) + '</h2><p>Как тебе? Нажми на звезду, ещё раз — половинка.</p>' +
+      '<div class="rpstars">' + stars + '<span class="rpnum">' + (r ? String(r).replace('.', ',') : '—') + '</span></div>' +
+      '<div class="btns"><button class="btn' + (f.liked ? ' on' : '') + '" data-f data-key="rp-like" data-act="like:' + esc(f.id) + '">' + I.heart(f.liked) + (f.liked ? ' В любимом' : ' В любимое') + '</button>' +
+      '<button class="btn pri" data-f data-key="rp-done" data-act="rpclose">' + (r ? 'Готово' : 'Позже') + '</button></div></div></div></div>';
+  }
+
   function refresh(force) {
     load();
+    if (checkFinished()) return;
     var sh = shape(S);
     if (!force && sh === lastShape) { patchProgress(); return; }
     lastShape = sh;
@@ -973,6 +1008,7 @@
   var app = {
     refresh: function () { refresh(false); },
     back: function () {
+      if (rateFor) { rateFor = ''; render('f-play', false); return true; }
       if (full >= 0) { full = -1; render(null, true); return true; }
       if (confirmKey) { confirmKey = null; render(null, true); return true; }
       if (!stack.length) {

@@ -221,3 +221,11 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web, html.web body { overflow-x: hidden; }
   html.web .deco.deco-web { width: calc(100vw + 60px); left: 50%; margin-left: calc(-50vw - 30px); }
 }
+
+@media (max-width: 900px) {
+  html.web .rpbox { flex-direction: column; text-align: center; gap: 16px; padding: 22px 18px; }
+  html.web .rppost { width: 130px; height: 195px; }
+  html.web .rpinfo { align-items: center; }
+  html.web .rpinfo h2 { font-size: 24px; }
+  html.web .rpstar { width: 46px; height: 46px; font-size: 38px; line-height: 46px; }
+}
