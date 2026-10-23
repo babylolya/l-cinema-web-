@@ -173,3 +173,11 @@ html.web .ctiles { gap: 22px; padding-top: 18px; }
   html.web .ckick { font-size: 10px; padding: 4px 10px; }
   html.web .chead .cstk { height: 128px; right: 10px; top: -30px; }
 }
+
+@media (max-width: 900px) {
+  html.web .ctile { border-radius: 20px; height: 112px; justify-content: flex-end; gap: 8px; }
+  html.web .ctile .ctitle { font-size: 22px; }
+  html.web .cmeta { gap: 8px; }
+  html.web .cmeta .csub { font-size: 12px; }
+  html.web .cchip { font-size: 11px; padding: 3px 9px; }
+}

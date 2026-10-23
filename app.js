@@ -234,7 +234,8 @@
     for (var i = 0; i < cs.length; i++) {
       var c = cs[i], n = collFilms(c).length;
       h += '<button class="ctile th-' + esc(c.theme || 'default') + '" data-f data-key="coll-' + esc(c.id) + '" data-act="coll:' + esc(c.id) + '">' + stickers(c.theme) +
-        '<span class="ctitle">' + esc(c.title) + '</span><span class="csub">' + esc(c.subtitle || '') + (n ? ' · ' + n + ' шт.' : (c.auto === 'liked' ? ' · ставь ♥' : ' · скоро')) + '</span></button>';
+        '<span class="ctitle">' + esc(c.title) + '</span><span class="cmeta"><span class="csub">' + esc(c.subtitle || '') + '</span>' +
+        '<span class="cchip">' + (n ? n + ' ' + plural(n, 'фильм', 'фильма', 'фильмов') : (c.auto === 'liked' ? 'ставь ♥' : 'скоро')) + '</span></span></button>';
     }
     return h + '</div></section>';
   }
