@@ -79,7 +79,9 @@
   /** Where to continue: { key, pos, label, active } */
   function resume(f) {
     if (!isSeries(f)) {
-      var active = f.pos > 5000 && !f.watchedPart;
+      // a watched film, or one stopped during the end credits, is not «in progress»
+      var nearEnd = f.dur > 5 * 60000 && f.pos > f.dur * 0.92;
+      var active = f.pos > 5000 && !f.watchedPart && !nearEnd && !watched(f);
       return { key: f.key, pos: active ? f.pos : 0, active: active, label: active ? 'Продолжить с ' + clock(f.pos) : (watched(f) ? 'Смотреть ещё раз' : 'Смотреть') };
     }
     var list = eps(f), idx = -1;
