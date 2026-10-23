@@ -291,7 +291,7 @@
       for (var d = 0; d < n; d++) dots += '<button class="dot' + (d === idx ? ' on' : '') + '" data-f data-key="dot-' + d + '" data-act="hero:' + d + '" aria-label="Фильм ' + (d + 1) + '"><i></i></button>';
       dots += '</div>';
     }
-    return '<section class="hero glass" data-hero="' + esc(hero.id) + '">' + bgHtml + '<div class="info"><div class="kicker">' + esc(kicker) + '</div><h1' + (String(hero.title || '').length > 26 ? ' class="long"' : '') + '>' + esc(hero.title) + '</h1>' +
+    return '<section class="hero glass' + (hero.backdrop ? ' has-bd' : '') + '" data-hero="' + esc(hero.id) + '">' + bgHtml + '<div class="info"><div class="kicker">' + esc(kicker) + '</div><h1' + (String(hero.title || '').length > 26 ? ' class="long"' : '') + '>' + esc(hero.title) + '</h1>' +
       '<div class="meta">' + esc(filmMeta(hero)) + '</div><div class="btns">' +
       '<button class="btn pri" data-f data-key="hero-play" data-act="play:' + esc(hero.id) + ':' + esc(hr.key) + '">' + I.play + esc(hr.label) + '</button>' +
       '<button class="btn" data-f data-key="hero-more" data-act="film:' + esc(hero.id) + '">Подробнее</button></div>' + dots + '</div>' +
