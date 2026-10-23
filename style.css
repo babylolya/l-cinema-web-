@@ -652,7 +652,7 @@ html.nogap .ep + .ep { margin-top: 8px; }
   background: linear-gradient(105deg, transparent 0%, transparent 38%, rgba(255,255,255,0.75) 46%, rgba(214,190,255,0.55) 50%, transparent 58%, transparent 100%);
   background-size: 260% 100%; background-repeat: no-repeat; mix-blend-mode: screen; animation: iceSheen 4.5s ease-in-out infinite; }
 @keyframes iceSheen { 0% { background-position: 130% 0; } 60%, 100% { background-position: -30% 0; } }
-.deco.deco-ice { transform: translateY(62%); }
+.deco.deco-ice { transform: translateY(78%); }
 .film.has-bd .body { position: relative; z-index: 6; }
 .film.has-bd { margin-top: -110px; }
 .film.has-bd .body { padding-top: 150px; }
