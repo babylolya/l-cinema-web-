@@ -65,6 +65,7 @@
         if (!owner.url && a.url) owner.url = a.url;
         if (!owner.episodes && a.episodes) owner.episodes = a.episodes;
         if (!owner.collection && a.collection) owner.collection = a.collection;
+        if (a.uploaded) owner.uploaded = a.uploaded;
         return;
       }
       var f = clone(a), meta = (tm[f.id] || {}).meta;

@@ -335,9 +335,10 @@
     var films = S.films;
     var byAdded = function (a, b) { return String(b.addedAt || '').localeCompare(String(a.addedAt || '')); };
     // a new random order each time the app is opened (stays the same while you scroll)
-    // the most recently added day comes first, shuffled within each day
+    // the latest uploads to Drive come first (films without a known time are shuffled after them)
+    var upl = function (f) { return String(f.uploaded || (f.addedAt ? String(f.addedAt).slice(0, 10) + 'T00:00' : '')); };
     var fresh = films.filter(isNew).slice().sort(function (x, y) {
-      var d = String(y.addedAt || '').slice(0, 10).localeCompare(String(x.addedAt || '').slice(0, 10));
+      var d = upl(y).localeCompare(upl(x));
       return d || (hash(x.id + SEED) - hash(y.id + SEED));
     });
     var cont = films.filter(function (f) { return resume(f).active; }).sort(function (a, b) { return (b.lastAt || 0) - (a.lastAt || 0); });
@@ -346,7 +347,7 @@
     var downloading = films.filter(function (f) { return dlSummary(f).running > 0; });
 
     // top panel: new films one after another (or, if nothing is new, what you want to watch)
-    var pool = (fresh.length ? fresh : (want.length ? want : films)).slice(0, 8);
+    var pool = (fresh.length ? fresh : (want.length ? want : films)).slice(0, 12);
     var ids = pool.map(function (f) { return f.id; });
     if (ids.join('|') !== heroList.join('|')) { heroList = ids; heroIdx = 0; }
     if (heroIdx >= heroList.length) heroIdx = 0;
