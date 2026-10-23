@@ -223,10 +223,11 @@
     (c.films || []).forEach(function (id) { var f = byId(id); if (f) out.push(f); });
     S.films.forEach(function (f) { if (f.collection === c.id && out.indexOf(f) < 0) out.push(f); });
     // films whose title or description mention the collection's words (Рождество, Санта…) join it by themselves
+    if (c.exclude && c.exclude.length) out = out.filter(function (f) { return c.exclude.indexOf(f.id) < 0; });
     if (c.keywords && c.keywords.length) {
       var words = c.keywords.map(function (w) { return String(w).toLowerCase(); });
       S.films.forEach(function (f) {
-        if (out.indexOf(f) >= 0) return;
+        if (out.indexOf(f) >= 0 || (c.exclude && c.exclude.indexOf(f.id) >= 0)) return;
         var text = ((f.title || '') + ' ' + (f.original || '') + ' ' + (f.description || '')).toLowerCase();
         for (var i = 0; i < words.length; i++) if (text.indexOf(words[i]) >= 0) { out.push(f); return; }
       });
