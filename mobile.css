@@ -263,3 +263,10 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .fc-2 { width: 9%; right: 8%; top: 30%; }
   html.web .fc-3 { width: 13%; right: 14%; top: 66%; }
 }
+/* smaller Halloween decorations, as in the sketch */
+@media (max-width: 900px) {
+  html.web .deco-branch .br { left: -14px; top: 84%; width: 68%; }
+  html.web .fc-1 { width: 7%; left: 4%; top: 66%; }
+  html.web .fc-2 { width: 6%; right: 10%; top: 20%; }
+  html.web .fc-3 { width: 7%; right: 22%; top: 60%; }
+}
