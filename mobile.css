@@ -274,3 +274,7 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .hero .hs-a { height: 17%; right: 2%; top: 31%; bottom: auto; }
   html.web .hcandy { height: 7%; }
 }
+@media (max-width: 900px) {
+  html.web .hero .vines { left: 0; bottom: auto; height: auto; aspect-ratio: 16 / 9; }
+  html.web .hero.has-bd .vines { left: 0; }
+}
