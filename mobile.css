@@ -240,3 +240,6 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .hero.has-bd .frost { left: 0; }
 }
 @media (max-width: 900px) { html.web .hero.has-bd .frost { -webkit-mask-image: none; mask-image: none; } }
+@media (max-width: 900px) {
+  html.web .deco.deco-ice { width: calc(100vw + 50px); left: 50%; margin-left: calc(-50vw - 25px); }
+}

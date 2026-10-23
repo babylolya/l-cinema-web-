@@ -284,7 +284,7 @@
   // a cobweb under Halloween things, a pine garland with lights under Christmas ones
   var DECO = { halloween: 'web', christmas: 'garland' };
   function decoHtml(theme) {
-    if (theme === 'christmas') return '<div class="deco deco-garland"><img src="stk/garland-base.webp" alt=""><img class="la" src="stk/garland-a.webp" alt=""><img class="lb" src="stk/garland-b.webp" alt=""></div>';
+    if (theme === 'christmas') return '<div class="deco deco-ice"><img src="stk/ice.webp" alt=""><i class="sheen"></i></div>';
     if (theme === 'halloween') return '<div class="deco deco-web"><img src="stk/web.webp" alt=""></div>';
     return '';
   }

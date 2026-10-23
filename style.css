@@ -631,15 +631,28 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .hs-b { height: 24%; right: 26%; top: 8%; animation-delay: .4s, 1.1s; }
 .hs-c { height: 18%; right: 3%; top: 7%; animation-delay: .55s, 1.25s; }
 
-/* frost creeping over a Christmas film in the top panel */
-.frost { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 2; pointer-events: none; overflow: hidden; border-radius: inherit; }
+/* frost growing in from the edges of a Christmas film in the top panel */
+.frost { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1; pointer-events: none; overflow: hidden; border-radius: inherit; }
 .hero.has-bd .frost { left: 34%; }
-.frost img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transform: scale(1.25);
-  animation: frostIn 7.5s cubic-bezier(.25, .6, .3, 1) .3s forwards; }
-@keyframes frostIn { 0% { opacity: 0; transform: scale(1.25); filter: blur(3px); } 100% { opacity: .95; transform: scale(1); filter: blur(0); } }
-.frost::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0;
-  background: radial-gradient(90% 90% at 50% 50%, transparent 40%, rgba(190,220,255,0.22) 100%); animation: frostTint 7.5s ease .3s forwards; }
-@keyframes frostTint { to { opacity: 1; } }
+.frost img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: .95;
+  -webkit-mask-image: radial-gradient(closest-side, transparent 55%, #000 100%); mask-image: radial-gradient(closest-side, transparent 55%, #000 100%);
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center;
+  -webkit-mask-size: 320% 320%; mask-size: 320% 320%; animation: frostGrow 7.5s cubic-bezier(.3, .5, .4, 1) .3s forwards; }
+@keyframes frostGrow { to { -webkit-mask-size: 125% 125%; mask-size: 125% 125%; } }
 .frost { z-index: 1; }
 .hero .info { z-index: 2; }
 .hero.has-bd .frost { -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
+
+/* Christmas: an icy shelf with icicles over the seam, glinting like real ice, a little violet */
+.deco.deco-ice { left: -40px; width: calc(100% + 80px); transform: translateY(70%); animation: iceHue 6s ease-in-out infinite alternate; }
+.deco-ice img { filter: drop-shadow(0 12px 18px rgba(0,0,0,0.5)); }
+@keyframes iceHue { from { filter: hue-rotate(0deg) saturate(1); } to { filter: hue-rotate(38deg) saturate(1.25); } }
+.deco-ice .sheen { position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none;
+  -webkit-mask-image: url(stk/ice.webp); mask-image: url(stk/ice.webp); -webkit-mask-size: 100% 100%; mask-size: 100% 100%;
+  background: linear-gradient(105deg, transparent 0%, transparent 38%, rgba(255,255,255,0.75) 46%, rgba(214,190,255,0.55) 50%, transparent 58%, transparent 100%);
+  background-size: 260% 100%; background-repeat: no-repeat; mix-blend-mode: screen; animation: iceSheen 4.5s ease-in-out infinite; }
+@keyframes iceSheen { 0% { background-position: 130% 0; } 60%, 100% { background-position: -30% 0; } }
+.deco.deco-ice { transform: translateY(62%); }
+.film.has-bd .body { position: relative; z-index: 6; }
+.film.has-bd { margin-top: -110px; }
+.film.has-bd .body { padding-top: 150px; }
