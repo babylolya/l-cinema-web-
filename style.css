@@ -724,3 +724,15 @@ html.nogap .ep + .ep { margin-top: 8px; }
 @keyframes vg4 { to { clip-path: circle(130% at 100% 60%); } }
 .vines::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; opacity: 0;
   background: radial-gradient(90% 90% at 50% 50%, transparent 45%, rgba(20,8,30,0.35) 100%); animation: frostTint 7s ease .2s forwards; }
+
+/* the branch really grows: it starts as a tiny sprout at its root and stretches, bends and unfurls outwards */
+.vines .v .g { display: block; width: 100%; height: 100%; will-change: transform; }
+.v1 .g { transform-origin: 0% 45%; animation: grL 6.5s cubic-bezier(.3, .55, .25, 1) .2s both, swayL 5s ease-in-out 6.7s infinite alternate; }
+.v2 .g { transform-origin: 100% 35%; animation: grR 6s cubic-bezier(.3, .55, .25, 1) 1s both, swayR 5.6s ease-in-out 7s infinite alternate; }
+.v3 .g { transform-origin: 0% 65%; animation: grL 5.2s cubic-bezier(.3, .55, .25, 1) 1.8s both, swayL 6s ease-in-out 7s infinite alternate-reverse; }
+.v4 .g { transform-origin: 100% 60%; animation: grR 5.6s cubic-bezier(.3, .55, .25, 1) 1.3s both, swayR 6.4s ease-in-out 6.9s infinite alternate-reverse; }
+@keyframes grL { 0% { transform: scale(.08, .2) rotate(-40deg); } 55% { transform: scale(.75, .85) rotate(-10deg); } 100% { transform: none; } }
+@keyframes grR { 0% { transform: scale(.08, .2) rotate(40deg); } 55% { transform: scale(.75, .85) rotate(10deg); } 100% { transform: none; } }
+@keyframes swayL { from { transform: rotate(0deg); } to { transform: rotate(-2.5deg); } }
+@keyframes swayR { from { transform: rotate(0deg); } to { transform: rotate(2.5deg); } }
+.vines .v { animation-duration: 4.5s !important; }
