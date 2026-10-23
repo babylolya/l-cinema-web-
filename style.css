@@ -660,3 +660,22 @@ html.nogap .ep + .ep { margin-top: 8px; }
 /* film page: pictures take turns with a slow crossfade */
 .fbanner .fbimg { opacity: 0; transition: opacity 1.4s ease; }
 .fbanner .fbimg.on { opacity: 1; animation: kenburns 14s ease-in-out infinite alternate; }
+
+/* Halloween in the top panel: one big pumpkin in front, bats flying, candy corn popping out at the sides */
+.hero .hs-a { height: 58%; right: 3%; bottom: 3%; top: auto; }
+.hbat { position: absolute; z-index: 3; pointer-events: none; opacity: 0; animation: batIn .9s ease-out forwards, batDrift 5s ease-in-out infinite alternate; }
+.hbat img { display: block; width: 100%; height: auto; filter: drop-shadow(0 0 6px rgba(190,120,255,0.75)) drop-shadow(0 6px 10px rgba(0,0,0,0.5));
+  animation: batFlap .32s ease-in-out infinite alternate; transform-origin: 50% 60%; }
+.hb-1 { width: 9%; right: 30%; top: 10%; animation-delay: .3s, 1.2s; }
+.hb-2 { width: 6%; right: 18%; top: 6%; animation-delay: .55s, 1.5s; }
+.hb-2 img { animation-duration: .27s; }
+.hb-3 { width: 5%; right: 40%; top: 30%; animation-delay: .8s, 1.8s; }
+.hb-3 img { transform: scaleX(-1); animation-name: batFlapR; }
+@keyframes batIn { from { opacity: 0; transform: translate(60px, 30px) scale(.5); } to { opacity: 1; transform: none; } }
+@keyframes batDrift { from { margin-top: 0; margin-right: 0; } to { margin-top: -12px; margin-right: 18px; } }
+@keyframes batFlap { from { transform: scaleY(1); } to { transform: scaleY(.55); } }
+@keyframes batFlapR { from { transform: scaleX(-1) scaleY(1); } to { transform: scaleX(-1) scaleY(.55); } }
+.hcandy { height: 17%; }
+.hc-1 { left: 46%; bottom: 7%; transform: rotate(-18deg); animation: candyPop .7s cubic-bezier(.34, 1.7, .5, 1) .45s both, stkfloat 3s ease-in-out 1.2s infinite; }
+.hc-2 { right: 1%; top: 14%; transform: rotate(22deg); animation: candyPop .7s cubic-bezier(.34, 1.7, .5, 1) .65s both, stkfloat 3.6s ease-in-out 1.4s infinite; }
+@keyframes candyPop { from { opacity: 0; transform: scale(.2) rotate(-60deg); } to { opacity: 1; } }

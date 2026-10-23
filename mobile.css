@@ -248,3 +248,12 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .hero.has-bd .info { margin-top: 0; padding-top: 16px; }
   html.web .hero.has-bd .bg img { -webkit-mask-image: none; mask-image: none; }
 }
+@media (max-width: 900px) {
+  html.web .hero .hs-a { height: 30%; right: 3%; top: 21%; bottom: auto; }
+  html.web .hb-1 { width: 15%; right: 38%; top: 4%; }
+  html.web .hb-2 { width: 10%; right: 22%; top: 3%; }
+  html.web .hb-3 { width: 8%; right: 54%; top: 14%; }
+  html.web .hcandy { height: 9%; }
+  html.web .hc-1 { left: 4%; top: 30%; bottom: auto; }
+  html.web .hc-2 { right: 4%; top: 4%; }
+}

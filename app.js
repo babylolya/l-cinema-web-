@@ -333,7 +333,9 @@
   // Halloween films in the top panel get pumpkins popping out, Christmas ones a mailbox and snowflakes
   function heroStickers(f) {
     var t = filmTheme(f);
-    if (t === 'halloween') return '<img class="hstk hs-a" src="stk/pumpkin.webp" alt=""><img class="hstk hs-b" src="stk/pumpkin.webp" alt=""><img class="hstk hs-c" src="stk/glitter.webp" alt="">';
+    if (t === 'halloween') return '<img class="hstk hs-a" src="stk/pumpkin.webp" alt="">' +
+      '<span class="hbat hb-1"><img src="stk/bat.webp" alt=""></span><span class="hbat hb-2"><img src="stk/bat.webp" alt=""></span><span class="hbat hb-3"><img src="stk/bat.webp" alt=""></span>' +
+      '<img class="hstk hcandy hc-1" src="stk/candy.webp" alt=""><img class="hstk hcandy hc-2" src="stk/candy.webp" alt="">';
     // Christmas: the picture slowly frosts over from the corners while it waits to turn
     if (t === 'christmas') return '<div class="frost"><img src="stk/frost.webp" alt=""></div>';
     return '';
@@ -451,9 +453,11 @@
       return f.watchedPart || f.pos > 5000;
     };
     // «Новое» holds what was uploaded on the latest upload day; older films just live in their genres
-    var lastDay = '';
-    films.forEach(function (f) { var d = upl(f).slice(0, 10); if (d > lastDay) lastDay = d; });
-    var fresh = films.filter(function (f) { return isNew(f) && !touched(f) && (!lastDay || upl(f).slice(0, 10) === lastDay); }).slice().sort(function (x, y) {
+    // the latest upload session: everything uploaded within 30 hours of the newest upload (a night session can cross midnight)
+    var lastT = 0;
+    var tOf = function (f) { var u = upl(f); if (!u) return 0; var t = Date.parse(u.length <= 10 ? u + 'T00:00:00' : u + (u.length === 16 ? ':00' : '')); return isNaN(t) ? 0 : t; };
+    films.forEach(function (f) { var t = tOf(f); if (t > lastT) lastT = t; });
+    var fresh = films.filter(function (f) { return isNew(f) && !touched(f) && (!lastT || tOf(f) >= lastT - 30 * 3600000); }).slice().sort(function (x, y) {
       var d = upl(y).localeCompare(upl(x));
       return d || (hash(x.id + SEED) - hash(y.id + SEED));
     });
