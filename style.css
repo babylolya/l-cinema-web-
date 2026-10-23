@@ -583,3 +583,14 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .film.has-bd { margin-top: -150px; position: relative; z-index: 2; padding: 0 30px; }
 .film.has-bd .big { width: 220px; height: 330px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.18); }
 .film.has-bd .body { padding-top: 168px; }
+
+/* ---------- seasonal decorations along the bottom edge ---------- */
+.deco { position: absolute; left: -2%; width: 104%; height: auto; pointer-events: none; z-index: 4; }
+.deco-web { bottom: -78px; }
+.deco-garland { bottom: -44px; animation: twinkle 2.6s ease-in-out infinite alternate; }
+@keyframes twinkle { from { filter: brightness(0.92) saturate(1); } to { filter: brightness(1.12) saturate(1.15); } }
+.chead { margin-bottom: 34px; }
+.fbwrap { position: relative; flex-shrink: 0; }
+.fbwrap .deco-web { bottom: -70px; }
+.fbwrap .deco-garland { bottom: -40px; }
+.fbwrap + .film.has-bd .fpost { position: relative; z-index: 5; }

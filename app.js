@@ -281,6 +281,14 @@
       '</div>';
   }
 
+  // a cobweb under Halloween things, a pine garland with lights under Christmas ones
+  var DECO = { halloween: 'web', christmas: 'garland' };
+  function decoHtml(theme) { return DECO[theme] ? '<img class="deco deco-' + DECO[theme] + '" src="stk/' + DECO[theme] + '.webp" alt="">' : ''; }
+  function filmTheme(f) {
+    var cs = S.collections || [];
+    for (var i = 0; i < cs.length; i++) if (DECO[cs[i].theme] && collFilms(cs[i]).indexOf(f) >= 0) return cs[i].theme;
+    return '';
+  }
   function plural(n, one, few, many) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many); }
 
   function collection() {
@@ -291,7 +299,7 @@
     var stk = PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '';
     // a banner card: back button on top, then a glass card in the collection's colours with the big sticker peeking out
     var h = '<div class="ctop"><button class="btn small cback" data-f data-key="c-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
-      '<section class="chead th-' + esc(c.theme || 'default') + '">' + stk +
+      '<section class="chead th-' + esc(c.theme || 'default') + '">' + stk + decoHtml(c.theme) +
       '<div class="cinfo"><span class="ckick">Подборка</span><h1 class="coll-title">' + esc(c.title) + '</h1>' +
       (c.subtitle ? '<div class="csubt">' + esc(c.subtitle) + '</div>' : '') +
       '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') +
@@ -581,6 +589,8 @@
     // a wide picture across the top when there is one; the poster then sits on its lower edge
     var banner = f.backdrop ? '<section class="fbanner"><img src="' + esc(f.backdrop) + '" alt="" onerror="this.parentNode.classList.add(\'noimg\');this.remove()"><div class="fshade"></div>' +
       '<button class="btn small fback" data-f data-key="f-back" data-act="back">' + I.back + ' Назад</button></section>' : '';
+    var deco = f.backdrop ? decoHtml(filmTheme(f)) : '';
+    if (deco) banner = '<div class="fbwrap">' + banner + deco + '</div>';
     return banner + '<div class="film' + (f.backdrop ? ' has-bd' : '') + '"><div class="fpost">' + (f.backdrop ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
       '<div class="body"><div class="chips">' + tags + '</div><h1>' + esc(f.title) + '</h1>' +
       (f.original && f.original !== f.title ? '<div class="sub">' + esc(f.original) + '</div>' : '') +
