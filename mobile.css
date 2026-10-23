@@ -158,6 +158,7 @@ html.web .ctiles { gap: 22px; padding-top: 18px; }
   html.web .hero .btns { flex-wrap: nowrap; gap: 8px; }
   html.web .hero .btn { height: 44px; font-size: 15px; padding: 0 16px; }
   html.web .hero .btn.hplay { flex: 1; justify-content: center; }
+  html.web .hero, html.web .hero.has-bd { height: auto; }
   html.web .hero .btn.hwant { width: 44px; flex-shrink: 0; font-size: 22px; }
 }
 @media (max-width: 900px) {

@@ -618,3 +618,8 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .rpstar:focus { outline: 2px solid var(--cyan); outline-offset: 2px; transform: scale(1.1); }
 .rpnum { margin-left: 10px; font-size: 22px; font-weight: 700; color: #FFD66B; }
 .under { pointer-events: none; }
+/* long titles: room for the second line's letters, nothing cut */
+.hero h1, .hero h1.long { line-height: 1.18; padding-bottom: 3px; }
+.hero h1.long { font-size: 30px; }
+.hero, .hero.has-bd { height: 370px; }
+.hdesc { line-height: 1.5; }
