@@ -337,7 +337,12 @@
     // a new random order each time the app is opened (stays the same while you scroll)
     // the latest uploads to Drive come first (films without a known time are shuffled after them)
     var upl = function (f) { return String(f.uploaded || (f.addedAt ? String(f.addedAt).slice(0, 10) + 'T00:00' : '')); };
-    var fresh = films.filter(isNew).slice().sort(function (x, y) {
+    // started or (almost) finished films live in «Продолжить» / «Недавно просмотренные», not in «Новое»
+    var touched = function (f) {
+      if (isSeries(f)) return eps(f).some(function (e) { return e.watchedPart || e.pos > 5000; });
+      return f.watchedPart || f.pos > 5000;
+    };
+    var fresh = films.filter(function (f) { return isNew(f) && !touched(f); }).slice().sort(function (x, y) {
       var d = upl(y).localeCompare(upl(x));
       return d || (hash(x.id + SEED) - hash(y.id + SEED));
     });
