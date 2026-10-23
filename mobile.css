@@ -215,3 +215,9 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web #main { overflow-x: hidden; }
 }
 @media (max-width: 900px) { html.web .deco.deco-web { width: 100%; left: 0; } }
+/* phone: the cobweb runs in from beyond one edge of the screen and out past the other */
+@media (max-width: 900px) {
+  html.web #main { overflow-x: visible; }
+  html.web, html.web body { overflow-x: hidden; }
+  html.web .deco.deco-web { width: calc(100vw + 60px); left: 50%; margin-left: calc(-50vw - 30px); }
+}

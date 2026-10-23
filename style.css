@@ -596,3 +596,6 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .deco-web { transform: translateY(96%); }
 .film.has-bd { z-index: 6; }
 .deco-web { left: 0; width: 100%; transform: translateY(98%); }
+/* big screen: the cobweb reaches past the picture on both sides */
+.deco.deco-web { left: -70px; width: calc(100% + 140px); }
+#main { overflow-x: hidden; }
