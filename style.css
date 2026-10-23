@@ -399,18 +399,35 @@ body.theme-love::after { background:
 
 /* ---------- Netflix and YouTube tiles under the top panel ---------- */
 .btiles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; flex-shrink: 0; }
-.btile { position: relative; height: 110px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.14); cursor: pointer; color: #fff;
-  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: transform .15s ease, box-shadow .2s ease; overflow: hidden; }
+.btile { position: relative; height: 150px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.14); cursor: pointer; color: #fff; overflow: hidden;
+  display: flex; align-items: flex-end; padding: 20px 24px; text-align: left; transition: transform .15s ease, box-shadow .25s ease; }
 .btile:focus, html.mac .btile:hover { transform: scale(1.03); }
-.bname { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: 0.02em; }
-.bsub { font-size: 13px; font-weight: 700; opacity: 0.75; }
-.b-nf { background: radial-gradient(120% 140% at 50% 0%, #3a0a0e 0%, #0b0608 70%); box-shadow: 0 0 26px rgba(229,9,20,0.25); }
-.b-nf .bname { color: #ff2a36; text-transform: uppercase; text-shadow: 0 0 18px rgba(255,42,54,0.6); }
-.b-nf:focus, html.mac .b-nf:hover { box-shadow: 0 0 34px rgba(255,42,54,0.55); }
-.b-yt { background: radial-gradient(120% 140% at 50% 0%, #2a1a22 0%, #0d0a10 70%); flex-direction: row; gap: 14px; box-shadow: 0 0 26px rgba(255,60,60,0.18); }
-.b-yt .bsub { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; }
-.b-yt .bplay { width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 24px solid #ff4d4d; filter: drop-shadow(0 0 10px rgba(255,77,77,0.7)); }
-.b-yt:focus, html.mac .b-yt:hover { box-shadow: 0 0 34px rgba(255,77,77,0.45); }
+.btext { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 6px; }
+.bname { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 28px; line-height: 1; text-shadow: 0 2px 18px rgba(0,0,0,0.5); }
+.bsub { font-size: 14px; font-weight: 700; opacity: 0.85; }
+
+/* Netflix: black to deep crimson, a soft red glow and the studio's posters fanned out on the right */
+.b-nf { background: radial-gradient(90% 120% at 100% 100%, rgba(229,9,20,0.55) 0%, rgba(229,9,20,0) 60%), linear-gradient(135deg, #0a0507 0%, #1d0609 55%, #3d0710 100%);
+  box-shadow: 0 0 26px rgba(229,9,20,0.30); }
+.b-nf .bname { color: #ff2b37; letter-spacing: 0.06em; text-transform: uppercase; text-shadow: 0 0 22px rgba(255,43,55,0.65); }
+.b-nf:focus, html.mac .b-nf:hover { box-shadow: 0 0 36px rgba(255,43,55,0.6); }
+.fan { position: absolute; z-index: 1; height: 84%; aspect-ratio: 2 / 3; object-fit: cover; border-radius: 10px; border: 1px solid rgba(255,255,255,0.22);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.6); transition: transform .35s cubic-bezier(.34, 1.5, .5, 1); }
+.fan0 { right: 5%; top: 9%; transform: rotate(8deg); z-index: 1; }
+.fan1 { right: 14%; top: 6%; transform: rotate(-1deg); z-index: 0; }
+.fan2 { right: 23%; top: 11%; transform: rotate(-10deg); z-index: 0; opacity: .85; }
+.b-nf:focus .fan0, html.mac .b-nf:hover .fan0 { transform: rotate(12deg) translateY(-6px); }
+.b-nf:focus .fan2, html.mac .b-nf:hover .fan2 { transform: rotate(-15deg) translateY(-6px); }
+
+/* YouTube: dark with a red glow and a glowing round play button */
+.b-yt { background: radial-gradient(80% 120% at 0% 0%, rgba(255,40,40,0.40) 0%, rgba(255,40,40,0) 60%), linear-gradient(135deg, #1a0d12 0%, #120b14 55%, #0b0910 100%);
+  box-shadow: 0 0 26px rgba(255,50,50,0.22); }
+.b-yt:focus, html.mac .b-yt:hover { box-shadow: 0 0 36px rgba(255,60,60,0.5); }
+.bplay { position: absolute; z-index: 1; right: 26px; top: 50%; width: 74px; height: 74px; margin-top: -37px; border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff6a6a, #e01b1b 70%); box-shadow: 0 0 0 8px rgba(255,60,60,0.14), 0 0 30px rgba(255,40,40,0.6);
+  transition: transform .3s cubic-bezier(.34, 1.6, .5, 1); }
+.bplay i { position: absolute; left: 30px; top: 22px; width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 24px solid #fff; }
+.b-yt:focus .bplay, html.mac .b-yt:hover .bplay { transform: scale(1.12); }
 
 body.theme-netflix { background: transparent; }
 body.theme-netflix::before, body.theme-netflix::after { content: ''; position: fixed; left: -30%; top: -30%; width: 160%; height: 160%; z-index: -1; pointer-events: none; will-change: transform; }

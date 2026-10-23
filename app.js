@@ -253,10 +253,16 @@
 
   // two big tiles under the top panel: the Netflix shelf and YouTube (opens in Brave)
   function brandTiles() {
-    var nf = collById('netflix'), n = nf ? collFilms(nf).length : 0;
+    var nf = collById('netflix'), list = nf ? collFilms(nf) : [];
+    var fan = '';
+    var withPoster = list.filter(function (f) { return f.poster; }).slice(0, 3);
+    for (var k = 0; k < withPoster.length; k++) fan += '<img class="fan fan' + k + '" src="' + esc(withPoster[k].poster) + '" alt="" onerror="this.remove()">';
+    var web = document.documentElement.classList.contains('web');
     return '<div class="btiles">' +
-      (nf ? '<button class="btile b-nf" data-f data-key="b-nf" data-act="coll:netflix"><span class="bname">Netflix</span><span class="bsub">' + (n ? n + ' шт.' : 'скоро') + '</span></button>' : '') +
-      '<button class="btile b-yt" data-f data-key="b-yt" data-act="url:https://www.youtube.com"><span class="bplay"></span><span class="bname">YouTube</span><span class="bsub">' + (document.documentElement.classList.contains('web') ? 'открыть' : 'открыть в Brave') + '</span></button>' +
+      (nf ? '<button class="btile b-nf" data-f data-key="b-nf" data-act="coll:netflix">' + fan +
+        '<span class="btext"><span class="bname">Netflix</span><span class="bsub">' + (list.length ? (web ? '' : 'Фильмы студии · ') + list.length + ' шт.' : 'скоро') + '</span></span></button>' : '') +
+      '<button class="btile b-yt" data-f data-key="b-yt" data-act="url:https://www.youtube.com">' +
+        '<span class="bplay"><i></i></span><span class="btext"><span class="bname">YouTube</span><span class="bsub">' + (web ? 'Открыть сайт' : 'Открыть в Brave') + '</span></span></button>' +
       '</div>';
   }
 

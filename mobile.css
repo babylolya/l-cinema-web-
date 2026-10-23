@@ -130,9 +130,11 @@ html.web .cstk { height: 64px; }
 
 @media (max-width: 900px) {
   html.web .btiles { gap: 10px; }
-  html.web .btile { height: 84px; border-radius: 18px; }
-  html.web .bname { font-size: 22px; }
+  html.web .btile { height: 104px; border-radius: 18px; padding: 14px 14px; }
+  html.web .bname { font-size: 18px; }
   html.web .bsub { font-size: 11px; }
-  html.web .b-yt .bsub { bottom: 8px; }
-  html.web .b-yt .bplay { border-top-width: 11px; border-bottom-width: 11px; border-left-width: 17px; }
+  html.web .fan { height: 70%; border-radius: 6px; top: 12%; }
+  html.web .fan0 { right: 5%; } html.web .fan1 { right: 19%; } html.web .fan2 { display: none; }
+  html.web .bplay { width: 46px; height: 46px; margin-top: -30px; right: 14px; box-shadow: 0 0 0 5px rgba(255,60,60,0.14), 0 0 20px rgba(255,40,40,0.6); }
+  html.web .bplay i { left: 18px; top: 13px; border-top-width: 10px; border-bottom-width: 10px; border-left-width: 15px; }
 }
