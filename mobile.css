@@ -113,7 +113,6 @@ html.web .ctiles { gap: 22px; padding-top: 18px; }
 @media (hover: hover) {
   html.web .ctile:hover .stk { opacity: 1; transform: none; animation: stkfloat 3.2s ease-in-out .5s infinite; }
 }
-html.web .cstk { height: 64px; }
 @media (max-width: 900px) {
   html.web .th-halloween .stk-b { left: -3%; top: -14%; bottom: auto; height: 34%; }
 }
@@ -163,4 +162,14 @@ html.web .cstk { height: 64px; }
 }
 @media (max-width: 900px) {
   html.web .hkick::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: kpulse 1.8s ease-in-out infinite; }
+}
+
+@media (max-width: 900px) {
+  html.web .ctop .status { font-size: 12px; }
+  html.web .chead { padding: 22px 18px 18px; min-height: 150px; border-radius: 22px; margin-top: 26px; }
+  html.web .cinfo { max-width: 64%; gap: 8px; }
+  html.web .chead .coll-title { font-size: 30px; }
+  html.web .csubt { font-size: 14px; }
+  html.web .ckick { font-size: 10px; padding: 4px 10px; }
+  html.web .chead .cstk { height: 128px; right: 10px; top: -30px; }
 }

@@ -266,12 +266,21 @@
       '</div>';
   }
 
+  function plural(n, one, few, many) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many); }
+
   function collection() {
     var c = collById(view.id);
     if (!c) return emptyScreen();
     var list = collFilms(c);
-    var h = '<div class="topline"><div><button class="btn small" data-f data-key="c-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>' +
-      '<div class="ctrow"><h1 class="title-glow coll-title">' + esc(c.title) + '</h1>' + (PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '') + '</div><div class="sub">' + esc(c.subtitle || '') + '</div></div>' + statusLine() + '</div>';
+    var seen = list.filter(watched).length;
+    var stk = PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '';
+    // a banner card: back button on top, then a glass card in the collection's colours with the big sticker peeking out
+    var h = '<div class="ctop"><button class="btn small cback" data-f data-key="c-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
+      '<section class="chead th-' + esc(c.theme || 'default') + '">' + stk +
+      '<div class="cinfo"><span class="ckick">Подборка</span><h1 class="coll-title">' + esc(c.title) + '</h1>' +
+      (c.subtitle ? '<div class="csubt">' + esc(c.subtitle) + '</div>' : '') +
+      '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') +
+      (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div></div></section>';
     if (!list.length) return h + '<div class="empty glass"><h1>Скоро здесь будет кино</h1><p>Скажи Claude, какие фильмы положить в «' + esc(c.title) + '», и они появятся здесь.</p></div>';
     var grid = '<div class="grid">';
     for (var i = 0; i < list.length; i++) grid += card(list[i], 'coll');
