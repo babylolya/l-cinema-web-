@@ -406,6 +406,16 @@
     var after = byId(heroList[(heroIdx + 1) % heroList.length]);
     if (after && (after.backdrop || after.poster)) { var im = new Image(); im.src = after.backdrop || after.poster; }
   }
+  // film page: the wide pictures fade from one to the next every few seconds
+  setInterval(function () {
+    var ims = document.querySelectorAll('.fbanner .fbimg');
+    if (ims.length < 2) return;
+    var cur = 0;
+    for (var i = 0; i < ims.length; i++) if (ims[i].classList.contains('on')) cur = i;
+    ims[cur].classList.remove('on');
+    ims[(cur + 1) % ims.length].classList.add('on');
+  }, 7000);
+
   var lastHeroTouch = 0;
   setInterval(function () { if (Date.now() - lastHeroTouch > 8000) rotateHero(); }, 8000);
 
@@ -600,11 +610,16 @@
     }
 
     // a wide picture across the top when there is one; the poster then sits on its lower edge
-    var banner = f.backdrop ? '<section class="fbanner"><img src="' + esc(f.backdrop) + '" alt="" onerror="this.parentNode.classList.add(\'noimg\');this.remove()"><div class="fshade"></div>' +
+    // several pictures take turns; the first one shown is picked at random each time
+    var bds = (f.backdrops && f.backdrops.length ? f.backdrops : (f.backdrop ? [f.backdrop] : []));
+    var bstart = bds.length ? Math.floor(Math.random() * bds.length) : 0;
+    var imgs = '';
+    for (var bi = 0; bi < bds.length; bi++) imgs += '<img class="fbimg' + (bi === bstart ? ' on' : '') + '" src="' + esc(bds[bi]) + '" alt="" onerror="this.remove()">';
+    var banner = bds.length ? '<section class="fbanner" data-bds="' + bds.length + '">' + imgs + '<div class="fshade"></div>' +
       '<button class="btn small fback" data-f data-key="f-back" data-act="back">' + I.back + ' Назад</button></section>' : '';
-    var deco = f.backdrop ? decoHtml(filmTheme(f)) : '';
+    var deco = bds.length ? decoHtml(filmTheme(f)) : '';
     if (deco) banner = '<div class="fbwrap">' + banner + deco + '</div>';
-    return banner + '<div class="film' + (f.backdrop ? ' has-bd' : '') + '"><div class="fpost">' + (f.backdrop ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
+    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + '"><div class="fpost">' + (bds.length ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
       '<div class="body"><div class="chips">' + tags + '</div><h1>' + esc(f.title) + '</h1>' +
       (f.original && f.original !== f.title ? '<div class="sub">' + esc(f.original) + '</div>' : '') +
       '<div class="meta">' + esc(filmMeta(f)) + '</div>' +

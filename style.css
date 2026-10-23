@@ -656,3 +656,7 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .film.has-bd .body { position: relative; z-index: 6; }
 .film.has-bd { margin-top: -110px; }
 .film.has-bd .body { padding-top: 150px; }
+
+/* film page: pictures take turns with a slow crossfade */
+.fbanner .fbimg { opacity: 0; transition: opacity 1.4s ease; }
+.fbanner .fbimg.on { opacity: 1; animation: kenburns 14s ease-in-out infinite alternate; }

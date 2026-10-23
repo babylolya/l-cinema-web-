@@ -115,6 +115,7 @@
       var t = tm[id] || {};
       if (!f.poster && t.poster) f.poster = t.poster;
       if (!f.backdrop && t.backdrop) f.backdrop = t.backdrop;
+      if (!f.backdrops && t.backdrops) f.backdrops = t.backdrops;
       if (!f.lang && t.lang) f.lang = t.lang;
       f.last = (P.last[id] || {}).key || ''; f.lastAt = (P.last[id] || {}).t || 0;
       return f;
