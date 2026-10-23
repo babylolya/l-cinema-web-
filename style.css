@@ -474,3 +474,19 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 .hero.has-bd .info { max-width: 58%; }
 .hero h1 { font-size: 40px; }
 .hero h1.long { font-size: 32px; }
+
+/* ---------- one button style everywhere: pills of frosted glass, the main action in the pink-violet gradient ---------- */
+.btn { border-radius: 999px; background: rgba(255,255,255,0.09); border-color: rgba(255,255,255,0.20);
+  -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); transition: transform .15s ease, box-shadow .2s ease, background .2s ease; }
+.btn.small { border-radius: 999px; }
+.btn.pri { background: linear-gradient(135deg, #FF5FDB 0%, #C84BFF 100%); color: #fff; box-shadow: 0 8px 26px rgba(255,79,216,0.45), inset 0 1px 0 rgba(255,255,255,0.35); }
+.btn.pri svg { fill: #fff; }
+.btn.on { background: rgba(92,242,255,0.12); border-color: rgba(92,242,255,0.6); color: #A8F8FF; box-shadow: 0 0 14px rgba(92,242,255,0.25); }
+.btn.warn { background: rgba(255,90,140,0.10); border-color: rgba(255,120,160,0.5); }
+.chip { border-radius: 999px; background: rgba(255,255,255,0.08); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.chip.on { background: rgba(92,242,255,0.14); }
+.gbtn { border-radius: 999px; }
+.gbtn.on { background: linear-gradient(135deg, #FF5FDB 0%, #C84BFF 100%); color: #fff; box-shadow: 0 6px 20px rgba(255,79,216,0.45), inset 0 1px 0 rgba(255,255,255,0.3); }
+.ni.on { background: linear-gradient(135deg, #FF5FDB 0%, #C84BFF 100%); color: #fff; box-shadow: 0 6px 20px rgba(255,79,216,0.5), inset 0 1px 0 rgba(255,255,255,0.3); }
+.ep { border-radius: 16px; }
+.ni { border-radius: 999px; }
