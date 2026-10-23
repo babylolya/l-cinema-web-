@@ -121,7 +121,10 @@ html.web .cstk { height: 64px; }
 /* phone: the picture sits on top, uncovered, and the text goes under it */
 @media (max-width: 900px) {
   html.web .hero.has-bd { flex-direction: column; min-height: 0; }
-  html.web .hero.has-bd .bg { position: relative; aspect-ratio: 16 / 9; width: 100%; flex-shrink: 0; }
+  html.web .hero.has-bd { background: #18151e; }
+  html.web .hero.has-bd .bg { position: relative; left: auto; aspect-ratio: 16 / 9; width: 100%; flex-shrink: 0; }
+  html.web .hero.has-bd .bg img { -webkit-mask-image: none; mask-image: none; }
+  html.web .hero.has-bd .info { max-width: none; }
   html.web .hero.has-bd .bg img { object-position: center center; }
   html.web .hero.has-bd .bg::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 38%; background: linear-gradient(0deg, rgba(24,21,30,1), rgba(24,21,30,0)); }
   html.web .hero.has-bd .shade { display: none; }

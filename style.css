@@ -437,3 +437,11 @@ body.theme-netflix::before { animation: bgflowA 16s ease-in-out infinite alterna
 body.theme-netflix::after { animation: bgflowB 21s ease-in-out infinite alternate; opacity: .9; background:
   radial-gradient(circle 40vmax at 74% 78%, rgba(120,8,18,0.45), transparent 72%); }
 body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
+
+/* hero on the big screen: the picture fills the right part uncovered and fades into the dark on the left, text sits on the dark */
+.hero.has-bd { background: #0c0912; }
+.hero.has-bd .bg { left: 34%; }
+.hero.has-bd .bg img { object-position: center center; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 34%); mask-image: linear-gradient(90deg, transparent 0%, #000 34%); }
+.hero.has-bd .shade { background: linear-gradient(0deg, rgba(9,7,15,0.35) 0%, rgba(9,7,15,0) 30%); }
+.hero.has-bd .info { max-width: 52%; }
+.hero.has-bd h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.7); }
