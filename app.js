@@ -34,6 +34,12 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
+  // one wide picture per film for this launch: a different one of its set each time the app is opened
+  function pickBd(f) {
+    var l = f.backdrops && f.backdrops.length ? f.backdrops : null;
+    if (!l) return f.backdrop || '';
+    return l[hash(f.id + '|' + SEED) % l.length];
+  }
   function hash(s) { var h = 0; s = String(s); for (var i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) | 0; return Math.abs(h); }
   function color(f) { return PALETTE[hash(f.id || f.title) % PALETTE.length]; }
   function isSeries(f) { return f.type === 'series' && f.episodes && f.episodes.length > 0; }
@@ -343,11 +349,12 @@
   function heroHtml(hero, idx, n) {
     var hr = resume(hero);
     var kicker = kickerOf(hero);
+    var bdUrl = pickBd(hero);
     var bgHtml = '';
-    if (hero.backdrop) bgHtml = '<div class="bgblur"><img src="' + esc(hero.backdrop) + '" alt="" onerror="this.remove()"></div>' +
-      '<div class="bg"><img src="' + esc(hero.backdrop) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
+    if (bdUrl) bgHtml = '<div class="bgblur"><img src="' + esc(bdUrl) + '" alt="" onerror="this.remove()"></div>' +
+      '<div class="bg"><img src="' + esc(bdUrl) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
     else if (hero.poster) bgHtml = '<div class="bg blur"><img src="' + esc(hero.poster) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
-    var side = (!hero.backdrop && hero.poster) ? '<div class="pst"><img src="' + esc(hero.poster) + '" alt="" onerror="this.parentNode.remove()"></div>' : '';
+    var side = (!bdUrl && hero.poster) ? '<div class="pst"><img src="' + esc(hero.poster) + '" alt="" onerror="this.parentNode.remove()"></div>' : '';
     var dots = '';
     if (n > 1) {
       dots = '<div class="dots">';
@@ -364,7 +371,7 @@
       (hero.rating ? '<span class="hchip rate">★ ' + esc(String(hero.rating).replace('.', ',')) + '</span>' : '') + '</div>';
     var desc = hero.description ? '<p class="hdesc">' + esc(hero.description) + '</p>' : '';
     var wantOn = isWant(hero);
-    return '<section class="hero glass' + (hero.backdrop ? ' has-bd' : '') + '" data-hero="' + esc(hero.id) + '">' + bgHtml +
+    return '<section class="hero glass' + (bdUrl ? ' has-bd' : '') + '" data-hero="' + esc(hero.id) + '">' + bgHtml +
       '<div class="info"><div class="kicker"><i></i>' + esc(kicker) + '</div>' +
       '<h1' + (String(hero.title || '').length > 26 ? ' class="long"' : '') + '>' + esc(hero.title) + '</h1>' + chipHtml + desc +
       '<div class="btns">' +
@@ -408,16 +415,6 @@
     var after = byId(heroList[(heroIdx + 1) % heroList.length]);
     if (after && (after.backdrop || after.poster)) { var im = new Image(); im.src = after.backdrop || after.poster; }
   }
-  // film page: the wide pictures fade from one to the next every few seconds
-  setInterval(function () {
-    var ims = document.querySelectorAll('.fbanner .fbimg');
-    if (ims.length < 2) return;
-    var cur = 0;
-    for (var i = 0; i < ims.length; i++) if (ims[i].classList.contains('on')) cur = i;
-    ims[cur].classList.remove('on');
-    ims[(cur + 1) % ims.length].classList.add('on');
-  }, 7000);
-
   var lastHeroTouch = 0;
   setInterval(function () { if (Date.now() - lastHeroTouch > 8000) rotateHero(); }, 8000);
 
@@ -615,10 +612,9 @@
 
     // a wide picture across the top when there is one; the poster then sits on its lower edge
     // several pictures take turns; the first one shown is picked at random each time
-    var bds = (f.backdrops && f.backdrops.length ? f.backdrops : (f.backdrop ? [f.backdrop] : []));
-    var bstart = bds.length ? Math.floor(Math.random() * bds.length) : 0;
-    var imgs = '';
-    for (var bi = 0; bi < bds.length; bi++) imgs += '<img class="fbimg' + (bi === bstart ? ' on' : '') + '" src="' + esc(bds[bi]) + '" alt="" onerror="this.remove()">';
+    var one = pickBd(f);
+    var bds = one ? [one] : [];
+    var imgs = one ? '<img class="fbimg on" src="' + esc(one) + '" alt="" onerror="this.remove()">' : '';
     var banner = bds.length ? '<section class="fbanner" data-bds="' + bds.length + '">' + imgs + '<div class="fshade"></div>' +
       '<button class="btn small fback" data-f data-key="f-back" data-act="back">' + I.back + ' Назад</button></section>' : '';
     var deco = bds.length ? decoHtml(filmTheme(f)) : '';

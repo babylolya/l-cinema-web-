@@ -659,7 +659,7 @@ html.nogap .ep + .ep { margin-top: 8px; }
 
 /* film page: pictures take turns with a slow crossfade */
 .fbanner .fbimg { opacity: 0; transition: opacity 1.4s ease; }
-.fbanner .fbimg.on { opacity: 1; animation: kenburns 14s ease-in-out infinite alternate; }
+.fbanner .fbimg.on { opacity: 1; }
 
 /* Halloween in the top panel: one big pumpkin in front, bats flying, candy corn popping out at the sides */
 .hero .hs-a { height: 58%; right: 3%; bottom: 3%; top: auto; }
