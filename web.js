@@ -58,9 +58,10 @@
     var extra = [];
     (SHARED.films || []).forEach(function (a) {
       if (known[a.driveId]) return;
-      var fn = String(a.fileName || '').toLowerCase();
+      var nf = function (x) { x = String(x || ''); return x.normalize ? x.normalize('NFC') : x; };
+      var fn = nf(a.fileName).toLowerCase();
       var owner = null;
-      for (var i = 0; i < lib.length; i++) if (lib[i].fileMatch && fn.indexOf(String(lib[i].fileMatch).toLowerCase()) >= 0) { owner = lib[i]; break; }
+      for (var i = 0; i < lib.length; i++) if (lib[i].fileMatch && fn.indexOf(nf(lib[i].fileMatch).toLowerCase()) >= 0) { owner = lib[i]; break; }
       if (owner) {
         if (!owner.url && a.url) owner.url = a.url;
         if (!owner.episodes && a.episodes) owner.episodes = a.episodes;
