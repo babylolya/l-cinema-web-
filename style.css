@@ -250,7 +250,7 @@ h1, h2, h3 { margin: 0; font-family: Unbounded, sans-serif; }
 .ctile:focus { transform: scale(1.03); }
 .ctitle { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 28px; text-shadow: 0 2px 18px rgba(0,0,0,0.45); }
 .csub { font-size: 14px; font-weight: 700; opacity: 0.9; }
-.th-halloween.ctile { background: linear-gradient(135deg, #3a0f6b 0%, #7b2cbf 45%, #ff7a1a 100%); box-shadow: 0 0 26px rgba(255,122,26,0.35); }
+.th-halloween.ctile { background: linear-gradient(135deg, #5a1a86 0%, #b93d12 36%, #f26a1b 62%, #ffa23a 100%); box-shadow: 0 0 28px rgba(255,122,26,0.45); }
 .th-christmas.ctile { background: linear-gradient(135deg, #8e0b22 0%, #c8102e 40%, #0c7a43 100%); box-shadow: 0 0 26px rgba(200,16,46,0.35); }
 .th-default.ctile { background: linear-gradient(135deg, #3b2850, #2a3458); }
 
@@ -347,7 +347,7 @@ html.mac body { -webkit-user-select: none; user-select: none; }
 @keyframes stkpop { from { opacity: 0; transform: scale(0.3) rotate(-20deg); } to { opacity: 1; transform: none; } }
 
 .th-halloween .stk-a { height: 88%; right: 1%; top: -30%; }
-.th-halloween .stk-b { height: 36%; left: -2%; bottom: 10%; }
+.th-halloween .stk-b { height: 34%; left: -2%; top: -14%; }
 .th-christmas .stk-a { height: 116%; right: 5%; top: -24%; }
 .th-christmas .stk-b { height: 34%; right: 36%; top: 6%; }
 .th-christmas .stk-c { height: 24%; left: 4%; top: -8%; }
