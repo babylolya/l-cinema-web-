@@ -203,7 +203,7 @@
   function statusLine() {
     if (S.error) return '<span class="status err">' + esc(S.error) + '</span>';
     if (S.syncing) return '<span class="status">Обновляю библиотеку…</span>';
-    if (S.syncedAt) return '<span class="status">Обновлено в ' + esc(String(S.syncedAt).slice(11, 16)) + '</span>';
+    if (S.syncedAt) return '<span class="status">Обновлено в ' + esc(String(S.syncedAt).slice(11, 16)) + (S.updErr ? ' · новая версия не скачалась: ' + esc(S.updErr) : '') + '</span>';
     return '';
   }
 
