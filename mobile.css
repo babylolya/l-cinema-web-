@@ -214,3 +214,4 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .deco { width: 220%; left: -60%; }
   html.web #main { overflow-x: hidden; }
 }
+@media (max-width: 900px) { html.web .deco.deco-web { width: 100%; left: 0; } }

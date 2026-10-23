@@ -595,3 +595,4 @@ html.nogap .ep + .ep { margin-top: 8px; }
 @keyframes blinkA { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
 .deco-web { transform: translateY(96%); }
 .film.has-bd { z-index: 6; }
+.deco-web { left: 0; width: 100%; transform: translateY(98%); }
