@@ -333,7 +333,8 @@
   function heroStickers(f) {
     var t = filmTheme(f);
     if (t === 'halloween') return '<img class="hstk hs-a" src="stk/pumpkin.webp" alt=""><img class="hstk hs-b" src="stk/pumpkin.webp" alt=""><img class="hstk hs-c" src="stk/glitter.webp" alt="">';
-    if (t === 'christmas') return '<img class="hstk hs-a" src="stk/mailbox.webp" alt=""><img class="hstk hs-b" src="stk/snow.webp" alt=""><img class="hstk hs-c" src="stk/snow.webp" alt="">';
+    // Christmas: the picture slowly frosts over from the corners while it waits to turn
+    if (t === 'christmas') return '<div class="frost"><img src="stk/frost.webp" alt=""></div>';
     return '';
   }
   function heroHtml(hero, idx, n) {
