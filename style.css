@@ -733,3 +733,11 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .v4 svg { transform: rotate(180deg) rotate(-8deg); }
 .v1 svg { animation: swayL 5s ease-in-out 7s infinite alternate; transform-origin: 0 100%; }
 @keyframes swayL { from { rotate: 0deg; } to { rotate: -2deg; } }
+/* the roots sit outside the frame: branches creep in from behind its edges and run along them */
+.vines .v1 { height: 112%; left: -11%; top: -3%; right: auto; bottom: auto; }
+.vines .v2 { height: 86%; right: -10%; top: -5%; left: auto; bottom: auto; }
+.vines .v3 { height: 66%; left: -10%; bottom: -3%; top: auto; right: auto; }
+.vines .v4 { height: 76%; right: -11%; bottom: -2%; top: auto; left: auto; }
+.v2 svg { transform: scaleX(-1) rotate(4deg); }
+.v3 svg { transform: scaleY(-1) rotate(-3deg); }
+.v4 svg { transform: rotate(180deg) rotate(-4deg); }
