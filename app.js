@@ -329,6 +329,13 @@
 
   function kickerOf(hero) { return resume(hero).active ? 'Продолжить просмотр' : (watched(hero) ? 'Уже смотрела' : (isWant(hero) ? 'Хочу посмотреть' : 'Новое')); }
   function setKicker(f) { var k = document.querySelector('.hkick'); if (k && f) k.textContent = kickerOf(f); }
+  // Halloween films in the top panel get pumpkins popping out, Christmas ones a mailbox and snowflakes
+  function heroStickers(f) {
+    var t = filmTheme(f);
+    if (t === 'halloween') return '<img class="hstk hs-a" src="stk/pumpkin.webp" alt=""><img class="hstk hs-b" src="stk/pumpkin.webp" alt=""><img class="hstk hs-c" src="stk/glitter.webp" alt="">';
+    if (t === 'christmas') return '<img class="hstk hs-a" src="stk/mailbox.webp" alt=""><img class="hstk hs-b" src="stk/snow.webp" alt=""><img class="hstk hs-c" src="stk/snow.webp" alt="">';
+    return '';
+  }
   function heroHtml(hero, idx, n) {
     var hr = resume(hero);
     var kicker = kickerOf(hero);
@@ -360,7 +367,7 @@
       '<button class="btn pri hplay" data-f data-key="hero-play" data-act="play:' + esc(hero.id) + ':' + esc(hr.key) + '">' + I.play + esc(hr.label) + '</button>' +
       '<button class="btn hmore" data-f data-key="hero-more" data-act="film:' + esc(hero.id) + '">Подробнее</button>' +
       (watched(hero) ? '' : '<button class="btn hwant' + (wantOn ? ' on' : '') + '" data-f data-key="hero-want" data-act="want:' + esc(hero.id) + '" aria-label="Хочу посмотреть">' + (wantOn ? '✓' : '+') + '</button>') +
-      '</div>' + dots + '</div>' + side + '</section>';
+      '</div>' + dots + '</div>' + side + heroStickers(hero) + '</section>';
   }
 
   /** Shows film number n in the top panel; keeps the remote on the same dot. */

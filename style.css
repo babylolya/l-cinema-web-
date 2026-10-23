@@ -623,3 +623,10 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .hero h1.long { font-size: 30px; }
 .hero, .hero.has-bd { height: 370px; }
 .hdesc { line-height: 1.5; }
+
+/* stickers popping out of the top panel for seasonal films */
+.hstk { position: absolute; z-index: 3; width: auto; pointer-events: none; filter: drop-shadow(0 10px 16px rgba(0,0,0,0.55));
+  animation: stkpop .7s cubic-bezier(.34, 1.7, .5, 1) both, stkfloat 3.4s ease-in-out .7s infinite; }
+.hs-a { height: 46%; right: 4%; bottom: 6%; animation-delay: .25s, .95s; }
+.hs-b { height: 24%; right: 26%; top: 8%; animation-delay: .4s, 1.1s; }
+.hs-c { height: 18%; right: 3%; top: 7%; animation-delay: .55s, 1.25s; }

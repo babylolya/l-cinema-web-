@@ -230,3 +230,8 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .rpinfo h2 { font-size: 24px; }
   html.web .rpstar { width: 46px; height: 46px; font-size: 38px; line-height: 46px; }
 }
+@media (max-width: 900px) {
+  html.web .hero .hs-a { height: 26%; right: 4%; bottom: auto; top: 22%; }
+  html.web .hero .hs-b { height: 13%; right: 32%; top: 4%; }
+  html.web .hero .hs-c { height: 11%; right: 4%; top: 4%; }
+}
