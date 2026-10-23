@@ -679,3 +679,16 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .hc-1 { left: 46%; bottom: 7%; transform: rotate(-18deg); animation: candyPop .7s cubic-bezier(.34, 1.7, .5, 1) .45s both, stkfloat 3s ease-in-out 1.2s infinite; }
 .hc-2 { right: 1%; top: 14%; transform: rotate(22deg); animation: candyPop .7s cubic-bezier(.34, 1.7, .5, 1) .65s both, stkfloat 3.6s ease-in-out 1.4s infinite; }
 @keyframes candyPop { from { opacity: 0; transform: scale(.2) rotate(-60deg); } to { opacity: 1; } }
+
+/* Halloween film page: a twisted branch curling over the picture's lower edge and candy corn floating in the air */
+.deco-branch { position: absolute; left: 0; right: 0; top: 0; bottom: 0; pointer-events: none; z-index: 4; }
+.deco-branch .br { position: absolute; left: -40px; top: 52%; width: 58%; height: auto; filter: drop-shadow(0 10px 14px rgba(0,0,0,0.55)); transform-origin: 0 30%;
+  animation: brGrow 1.4s cubic-bezier(.3, .7, .3, 1) both; }
+@keyframes brGrow { from { opacity: 0; transform: rotate(-8deg) scale(.85); } to { opacity: 1; transform: none; } }
+.fcandy { position: absolute; height: auto; filter: drop-shadow(0 12px 14px rgba(0,0,0,0.5)); animation: candyPop .7s cubic-bezier(.34, 1.7, .5, 1) both, levitate 4s ease-in-out infinite; }
+.fc-1 { width: 7%; left: 3%; top: 70%; animation-delay: .5s, 1.2s; }
+.fc-2 { width: 6%; right: 6%; top: 34%; animation-delay: .7s, 1.6s; }
+.fc-3 { width: 9%; right: 16%; top: 60%; animation-delay: .9s, 2s; }
+@keyframes levitate { 0%, 100% { translate: 0 0; rotate: -10deg; } 50% { translate: 0 -14px; rotate: 8deg; } }
+.deco-branch .br { width: 42%; top: 48%; }
+.fc-1 { left: 26%; top: 74%; }
