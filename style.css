@@ -584,13 +584,14 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .film.has-bd .big { width: 220px; height: 330px; box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.18); }
 .film.has-bd .body { padding-top: 168px; }
 
-/* ---------- seasonal decorations along the bottom edge ---------- */
-.deco { position: absolute; left: -2%; width: 104%; height: auto; pointer-events: none; z-index: 4; }
-.deco-web { bottom: -78px; }
-.deco-garland { bottom: -44px; animation: twinkle 2.6s ease-in-out infinite alternate; }
-@keyframes twinkle { from { filter: brightness(0.92) saturate(1); } to { filter: brightness(1.12) saturate(1.15); } }
-.chead { margin-bottom: 34px; }
+/* ---------- seasonal decorations over the seam under the film picture ---------- */
 .fbwrap { position: relative; flex-shrink: 0; }
-.fbwrap .deco-web { bottom: -70px; }
-.fbwrap .deco-garland { bottom: -40px; }
-.fbwrap + .film.has-bd .fpost { position: relative; z-index: 5; }
+.deco { position: absolute; left: -3%; width: 106%; bottom: 0; pointer-events: none; z-index: 4; }
+.deco img { display: block; width: 100%; height: auto; }
+.deco-garland { transform: translateY(54%); }
+.deco-garland .la, .deco-garland .lb { position: absolute; left: 0; top: 0; }
+.deco-garland .la { animation: blinkA 1.6s ease-in-out infinite; }
+.deco-garland .lb { animation: blinkA 1.6s ease-in-out .8s infinite; }
+@keyframes blinkA { 0%, 100% { opacity: 1; } 50% { opacity: 0.15; } }
+.deco-web { transform: translateY(96%); }
+.film.has-bd { z-index: 6; }

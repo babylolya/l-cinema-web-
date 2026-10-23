@@ -283,7 +283,11 @@
 
   // a cobweb under Halloween things, a pine garland with lights under Christmas ones
   var DECO = { halloween: 'web', christmas: 'garland' };
-  function decoHtml(theme) { return DECO[theme] ? '<img class="deco deco-' + DECO[theme] + '" src="stk/' + DECO[theme] + '.webp" alt="">' : ''; }
+  function decoHtml(theme) {
+    if (theme === 'christmas') return '<div class="deco deco-garland"><img src="stk/garland-base.webp" alt=""><img class="la" src="stk/garland-a.webp" alt=""><img class="lb" src="stk/garland-b.webp" alt=""></div>';
+    if (theme === 'halloween') return '<div class="deco deco-web"><img src="stk/web.webp" alt=""></div>';
+    return '';
+  }
   function filmTheme(f) {
     var cs = S.collections || [];
     for (var i = 0; i < cs.length; i++) if (DECO[cs[i].theme] && collFilms(cs[i]).indexOf(f) >= 0) return cs[i].theme;
@@ -299,7 +303,7 @@
     var stk = PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '';
     // a banner card: back button on top, then a glass card in the collection's colours with the big sticker peeking out
     var h = '<div class="ctop"><button class="btn small cback" data-f data-key="c-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
-      '<section class="chead th-' + esc(c.theme || 'default') + '">' + stk + decoHtml(c.theme) +
+      '<section class="chead th-' + esc(c.theme || 'default') + '">' + stk +
       '<div class="cinfo"><span class="ckick">Подборка</span><h1 class="coll-title">' + esc(c.title) + '</h1>' +
       (c.subtitle ? '<div class="csubt">' + esc(c.subtitle) + '</div>' : '') +
       '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') +
