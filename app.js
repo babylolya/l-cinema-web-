@@ -338,10 +338,19 @@
   function kickerOf(hero) { return resume(hero).active ? 'Продолжить просмотр' : (watched(hero) ? 'Уже смотрела' : (isWant(hero) ? 'Хочу посмотреть' : 'Новое')); }
   function setKicker(f) { var k = document.querySelector('.hkick'); if (k && f) k.textContent = kickerOf(f); }
   // Halloween films in the top panel get pumpkins popping out, Christmas ones a mailbox and snowflakes
+  // a branch that grows along its own length: the picture is revealed by a thick line drawn from the root to the tip of the curl
+  var VINE_PATH = 'M10,955 C30,860 60,700 52,560 C48,470 80,400 110,330 C130,270 150,200 220,120 C290,60 400,15 520,18 C610,22 670,70 685,140 C695,210 650,265 585,280 C520,290 470,240 460,195 C452,160 490,150 505,185';
+  function vineSvg(n, delay, dur) {
+    var id = 'vm' + n + '_' + Math.floor(Math.random() * 1e6);
+    return '<svg viewBox="0 0 700 955" preserveAspectRatio="none"><defs><mask id="' + id + '" maskUnits="userSpaceOnUse" x="0" y="0" width="700" height="955">' +
+      '<path d="' + VINE_PATH + '" fill="none" stroke="#fff" stroke-width="150" stroke-linecap="round" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1">' +
+      '<animate attributeName="stroke-dashoffset" from="1" to="0" begin="' + delay + 's" dur="' + dur + 's" fill="freeze" calcMode="spline" keyTimes="0;1" keySplines="0.35 0.1 0.35 1"/></path></mask></defs>' +
+      '<image href="stk/vine.webp" x="0" y="0" width="700" height="955" mask="url(#' + id + ')"/></svg>';
+  }
   function heroStickers(f) {
     var t = filmTheme(f);
     // Halloween: twisted branches creep in from the corners while it waits to turn
-    if (t === 'halloween') return '<div class="vines">' + [1, 2, 3, 4].map(function (n) { return '<span class="v v' + n + '"><i class="g"><img src="stk/vine.webp" alt=""></i></span>'; }).join('') + '</div>';
+    if (t === 'halloween') return '<div class="vines">' + [[1, 0.2, 6.5], [2, 1.0, 5.8], [3, 1.8, 5.0], [4, 1.3, 5.5]].map(function (v) { return '<span class="v v' + v[0] + '">' + vineSvg(v[0], v[1], v[2]) + '</span>'; }).join('') + '</div>';
     // Christmas: the picture slowly frosts over from the corners while it waits to turn
     if (t === 'christmas') return '<div class="frost"><img src="stk/frost.webp" alt=""></div>';
     return '';
