@@ -635,7 +635,7 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .frost { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 1; pointer-events: none; overflow: hidden; border-radius: inherit; }
 .hero.has-bd .frost { left: 34%; }
 .frost img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: .95;
-  -webkit-mask-image: radial-gradient(closest-side, transparent 55%, #000 100%); mask-image: radial-gradient(closest-side, transparent 55%, #000 100%);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 62%, #000 100%); mask-image: radial-gradient(closest-side, transparent 62%, #000 100%);
   -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; -webkit-mask-position: center; mask-position: center;
   -webkit-mask-size: 320% 320%; mask-size: 320% 320%; animation: frostGrow 7.5s cubic-bezier(.3, .5, .4, 1) .3s forwards; }
 @keyframes frostGrow { to { -webkit-mask-size: 125% 125%; mask-size: 125% 125%; } }
@@ -696,3 +696,8 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .fc-1 { width: 4.5%; left: 24%; top: 72%; }
 .fc-2 { width: 4%; right: 8%; top: 24%; }
 .fc-3 { width: 5%; right: 20%; top: 62%; }
+
+/* stronger, more textured frost */
+.frost img { opacity: 1; filter: drop-shadow(0 0 2px rgba(220,240,255,0.9)) drop-shadow(0 1px 1px rgba(0,20,60,0.35)); }
+@keyframes frostGrow { to { -webkit-mask-size: 112% 112%; mask-size: 112% 112%; } }
+.frost::after { background: radial-gradient(90% 90% at 50% 50%, transparent 35%, rgba(200,225,255,0.18) 100%); }
