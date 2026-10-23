@@ -631,15 +631,33 @@
     return h + '</div><div class="hint" style="margin-top:18px">Постеры и кадры: TMDB. This product uses the TMDB API but is not endorsed or certified by TMDB. · L-CINEMA ' + esc(S.version || '') + '</div>';
   }
 
+  // the screensavers page: one of them plays silently behind a big header card (a new one each time you come in), the rest below
+  var svPick = -1;
+  function svDirect(u) {
+    var m = /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=download&)?id=)([A-Za-z0-9_-]{10,})/.exec(u || '');
+    return m ? 'https://drive.usercontent.google.com/download?id=' + m[1] + '&export=download&confirm=t' : '';
+  }
   function savers() {
     var list = S.screensavers || [];
-    var h = '<div class="topline"><h1 class="title-glow">Заставки</h1>' + statusLine() + '</div>';
-    if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Пришли Claude ссылки на свои фоны с Google Диска — они появятся здесь.</p></div>';
+    if (!list.length) return '<div class="topline"><h1 class="title-glow">Заставки</h1>' + statusLine() + '</div><div class="empty glass"><h1>Пока пусто</h1><p>Пришли Claude ссылки на свои фоны с Google Диска — они появятся здесь.</p></div>';
+    if (svPick < 0 || svPick >= list.length) svPick = Math.floor(Math.random() * list.length);
+    var p = list[svPick];
+    var big = p.thumb ? String(p.thumb).replace('sz=w800', 'sz=w1600') : '';
+    var vid = p.type === 'video' ? svDirect(p.url) : '';
+    var h = '<div class="ctop"><span></span>' + statusLine() + '</div>' +
+      '<section class="svhero">' +
+      (big ? '<img class="svbg" src="' + esc(big) + '" alt="" onerror="this.remove()">' : '') +
+      (vid ? '<video class="svvid" data-src="' + esc(vid) + '" src="' + esc(vid) + '" muted autoplay loop playsinline preload="auto" onplaying="this.classList.add(\'on\')" onerror="this.remove()"></video>' : '') +
+      '<div class="svshade"></div>' +
+      '<div class="svinfo"><span class="hchip">' + list.length + ' ' + plural(list.length, 'заставка', 'заставки', 'заставок') + '</span>' +
+      '<h1>Заставки</h1><div class="svnow">Сейчас на фоне: ' + esc(p.title || '') + '</div>' +
+      '<div class="btns"><button class="btn pri" data-f data-key="sv-now" data-act="saver:' + svPick + '">' + I.play + 'Включить на весь экран</button></div></div>' +
+      '</section>';
     h += '<div class="savers">';
     for (var i = 0; i < list.length; i++) {
       var sv = list[i];
       var img = sv.thumb ? '<img src="' + esc(sv.thumb) + '" alt="" onerror="this.remove()">' : '';
-      h += '<div class="tile" data-f tabindex="0" data-key="sv-' + i + '" data-act="saver:' + i + '">' +
+      h += '<div class="tile' + (i === svPick ? ' cur' : '') + '" data-f tabindex="0" data-key="sv-' + i + '" data-act="saver:' + i + '">' +
         '<div class="thumb' + (sv.pixel === false ? '' : ' px') + '">' + img + '<span class="kind">' + (sv.type === 'image' ? 'картинка' : I.play) + '</span></div>' +
         '<div class="ct">' + esc(sv.title || ('Заставка ' + (i + 1))) + '</div></div>';
     }
@@ -701,7 +719,10 @@
     var theme = '';
     if (view.name === 'coll') { var cc = collById(view.id); theme = cc ? 'theme-' + (cc.theme || 'default') : ''; }
     document.body.className = theme;
+    var oldVid = document.querySelector('.svvid');
     root.innerHTML = nav() + '<main id="main">' + updateBanner() + screen() + '</main>' + (full >= 0 ? fullScreen() : '');
+    var newVid = document.querySelector('.svvid');
+    if (oldVid && newVid && oldVid.getAttribute('data-src') === newVid.getAttribute('data-src')) newVid.parentNode.replaceChild(oldVid, newVid);
     main = document.getElementById('main');
     if (keepScroll) {
       main.scrollTop = top;
@@ -777,6 +798,7 @@
         if (view.name === arg) return;
         stack = [];
         view = { name: arg };
+        if (arg === 'savers') svPick = -1; // a new background each time you come in
         render('nav-' + arg, false);
         return;
       case 'film': go({ name: 'film', id: arg }); return;

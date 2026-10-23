@@ -192,3 +192,11 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
 @media (max-width: 900px) {
   html.web .tile .ct { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.3; }
 }
+
+@media (max-width: 900px) {
+  html.web .svhero { height: 260px; border-radius: 22px; }
+  html.web .svinfo { padding: 18px; gap: 8px; }
+  html.web .svinfo h1 { font-size: 30px; }
+  html.web .svnow { font-size: 12px; }
+  html.web .svinfo .btn { height: 42px; font-size: 14px; }
+}

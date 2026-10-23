@@ -534,3 +534,19 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
   background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
 .thumb .kind svg { fill: #fff; width: 16px; height: 16px; margin-left: 2px; }
 .tile .ct { font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- screensavers page: a big living header ---------- */
+.svhero { position: relative; flex-shrink: 0; height: 330px; border-radius: 26px; overflow: hidden; background: #0c0912; margin-top: 6px;
+  border: 1px solid rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 20px 60px rgba(0,0,0,0.45); }
+.svbg, .svvid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.svbg { animation: kenburns 24s ease-in-out infinite alternate; image-rendering: pixelated; }
+@keyframes kenburns { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.14) translate(-2%, -2%); } }
+.svvid { opacity: 0; transition: opacity 1.2s ease; }
+.svvid.on { opacity: 1; }
+.svshade { position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(120% 120% at 0% 100%, rgba(9,7,15,0.92) 0%, rgba(9,7,15,0.55) 38%, rgba(9,7,15,0) 65%); }
+.svinfo { position: absolute; left: 0; bottom: 0; z-index: 2; padding: 30px 36px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.svinfo h1 { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 46px; line-height: 1; margin: 0; text-shadow: 0 2px 20px rgba(0,0,0,0.6); }
+.svinfo .hchip { background: rgba(0,0,0,0.3); }
+.svnow { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.8); }
+.tile.cur .thumb { box-shadow: 0 0 0 2px var(--pink), 0 0 22px rgba(255,79,216,0.5); }
