@@ -523,3 +523,5 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 .th-halloween.ctile:focus, html.mac .th-halloween.ctile:hover { box-shadow: 0 0 36px rgba(255,122,26,0.6), inset 0 1px 0 rgba(255,255,255,0.25); }
 .th-christmas.ctile:focus, html.mac .th-christmas.ctile:hover { box-shadow: 0 0 36px rgba(220,40,60,0.6), inset 0 1px 0 rgba(255,255,255,0.25); }
 .th-love.ctile:focus, html.mac .th-love.ctile:hover { box-shadow: 0 0 36px rgba(255,79,216,0.6), inset 0 1px 0 rgba(255,255,255,0.25); }
+.cchip { position: relative; z-index: 2; align-self: flex-start; margin-bottom: 2px; }
+.ctile .csub { position: relative; z-index: 2; opacity: 0.9; }
