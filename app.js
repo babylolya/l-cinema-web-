@@ -297,7 +297,8 @@
     var hr = resume(hero);
     var kicker = kickerOf(hero);
     var bgHtml = '';
-    if (hero.backdrop) bgHtml = '<div class="bg"><img src="' + esc(hero.backdrop) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
+    if (hero.backdrop) bgHtml = '<div class="bgblur"><img src="' + esc(hero.backdrop) + '" alt="" onerror="this.remove()"></div>' +
+      '<div class="bg"><img src="' + esc(hero.backdrop) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
     else if (hero.poster) bgHtml = '<div class="bg blur"><img src="' + esc(hero.poster) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
     var side = (!hero.backdrop && hero.poster) ? '<div class="pst"><img src="' + esc(hero.poster) + '" alt="" onerror="this.parentNode.remove()"></div>' : '';
     var dots = '';
@@ -306,11 +307,24 @@
       for (var d = 0; d < n; d++) dots += '<button class="dot' + (d === idx ? ' on' : '') + '" data-f data-key="dot-' + d + '" data-act="hero:' + d + '" aria-label="Фильм ' + (d + 1) + '"><i></i></button>';
       dots += '</div>';
     }
-    return '<section class="hero glass' + (hero.backdrop ? ' has-bd' : '') + '" data-hero="' + esc(hero.id) + '">' + bgHtml + '<div class="info"><div class="kicker">' + esc(kicker) + '</div><h1' + (String(hero.title || '').length > 26 ? ' class="long"' : '') + '>' + esc(hero.title) + '</h1>' +
-      '<div class="meta">' + esc(filmMeta(hero)) + '</div><div class="btns">' +
-      '<button class="btn pri" data-f data-key="hero-play" data-act="play:' + esc(hero.id) + ':' + esc(hr.key) + '">' + I.play + esc(hr.label) + '</button>' +
-      '<button class="btn" data-f data-key="hero-more" data-act="film:' + esc(hero.id) + '">Подробнее</button></div>' + dots + '</div>' +
-      side + '</section>';
+    // little glass chips: year, genre, length, own rating
+    var chips = [];
+    if (hero.year) chips.push(String(hero.year));
+    var g = genresOf(hero);
+    if (g.length) chips.push(g[0]);
+    if (isSeries(hero)) chips.push(eps(hero).length + ' сер.'); else if (hero.duration) chips.push(hero.duration);
+    var chipHtml = '<div class="hchips">' + chips.map(function (c) { return '<span class="hchip">' + esc(c) + '</span>'; }).join('') +
+      (hero.rating ? '<span class="hchip rate">★ ' + esc(String(hero.rating).replace('.', ',')) + '</span>' : '') + '</div>';
+    var desc = hero.description ? '<p class="hdesc">' + esc(hero.description) + '</p>' : '';
+    var wantOn = isWant(hero);
+    return '<section class="hero glass' + (hero.backdrop ? ' has-bd' : '') + '" data-hero="' + esc(hero.id) + '">' + bgHtml +
+      '<div class="info"><div class="kicker"><i></i>' + esc(kicker) + '</div>' +
+      '<h1' + (String(hero.title || '').length > 26 ? ' class="long"' : '') + '>' + esc(hero.title) + '</h1>' + chipHtml + desc +
+      '<div class="btns">' +
+      '<button class="btn pri hplay" data-f data-key="hero-play" data-act="play:' + esc(hero.id) + ':' + esc(hr.key) + '">' + I.play + esc(hr.label) + '</button>' +
+      '<button class="btn hmore" data-f data-key="hero-more" data-act="film:' + esc(hero.id) + '">Подробнее</button>' +
+      (watched(hero) ? '' : '<button class="btn hwant' + (wantOn ? ' on' : '') + '" data-f data-key="hero-want" data-act="want:' + esc(hero.id) + '" aria-label="Хочу посмотреть">' + (wantOn ? '✓' : '+') + '</button>') +
+      '</div>' + dots + '</div>' + side + '</section>';
   }
 
   /** Shows film number n in the top panel; keeps the remote on the same dot. */

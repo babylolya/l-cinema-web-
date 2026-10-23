@@ -39,7 +39,7 @@ body.playing { overflow: hidden; }
   html.web .title-glow { font-size: 26px; }
 
   /* top panel */
-  html.web .hero { height: auto; min-height: 250px; border-radius: 22px; touch-action: pan-y; }
+  html.web .hero, html.web .hero.has-bd { height: auto; min-height: 250px; border-radius: 22px; touch-action: pan-y; }
   html.web .hero h1.long { font-size: 21px; -webkit-line-clamp: 3; }
   html.web .hero .info { padding: 18px; gap: 8px; }
   html.web .hero h1 { font-size: 26px; }
@@ -141,4 +141,26 @@ html.web .cstk { height: 64px; }
   html.web .b-nf .bname { font-size: 16px; letter-spacing: 0.04em; }
   html.web .bplay { width: 46px; height: 46px; margin-top: -30px; right: 14px; box-shadow: 0 0 0 5px rgba(255,60,60,0.14), 0 0 20px rgba(255,40,40,0.6); }
   html.web .bplay i { left: 18px; top: 13px; border-top-width: 10px; border-bottom-width: 10px; border-left-width: 15px; }
+}
+
+/* phone: Apple-TV-like card — sharp picture on top, the same picture blurred and darkened behind the text */
+@media (max-width: 900px) {
+  html.web .hero.has-bd .bgblur { display: block; position: absolute; inset: 0; z-index: 0; overflow: hidden; }
+  html.web .hero.has-bd .bgblur img { width: 100%; height: 100%; object-fit: cover; filter: blur(30px) saturate(1.4) brightness(0.45); transform: scale(1.3); }
+  html.web .hero.has-bd .bg { z-index: 1; }
+  html.web .hero.has-bd .bg::after { background: linear-gradient(0deg, rgba(20,14,28,0.0) 0%, rgba(20,14,28,0) 100%); }
+  html.web .hero.has-bd .bg img { -webkit-mask-image: linear-gradient(180deg, #000 70%, transparent 100%); mask-image: linear-gradient(180deg, #000 70%, transparent 100%); }
+  html.web .hero.has-bd .info { z-index: 2; margin-top: -26px; padding: 0 16px 16px; gap: 10px; }
+  html.web .hero .kicker { display: none; }
+  html.web .hkick { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; margin: 4px 0 -6px; align-self: flex-start;
+    background: rgba(92,242,255,0.10); border: 1px solid rgba(92,242,255,0.35); font-size: 11px; }
+  html.web .hchip { font-size: 12px; padding: 4px 10px; }
+  html.web .hdesc { font-size: 13px; }
+  html.web .hero .btns { flex-wrap: nowrap; gap: 8px; }
+  html.web .hero .btn { height: 44px; font-size: 15px; padding: 0 16px; }
+  html.web .hero .btn.hplay { flex: 1; justify-content: center; }
+  html.web .hero .btn.hwant { width: 44px; flex-shrink: 0; font-size: 22px; }
+}
+@media (max-width: 900px) {
+  html.web .hkick::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: kpulse 1.8s ease-in-out infinite; }
 }

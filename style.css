@@ -445,3 +445,32 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 .hero.has-bd .shade { background: linear-gradient(0deg, rgba(9,7,15,0.35) 0%, rgba(9,7,15,0) 30%); }
 .hero.has-bd .info { max-width: 52%; }
 .hero.has-bd h1 { text-shadow: 0 2px 18px rgba(0,0,0,0.7); }
+
+/* ---------- top panel, dressed up ---------- */
+.hero .bgblur { display: none; }
+.hero .kicker { display: inline-flex; align-items: center; gap: 8px; align-self: flex-start; padding: 6px 12px 6px 10px; border-radius: 999px;
+  background: rgba(92,242,255,0.10); border: 1px solid rgba(92,242,255,0.35); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); font-size: 12px; }
+.hero .kicker i { width: 7px; height: 7px; border-radius: 50%; background: var(--cyan); box-shadow: 0 0 8px var(--cyan); animation: kpulse 1.8s ease-in-out infinite; }
+@keyframes kpulse { 0%, 100% { opacity: 1; } 50% { opacity: .35; } }
+.hero h1 { letter-spacing: -0.01em; }
+.hchips { display: flex; flex-wrap: wrap; gap: 8px; }
+.hchip { padding: 5px 11px; border-radius: 999px; font-size: 13px; font-weight: 700; color: #E9E2F3; background: rgba(255,255,255,0.09); border: 1px solid rgba(255,255,255,0.16);
+  -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px); }
+.hchip.rate { color: #FFD66B; border-color: rgba(255,214,107,0.4); background: rgba(255,214,107,0.10); }
+.hdesc { margin: 0; max-width: 560px; font-size: 15px; line-height: 1.45; color: #CFC6DC; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.hero .btn { border-radius: 999px; }
+.hero .btn.hplay { background: linear-gradient(135deg, #FF5FDB 0%, #C84BFF 100%); color: #fff; box-shadow: 0 8px 26px rgba(255,79,216,0.45), inset 0 1px 0 rgba(255,255,255,0.35); }
+.hero .btn.hplay svg { fill: #fff; }
+.hero .btn.hmore { background: rgba(255,255,255,0.10); border-color: rgba(255,255,255,0.22); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.hero .btn.hwant { width: 52px; padding: 0; justify-content: center; font-size: 26px; font-weight: 500; background: rgba(255,255,255,0.10); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.hero .btn.hwant.on { color: var(--cyan); border-color: rgba(92,242,255,0.6); background: rgba(92,242,255,0.12); font-size: 22px; }
+/* the active dot fills up while the panel waits to turn */
+.dot.on i { position: relative; overflow: hidden; background: rgba(255,79,216,0.35); }
+.dot.on i::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 100%; background: var(--pink); transform-origin: left; animation: dotfill 8s linear forwards; }
+@keyframes dotfill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+.hero.has-bd, .hero { height: 340px; }
+.hero .info { gap: 10px; padding: 26px 38px; }
+.hdesc { max-width: 520px; }
+.hero.has-bd .info { max-width: 58%; }
+.hero h1 { font-size: 40px; }
+.hero h1.long { font-size: 32px; }
