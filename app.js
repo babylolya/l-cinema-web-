@@ -3,6 +3,15 @@
   'use strict';
   // older TV browsers: Element.closest / matches
   if (window.Element && !Element.prototype.matches) Element.prototype.matches = Element.prototype.webkitMatchesSelector || Element.prototype.msMatchesSelector;
+  // old TV browsers lay out flexbox without "gap": mark them so the stylesheet adds spacing with margins instead
+  (function () {
+    try {
+      var f = document.createElement('div'); f.style.display = 'flex'; f.style.flexDirection = 'column'; f.style.rowGap = '1px';
+      f.appendChild(document.createElement('div')); f.appendChild(document.createElement('div'));
+      document.documentElement.appendChild(f); var ok = f.scrollHeight === 1; f.parentNode.removeChild(f);
+      if (!ok) document.documentElement.className += ' nogap';
+    } catch (e) {}
+  })();
   if (window.Element && !Element.prototype.closest) Element.prototype.closest = function (sel) { var el = this; while (el && el.nodeType === 1) { if (el.matches(sel)) return el; el = el.parentElement; } return null; };
 
   var A = window.Android;

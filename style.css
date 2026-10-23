@@ -495,7 +495,7 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 .ctop { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-shrink: 0; }
 .chead { position: relative; flex-shrink: 0; border-radius: 26px; padding: 30px 34px; min-height: 170px; display: flex; align-items: flex-end; overflow: visible;
   border: 1px solid rgba(255,255,255,0.16); box-shadow: inset 0 1px 0 rgba(255,255,255,0.18), 0 20px 60px rgba(0,0,0,0.35); margin-top: 18px; }
-.chead::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+.chead::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; pointer-events: none;
   background: radial-gradient(60% 90% at 0% 0%, rgba(255,255,255,0.16), transparent 60%); }
 .chead.th-halloween { background: linear-gradient(135deg, rgba(90,26,134,0.85) 0%, rgba(185,61,18,0.8) 55%, rgba(255,162,58,0.75) 100%); box-shadow: 0 0 40px rgba(255,122,26,0.35); }
 .chead.th-christmas { background: linear-gradient(135deg, rgba(142,11,34,0.88) 0%, rgba(200,16,46,0.8) 45%, rgba(12,122,67,0.8) 100%); box-shadow: 0 0 40px rgba(200,16,46,0.35); }
@@ -513,7 +513,7 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 
 /* ---------- collection tiles, dressed up like the rest ---------- */
 .ctile { border-radius: 24px; border: 1px solid rgba(255,255,255,0.20); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25), inset 0 -20px 40px rgba(0,0,0,0.18); }
-.ctile::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 1;
+.ctile::before { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; pointer-events: none; z-index: 1;
   background: radial-gradient(70% 120% at 0% 0%, rgba(255,255,255,0.18), transparent 55%), linear-gradient(0deg, rgba(0,0,0,0.22), transparent 55%); }
 .ctile .ctitle { font-size: 30px; letter-spacing: -0.01em; }
 .cmeta { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -528,7 +528,7 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 
 /* ---------- screensavers ---------- */
 .thumb { border-radius: 20px; border: 1px solid rgba(255,255,255,0.16); box-shadow: 0 14px 34px rgba(0,0,0,0.45); }
-.thumb::after { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
+.thumb::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; border-radius: inherit; pointer-events: none;
   background: radial-gradient(70% 100% at 0% 0%, rgba(255,255,255,0.14), transparent 55%), linear-gradient(0deg, rgba(0,0,0,0.35), transparent 45%); }
 .thumb .kind { z-index: 1; display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; padding: 0; border-radius: 50%;
   background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.3); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
@@ -538,15 +538,38 @@ body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }
 /* ---------- screensavers page: a big living header ---------- */
 .svhero { position: relative; flex-shrink: 0; height: 330px; border-radius: 26px; overflow: hidden; background: #0c0912; margin-top: 6px;
   border: 1px solid rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.14), 0 20px 60px rgba(0,0,0,0.45); }
-.svbg, .svvid { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.svbg, .svvid { position: absolute; top: 0; right: 0; bottom: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 .svbg { animation: kenburns 24s ease-in-out infinite alternate; image-rendering: pixelated; }
 @keyframes kenburns { from { transform: scale(1.04) translate(0, 0); } to { transform: scale(1.14) translate(-2%, -2%); } }
 .svvid { opacity: 0; transition: opacity 1.2s ease; }
 .svvid.on { opacity: 1; }
-.svshade { position: absolute; inset: 0; pointer-events: none;
+.svshade { position: absolute; top: 0; right: 0; bottom: 0; left: 0; pointer-events: none;
   background: radial-gradient(120% 120% at 0% 100%, rgba(9,7,15,0.92) 0%, rgba(9,7,15,0.55) 38%, rgba(9,7,15,0) 65%); }
 .svinfo { position: absolute; left: 0; bottom: 0; z-index: 2; padding: 30px 36px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
 .svinfo h1 { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 46px; line-height: 1; margin: 0; text-shadow: 0 2px 20px rgba(0,0,0,0.6); }
 .svinfo .hchip { background: rgba(0,0,0,0.3); }
 .svnow { font-size: 15px; font-weight: 600; color: rgba(255,255,255,0.8); }
 .tile.cur .thumb { box-shadow: 0 0 0 2px var(--pink), 0 0 22px rgba(255,79,216,0.5); }
+
+/* ---------- old TV browsers without CSS grid: the same layouts made with flexbox ---------- */
+@supports not (display: grid) {
+  .btiles, .ctiles, .savers, .grid { display: -webkit-flex; display: flex; -webkit-flex-wrap: wrap; flex-wrap: wrap; }
+  .btiles > *, .ctiles > * { -webkit-flex: 1 1 0; flex: 1 1 0; min-width: 0; margin-right: 18px; }
+  .btiles > *:last-child, .ctiles > *:last-child { margin-right: 0; }
+  .savers > * { width: 31%; margin: 0 2% 26px 0; }
+  .grid > * { width: 17%; margin: 0 2.5% 24px 0; }
+  .grid .poster { height: auto; padding-top: 150%; }
+  .svbg, .svvid, .bgblur img, .fan { }
+}
+
+html.nogap .row > * + *, html.nogap .btns > * + *, html.nogap .chips > * + *, html.nogap .hchips > * + *, html.nogap .cmeta > * + *,
+html.nogap .dots > * + *, html.nogap .stats > * + *, html.nogap .rate > * + *, html.nogap .stars > * + *, html.nogap .ctrow > * + *,
+html.nogap .topline > * + *, html.nogap .ctop > * + *, html.nogap .side > * + * { margin-left: 14px; }
+html.nogap .stars > * + * { margin-left: 2px; }
+html.nogap .dots > * + * { margin-left: 4px; }
+html.nogap #main > * + *, html.nogap .hero .info > * + *, html.nogap .svinfo > * + *, html.nogap .cinfo > * + *, html.nogap .panel > * + *,
+html.nogap .section > * + *, html.nogap .nav > * + *, html.nogap .card > * + *, html.nogap .tile > * + *, html.nogap .ctile > * + *,
+html.nogap .btext > * + *, html.nogap .info > * + * { margin-top: 10px; }
+html.nogap #main > * + * { margin-top: 22px; }
+html.nogap #app > * + * { margin-left: 20px; }
+html.nogap .ep + .ep { margin-top: 8px; }
