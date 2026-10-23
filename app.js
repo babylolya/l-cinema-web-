@@ -340,8 +340,8 @@
   // Halloween films in the top panel get pumpkins popping out, Christmas ones a mailbox and snowflakes
   function heroStickers(f) {
     var t = filmTheme(f);
-    if (t === 'halloween') return '<img class="hstk hs-a" src="stk/pumpkin.webp" alt="">' +
-      '<img class="hstk hcandy hc-1" src="stk/candy.webp" alt=""><img class="hstk hcandy hc-2" src="stk/candy.webp" alt="">';
+    // Halloween: twisted branches creep in from the corners while it waits to turn
+    if (t === 'halloween') return '<div class="frost vines"><img src="stk/vines.webp" alt=""></div>';
     // Christmas: the picture slowly frosts over from the corners while it waits to turn
     if (t === 'christmas') return '<div class="frost"><img src="stk/frost.webp" alt=""></div>';
     return '';
