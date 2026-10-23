@@ -243,3 +243,8 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
 @media (max-width: 900px) {
   html.web .deco.deco-ice { width: calc(100vw + 50px); left: 50%; margin-left: calc(-50vw - 25px); }
 }
+/* phone: the whole text block sits under the picture, nothing overlaps it */
+@media (max-width: 900px) {
+  html.web .hero.has-bd .info { margin-top: 0; padding-top: 16px; }
+  html.web .hero.has-bd .bg img { -webkit-mask-image: none; mask-image: none; }
+}
