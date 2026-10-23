@@ -200,3 +200,12 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .svnow { font-size: 12px; }
   html.web .svinfo .btn { height: 42px; font-size: 14px; }
 }
+
+@media (max-width: 900px) {
+  html.web .fbanner { height: auto; aspect-ratio: 16 / 10; border-radius: 22px; min-height: 200px; }
+  html.web .fback { top: 12px; left: 12px; }
+  html.web .film.has-bd { margin-top: -70px; padding: 0 14px; }
+  html.web .film.has-bd .big { width: 104px; height: 156px; border-radius: 14px; }
+  html.web .film.has-bd .body { padding-top: 0; }
+  html.web .film.has-bd .fpost { align-self: flex-start; }
+}

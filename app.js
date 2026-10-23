@@ -578,7 +578,10 @@
       episodes += '</div></section>';
     }
 
-    return '<div class="film"><div>' + '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>' + big + '</div>' +
+    // a wide picture across the top when there is one; the poster then sits on its lower edge
+    var banner = f.backdrop ? '<section class="fbanner"><img src="' + esc(f.backdrop) + '" alt="" onerror="this.parentNode.classList.add(\'noimg\');this.remove()"><div class="fshade"></div>' +
+      '<button class="btn small fback" data-f data-key="f-back" data-act="back">' + I.back + ' Назад</button></section>' : '';
+    return banner + '<div class="film' + (f.backdrop ? ' has-bd' : '') + '"><div class="fpost">' + (f.backdrop ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
       '<div class="body"><div class="chips">' + tags + '</div><h1>' + esc(f.title) + '</h1>' +
       (f.original && f.original !== f.title ? '<div class="sub">' + esc(f.original) + '</div>' : '') +
       '<div class="meta">' + esc(filmMeta(f)) + '</div>' +
