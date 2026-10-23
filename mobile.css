@@ -127,3 +127,12 @@ html.web .cstk { height: 64px; }
   html.web .hero.has-bd .shade { display: none; }
   html.web .hero.has-bd .info { padding: 4px 18px 18px; margin-top: -14px; }
 }
+
+@media (max-width: 900px) {
+  html.web .btiles { gap: 10px; }
+  html.web .btile { height: 84px; border-radius: 18px; }
+  html.web .bname { font-size: 22px; }
+  html.web .bsub { font-size: 11px; }
+  html.web .b-yt .bsub { bottom: 8px; }
+  html.web .b-yt .bplay { border-top-width: 11px; border-bottom-width: 11px; border-left-width: 17px; }
+}

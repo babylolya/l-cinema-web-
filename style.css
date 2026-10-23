@@ -396,3 +396,27 @@ body.theme-love::after { background:
   radial-gradient(circle 25vmax at 30% 70%, rgba(255,90,150,0.3), transparent 72%); }
 
 .hkick { display: none; }
+
+/* ---------- Netflix and YouTube tiles under the top panel ---------- */
+.btiles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; flex-shrink: 0; }
+.btile { position: relative; height: 110px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.14); cursor: pointer; color: #fff;
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; transition: transform .15s ease, box-shadow .2s ease; overflow: hidden; }
+.btile:focus, html.mac .btile:hover { transform: scale(1.03); }
+.bname { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 34px; letter-spacing: 0.02em; }
+.bsub { font-size: 13px; font-weight: 700; opacity: 0.75; }
+.b-nf { background: radial-gradient(120% 140% at 50% 0%, #3a0a0e 0%, #0b0608 70%); box-shadow: 0 0 26px rgba(229,9,20,0.25); }
+.b-nf .bname { color: #ff2a36; text-transform: uppercase; text-shadow: 0 0 18px rgba(255,42,54,0.6); }
+.b-nf:focus, html.mac .b-nf:hover { box-shadow: 0 0 34px rgba(255,42,54,0.55); }
+.b-yt { background: radial-gradient(120% 140% at 50% 0%, #2a1a22 0%, #0d0a10 70%); flex-direction: row; gap: 14px; box-shadow: 0 0 26px rgba(255,60,60,0.18); }
+.b-yt .bsub { position: absolute; bottom: 12px; left: 0; right: 0; text-align: center; }
+.b-yt .bplay { width: 0; height: 0; border-top: 15px solid transparent; border-bottom: 15px solid transparent; border-left: 24px solid #ff4d4d; filter: drop-shadow(0 0 10px rgba(255,77,77,0.7)); }
+.b-yt:focus, html.mac .b-yt:hover { box-shadow: 0 0 34px rgba(255,77,77,0.45); }
+
+body.theme-netflix { background: transparent; }
+body.theme-netflix::before, body.theme-netflix::after { content: ''; position: fixed; left: -30%; top: -30%; width: 160%; height: 160%; z-index: -1; pointer-events: none; will-change: transform; }
+body.theme-netflix::before { animation: bgflowA 16s ease-in-out infinite alternate; background:
+  radial-gradient(circle 46vmax at 30% 24%, rgba(190,10,24,0.55), transparent 72%),
+  linear-gradient(160deg, #14060a 0%, #0b0608 60%, #050304 100%); }
+body.theme-netflix::after { animation: bgflowB 21s ease-in-out infinite alternate; opacity: .9; background:
+  radial-gradient(circle 40vmax at 74% 78%, rgba(120,8,18,0.45), transparent 72%); }
+body.theme-netflix .coll-title { text-shadow: 0 0 24px rgba(255,42,54,0.8); }

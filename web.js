@@ -249,6 +249,7 @@
     play: play, restart: function (f, k) { P.progress[k] = { pos: 0, done: false, t: Date.now() }; saveP(); play(f, k); },
     playLoop: function (u) { var s = screensavers().filter(function (x) { return x.url === u; })[0]; if (s && s.drive) { window.open('https://drive.google.com/file/d/' + s.drive + '/view', '_blank'); return; } playLoop(u); },
     openYoutube: function (id) { window.open('https://www.youtube.com/watch?v=' + id, '_blank'); },
+    openUrl: function (u) { window.open(u, '_blank'); },
     setRating: function (id, r) { setLocal(id, 'rating', r); },
     setLiked: function (id, v) { setLocal(id, 'liked', v); },
     setStatus: function (id, s) { if (s === 'watched') markWatched(id); else setLocal(id, 'status', s); }

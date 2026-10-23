@@ -226,7 +226,7 @@
   }
 
   function collTiles() {
-    var cs = S.collections || [];
+    var cs = (S.collections || []).filter(function (c) { return !c.brand; });
     if (!cs.length) return '';
     var h = '<section class="section"><div class="head"><h2 class="h2">Подборки</h2></div><div class="ctiles">';
     for (var i = 0; i < cs.length; i++) {
@@ -249,6 +249,15 @@
     var l = STK[theme] || [], h = '';
     for (var i = 0; i < l.length; i++) h += '<img class="stk stk-' + l[i][1] + '" src="' + stkSrc(l[i][0]) + '" alt="">';
     return h;
+  }
+
+  // two big tiles under the top panel: the Netflix shelf and YouTube (opens in Brave)
+  function brandTiles() {
+    var nf = collById('netflix'), n = nf ? collFilms(nf).length : 0;
+    return '<div class="btiles">' +
+      (nf ? '<button class="btile b-nf" data-f data-key="b-nf" data-act="coll:netflix"><span class="bname">Netflix</span><span class="bsub">' + (n ? n + ' шт.' : 'скоро') + '</span></button>' : '') +
+      '<button class="btile b-yt" data-f data-key="b-yt" data-act="url:https://www.youtube.com"><span class="bplay"></span><span class="bname">YouTube</span><span class="bsub">' + (document.documentElement.classList.contains('web') ? 'открыть' : 'открыть в Brave') + '</span></button>' +
+      '</div>';
   }
 
   function collection() {
@@ -388,6 +397,7 @@
     var h = '<div class="topline"><span></span>' + statusLine() + '</div><div class="hkick">' + esc(kickerOf(hero)) + '</div>' + heroHtml(hero, heroIdx, heroList.length);
     h += row('new', 'Новое', fresh.length + ' шт.', fresh);
     h += row('cont', 'Продолжить просмотр', '', cont);
+    h += brandTiles();
     h += collTiles();
     h += want.length ? row('want', 'Хочу посмотреть', want.length + ' шт.', want)
       : '<section class="section"><div class="head"><h2 class="h2">Хочу посмотреть</h2></div><div class="sub">Пока пусто. Открой фильм и нажми «+ Хочу посмотреть» — он появится здесь.</div></section>';
@@ -742,6 +752,7 @@
       case 'hero': showHero(parseInt(arg, 10), true); return;
       case 'update': A.installUpdate(); return;
       case 'coll': go({ name: 'coll', id: arg }); return;
+      case 'url': if (A.openUrl) A.openUrl(arg); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
       case 'pickgenre': view = { name: 'genres', genre: arg, filter: view.filter, origin: arg === 'Сериалы' ? view.origin : 'all' }; render('g-' + arg, false); return;
       case 'filter': view = { name: 'genres', genre: view.genre, filter: arg, origin: view.origin }; render('f-' + arg, true); return;
