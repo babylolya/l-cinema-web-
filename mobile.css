@@ -39,7 +39,8 @@ body.playing { overflow: hidden; }
   html.web .title-glow { font-size: 26px; }
 
   /* top panel */
-  html.web .hero { height: 250px; border-radius: 22px; }
+  html.web .hero { height: auto; min-height: 250px; border-radius: 22px; touch-action: pan-y; }
+  html.web .hero h1.long { font-size: 21px; -webkit-line-clamp: 3; }
   html.web .hero .info { padding: 18px; gap: 8px; }
   html.web .hero h1 { font-size: 26px; }
   html.web .hero .meta { font-size: 13px; }

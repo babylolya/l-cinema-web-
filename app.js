@@ -289,7 +289,7 @@
       for (var d = 0; d < n; d++) dots += '<button class="dot' + (d === idx ? ' on' : '') + '" data-f data-key="dot-' + d + '" data-act="hero:' + d + '" aria-label="Фильм ' + (d + 1) + '"><i></i></button>';
       dots += '</div>';
     }
-    return '<section class="hero glass" data-hero="' + esc(hero.id) + '">' + bgHtml + '<div class="info"><div class="kicker">' + esc(kicker) + '</div><h1>' + esc(hero.title) + '</h1>' +
+    return '<section class="hero glass" data-hero="' + esc(hero.id) + '">' + bgHtml + '<div class="info"><div class="kicker">' + esc(kicker) + '</div><h1' + (String(hero.title || '').length > 26 ? ' class="long"' : '') + '>' + esc(hero.title) + '</h1>' +
       '<div class="meta">' + esc(filmMeta(hero)) + '</div><div class="btns">' +
       '<button class="btn pri" data-f data-key="hero-play" data-act="play:' + esc(hero.id) + ':' + esc(hr.key) + '">' + I.play + esc(hr.label) + '</button>' +
       '<button class="btn" data-f data-key="hero-more" data-act="film:' + esc(hero.id) + '">Подробнее</button></div>' + dots + '</div>' +
@@ -328,7 +328,27 @@
     var after = byId(heroList[(heroIdx + 1) % heroList.length]);
     if (after && (after.backdrop || after.poster)) { var im = new Image(); im.src = after.backdrop || after.poster; }
   }
-  setInterval(rotateHero, 8000);
+  var lastHeroTouch = 0;
+  setInterval(function () { if (Date.now() - lastHeroTouch > 8000) rotateHero(); }, 8000);
+
+  // on a phone the top panel turns with a swipe
+  var sx = 0, sy = 0, sOn = false;
+  document.addEventListener('touchstart', function (e) {
+    var t = e.touches && e.touches[0];
+    sOn = !!(t && e.target.closest && e.target.closest('section.hero'));
+    if (sOn) { sx = t.clientX; sy = t.clientY; }
+  }, { passive: true });
+  document.addEventListener('touchend', function (e) {
+    if (!sOn) return;
+    sOn = false;
+    var t = e.changedTouches && e.changedTouches[0];
+    if (!t || heroList.length < 2) return;
+    var dx = t.clientX - sx, dy = t.clientY - sy;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+    lastHeroTouch = Date.now();
+    var n = (heroIdx + (dx < 0 ? 1 : -1) + heroList.length) % heroList.length;
+    showHero(n, false);
+  }, { passive: true });
 
   function home() {
     if (!S.films.length) return '<div class="topline"><span></span>' + statusLine() + '</div>' + emptyScreen() + collTiles();
@@ -342,7 +362,10 @@
       if (isSeries(f)) return eps(f).some(function (e) { return e.watchedPart || e.pos > 5000; });
       return f.watchedPart || f.pos > 5000;
     };
-    var fresh = films.filter(function (f) { return isNew(f) && !touched(f); }).slice().sort(function (x, y) {
+    // «Новое» holds what was uploaded on the latest upload day; older films just live in their genres
+    var lastDay = '';
+    films.forEach(function (f) { var d = upl(f).slice(0, 10); if (d > lastDay) lastDay = d; });
+    var fresh = films.filter(function (f) { return isNew(f) && !touched(f) && (!lastDay || upl(f).slice(0, 10) === lastDay); }).slice().sort(function (x, y) {
       var d = upl(y).localeCompare(upl(x));
       return d || (hash(x.id + SEED) - hash(y.id + SEED));
     });

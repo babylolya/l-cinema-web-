@@ -89,6 +89,7 @@ h1, h2, h3 { margin: 0; font-family: Unbounded, sans-serif; }
 .hero .info { position: relative; z-index: 1; flex: 1; display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 32px 38px; }
 .hero .kicker { font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: 0 0 10px rgba(92,242,255,0.8); }
 .hero h1 { font-size: 44px; line-height: 1.05; font-weight: 700; }
+.hero h1.long { font-size: 34px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .hero .meta { font-size: 17px; color: #D4CBE0; }
 .hero .art { width: 400px; flex-shrink: 0; margin: 14px; border-radius: 18px; overflow: hidden; background: rgba(60,40,90,0.55); border: 1px solid rgba(255,255,255,0.10); position: relative; }
 .hero .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
