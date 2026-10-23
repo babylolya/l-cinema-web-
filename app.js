@@ -276,9 +276,11 @@
   var heroList = [], heroIdx = 0;
   var SEED = String(Math.random()).slice(2);
 
+  function kickerOf(hero) { return resume(hero).active ? 'Продолжить просмотр' : (watched(hero) ? 'Уже смотрела' : (isWant(hero) ? 'Хочу посмотреть' : 'Новое')); }
+  function setKicker(f) { var k = document.querySelector('.hkick'); if (k && f) k.textContent = kickerOf(f); }
   function heroHtml(hero, idx, n) {
     var hr = resume(hero);
-    var kicker = hr.active ? 'Продолжить просмотр' : (watched(hero) ? 'Уже смотрела' : (isWant(hero) ? 'Хочу посмотреть' : 'Новое'));
+    var kicker = kickerOf(hero);
     var bgHtml = '';
     if (hero.backdrop) bgHtml = '<div class="bg"><img src="' + esc(hero.backdrop) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
     else if (hero.poster) bgHtml = '<div class="bg blur"><img src="' + esc(hero.poster) + '" alt="" onerror="this.remove()"></div><div class="shade"></div>';
@@ -302,6 +304,7 @@
     var f = byId(heroList[n]);
     if (!sec || !f) return;
     heroIdx = n;
+    setKicker(f);
     var tmp = document.createElement('div');
     tmp.innerHTML = heroHtml(f, heroIdx, heroList.length);
     var next = tmp.firstChild;
@@ -320,6 +323,7 @@
     heroIdx = (heroIdx + 1) % heroList.length;
     var f = byId(heroList[heroIdx]);
     if (!f) return;
+    setKicker(f);
     var tmp = document.createElement('div');
     tmp.innerHTML = heroHtml(f, heroIdx, heroList.length);
     var next = tmp.firstChild;
@@ -381,7 +385,7 @@
     if (heroIdx >= heroList.length) heroIdx = 0;
     var hero = byId(heroList[heroIdx]) || pool[0];
 
-    var h = '<div class="topline"><span></span>' + statusLine() + '</div>' + heroHtml(hero, heroIdx, heroList.length);
+    var h = '<div class="topline"><span></span>' + statusLine() + '</div><div class="hkick">' + esc(kickerOf(hero)) + '</div>' + heroHtml(hero, heroIdx, heroList.length);
     h += row('new', 'Новое', fresh.length + ' шт.', fresh);
     h += row('cont', 'Продолжить просмотр', '', cont);
     h += collTiles();

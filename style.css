@@ -394,3 +394,5 @@ body.theme-love::before { background:
 body.theme-love::after { background:
   radial-gradient(circle 44vmax at 72% 76%, rgba(110,40,255,0.7), transparent 72%),
   radial-gradient(circle 25vmax at 30% 70%, rgba(255,90,150,0.3), transparent 72%); }
+
+.hkick { display: none; }

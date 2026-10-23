@@ -44,7 +44,8 @@ body.playing { overflow: hidden; }
   html.web .hero .info { padding: 18px; gap: 8px; }
   html.web .hero h1 { font-size: 26px; }
   html.web .hero .meta { font-size: 13px; }
-  html.web .hero .kicker { font-size: 11px; }
+  html.web .hero .kicker { display: none; }
+  html.web .hkick { display: block; margin: 4px 2px -8px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan); text-shadow: 0 0 10px rgba(92,242,255,0.8); }
   html.web .hero .pst { display: none; }
   html.web .btn { height: 44px; padding: 0 16px; font-size: 15px; border-radius: 14px; }
   html.web .btn.small { height: 38px; padding: 0 12px; font-size: 14px; }
