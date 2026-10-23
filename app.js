@@ -1,6 +1,9 @@
 /* L-CINEMA — interface. Talks to the Android side through window.Android. */
 (function () {
   'use strict';
+  // older TV browsers: Element.closest / matches
+  if (window.Element && !Element.prototype.matches) Element.prototype.matches = Element.prototype.webkitMatchesSelector || Element.prototype.msMatchesSelector;
+  if (window.Element && !Element.prototype.closest) Element.prototype.closest = function (sel) { var el = this; while (el && el.nodeType === 1) { if (el.matches(sel)) return el; el = el.parentElement; } return null; };
 
   var A = window.Android;
   var root = document.getElementById('app');
