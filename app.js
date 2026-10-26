@@ -879,6 +879,14 @@
 
   var lastHintView = '';
   var abLoadT = null;
+  function abDrivePlayer(fid) {
+    abStatus('');
+    var box = document.getElementById('abdrive');
+    if (!box) return;
+    box.innerHTML = '<iframe src="https://drive.google.com/file/d/' + fid + '/preview" allow="autoplay" title="Плеер Google Диска"></iframe>' +
+      '<div class="abdnote">На айфоне эта часть играет через плеер Google Диска — нажми ▶ в нём. Следующая часть: кнопка ⏭ выше.</div>';
+    box.style.display = '';
+  }
   function abStatus(t) { var el = document.getElementById('abst'); if (el) { el.textContent = t; el.style.display = t ? '' : 'none'; } }
   var AU = null, abTick = null, abSleep = 0, abSleepEnd = 0, abFading = false, abDimT = null;
   var SLEEP_STEPS = [0, 15, 30, 45, 60, 90];
@@ -995,7 +1003,7 @@
       '<div class="abtop"><button class="btn small" data-f data-key="ab-back" data-act="back">' + I.back + ' Назад</button></div>' +
       '<div class="abmain">' + abCover(b, 'abbig') +
       '<div class="abinfo"><span class="hchip">Аудиокнига</span><h1>' + esc(b.title || '') + '</h1>' + (b.author ? '<div class="abauth2">' + esc(b.author) + '</div>' : '') +
-      '<div class="abst" id="abst" style="display:none"></div>' +
+      '<div class="abst" id="abst" style="display:none"></div><div class="abdrive" id="abdrive" style="display:none"></div>' +
       '<div class="abch" id="abch">' + esc((ch[ci] && ch[ci].title) || '') + ' · ' + (ci + 1) + ' из ' + ch.length + '</div>' +
       '<div class="abbar"><div class="abfill" id="abfill"></div></div><div class="abtimes"><span id="abcur">' + fmtT(playingThis ? AU.currentTime : sv.c === ci ? sv.t : 0) + '</span><span id="abdur">' + (playingThis && AU.duration ? fmtT(AU.duration) : (sv.d && sv.c === ci ? fmtT(sv.d) : '')) + '</span></div>' +
       '<div class="abbtns">' +
@@ -1043,6 +1051,9 @@
         try { var u = A.resolveUrl(AU.src); if (u && u !== AU.src) { var t = AU.currentTime; AU.setAttribute('data-resolved', '1'); AU.src = u; AU.currentTime = t; AU.play(); return; } } catch (e) {}
       }
       clearTimeout(abLoadT);
+      // iPhone Safari won't play Drive's «download» files: use Google Drive's own player for this part
+      var fid = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(AU.src || '') || /\/drive\/([A-Za-z0-9_-]{10,})/.exec(AU.src || '') || [])[1];
+      if (fid && document.documentElement.classList.contains('web')) { abDrivePlayer(fid); return; }
       abStatus('Не получилось открыть файл' + (AU.error ? ' (код ' + AU.error.code + ')' : '') + ' — проверь, что папка на Диске открыта по ссылке');
     });
     return AU;
@@ -1052,6 +1063,7 @@
     var a = abEnsure(), ch = (b.chapters || [])[ci];
     if (!ch) return;
     a.removeAttribute('data-resolved');
+    var dbx = document.getElementById('abdrive'); if (dbx) { dbx.innerHTML = ''; dbx.style.display = 'none'; }
     a.setAttribute('data-book', b.id); a.setAttribute('data-ch', String(ci));
     a.src = ch.url;
     var seekTo = t || 0;
@@ -1107,7 +1119,7 @@
   function abSleepTick() {
     if (!abSleep || !AU) return;
     var left = abSleepEnd - Date.now();
-    if (left <= 0) { AU.pause(); AU.volume = 1; abSleep = 0; abFading = false; abUi(); var sb = document.querySelector('[data-key="ab-sleep"]'); if (sb) sb.classList.remove('on'); return; }
+    if (left <= 0) { var dbx2 = document.getElementById('abdrive'); if (dbx2) { dbx2.innerHTML = ''; dbx2.style.display = 'none'; } AU.pause(); AU.volume = 1; abSleep = 0; abFading = false; abUi(); var sb = document.querySelector('[data-key="ab-sleep"]'); if (sb) sb.classList.remove('on'); return; }
     if (left < 60000) { abFading = true; AU.volume = Math.max(0.05, left / 60000); }
   }
 
@@ -1118,7 +1130,7 @@
     if (view.name === 'book') abDimT = setTimeout(function () { if (view.name === 'book') document.documentElement.classList.add('abdim'); }, 15000);
   }
 
-  setInterval(function () { if (AU && !AU.paused) { abUi(); abSleepTick(); } }, 1000);
+  setInterval(function () { if (AU && !AU.paused) abUi(); if (abSleep) abSleepTick(); }, 1000);
   document.addEventListener('keydown', abWake, true);
   document.addEventListener('mousemove', abWake, true);
   document.addEventListener('touchstart', abWake, true);
