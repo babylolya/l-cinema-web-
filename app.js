@@ -218,7 +218,7 @@
     var h = '<nav class="nav glass"><div class="logo">L·C</div>';
     for (var i = 0; i < items.length; i++) {
       var on = view.name === items[i][0] || (view.name === 'film' && false);
-      if (items[i][0] === 'books') on = on || view.name === 'book';
+      if (items[i][0] === 'books') on = on || view.name === 'book' || view.name === 'author';
       h += '<button class="ni' + (on ? ' on' : '') + (items[i][0] === 'books' && AU && !AU.paused ? ' live' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '<span class="nl">' + items[i][1] + '</span></button>';
     }
     h += '<div class="spacer"></div><button class="ni sync' + (S.syncing ? ' spin' : '') + '" data-f data-key="nav-sync" data-act="sync" aria-label="Обновить">' + I.sync + '</button></nav>';
@@ -878,6 +878,8 @@
   // ---------- audiobooks: a calm player for falling asleep ----------
 
   var lastHintView = '';
+  var abLoadT = null;
+  function abStatus(t) { var el = document.getElementById('abst'); if (el) { el.textContent = t; el.style.display = t ? '' : 'none'; } }
   var AU = null, abTick = null, abSleep = 0, abSleepEnd = 0, abFading = false, abDimT = null;
   var SLEEP_STEPS = [0, 15, 30, 45, 60, 90];
 
@@ -911,15 +913,74 @@
     h += '</div>';
     list = list.filter(function (b) { return pick === 'Все' || (pick === 'Книги' ? !b.category : b.category === pick); });
     if (!list.length) return h + '<div class="empty glass"><h1>Здесь пока пусто</h1><p>' + (pick === 'Медитации' ? 'Положи на Диске в папку «аудиокниги» папку «медитации» с аудиофайлами — они появятся тут.' : 'Нет записей в этом разделе.') + '</p></div>';
-    h += '<p class="absub">Тихий плеер для сна: свет медленно переливается, экран сам затемняется, таймер выключит книгу.</p><div class="abgrid">';
+    // authors first (a round portrait each), their books one level deeper; books without an author below
+    var authors = [], byAuthor = {}, loose = [];
+    list.forEach(function (b) {
+      if (b.author) { if (!byAuthor[b.author]) { byAuthor[b.author] = []; authors.push(b.author); } byAuthor[b.author].push(b); }
+      else loose.push(b);
+    });
+    if (authors.length) {
+      h += '<section class="absec"><h2 class="h2">Авторы</h2><div class="augrid">';
+      authors.sort(function (a, b) { return a.localeCompare(b, 'ru'); }).forEach(function (a) {
+        var n = byAuthor[a].length, playing = byAuthor[a].some(function (b) { return cur === b.id && AU && !AU.paused; });
+        h += '<button class="aucard" data-f data-key="au-' + esc(a) + '" data-act="author:' + esc(a) + '">' + authorPic(a, 'aupic') +
+          '<span class="auname">' + esc(a) + '</span><span class="aucount">' + (playing ? '<i class="eq"><b></b><b></b><b></b></i> Играет' : n + ' ' + plural(n, 'книга', 'книги', 'книг')) + '</span></button>';
+      });
+      h += '</div></section>';
+    }
+    if (loose.length) h += '<section class="absec">' + (authors.length ? '<h2 class="h2">' + (pick === 'Медитации' ? 'Медитации' : 'Без автора') + '</h2>' : '') + bookGrid(loose, cur) + '</section>';
+    return h;
+  }
+
+  function bookGrid(list, cur) {
+    var h = '<div class="abgrid">';
     for (var i = 0; i < list.length; i++) {
       var b = list[i], sv = abSaved(b.id), n = (b.chapters || []).length;
-      var prog = sv.at ? 'Глава ' + (sv.c + 1) + ' из ' + n + ' · ' + fmtT(sv.t) : n + ' ' + plural(n, 'часть', 'части', 'частей');
+      var prog = sv.at ? 'Часть ' + (sv.c + 1) + ' из ' + n + ' · ' + fmtT(sv.t) : n + ' ' + plural(n, 'часть', 'части', 'частей');
       h += '<button class="abcard' + (cur === b.id ? ' cur' : '') + '" data-f data-key="ab-' + esc(b.id) + '" data-act="book:' + esc(b.id) + '">' + abCover(b, 'abcv') +
-        '<span class="abname">' + esc(b.title || '') + '</span>' + (b.author ? '<span class="abauth">' + esc(b.author) + '</span>' : '') +
-        '<span class="abprog">' + (cur === b.id && !AU.paused ? '<i class="eq"><b></b><b></b><b></b></i> Играет' : esc(prog)) + '</span></button>';
+        '<span class="abname">' + esc(b.title || '') + '</span>' + (b.author && view.name !== 'author' ? '<span class="abauth">' + esc(b.author) + '</span>' : '') +
+        '<span class="abprog">' + (cur === b.id && AU && !AU.paused ? '<i class="eq"><b></b><b></b><b></b></i> Играет' : esc(prog)) + '</span></button>';
     }
     return h + '</div>';
+  }
+
+  function authorPage() {
+    var a = view.id, list = abList().filter(function (b) { return b.author === a; });
+    var cur = AU && AU.getAttribute('data-book');
+    return '<div class="ctop"><button class="btn small" data-f data-key="au-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
+      '<section class="auhead glass">' + authorPic(a, 'aubig') + '<div class="auinfo"><span class="hchip">Автор</span><h1>' + esc(a) + '</h1>' +
+      '<div class="aucount2">' + list.length + ' ' + plural(list.length, 'книга', 'книги', 'книг') + '</div>' +
+      (authorBio[a] ? '<p class="aubio">' + esc(authorBio[a]) + '</p>' : '') + '</div></section>' + bookGrid(list, cur);
+  }
+
+  // portraits from Wikipedia, all in one look: tinted the same violet-blue and glowing softly
+  var authorImg = {}, authorBio = {}, authorAsked = {};
+  try { var cachedAu = JSON.parse(localStorage.getItem('authors') || '{}'); for (var k in cachedAu) { authorImg[k] = cachedAu[k].img; authorBio[k] = cachedAu[k].bio; } } catch (e) {}
+  function saveAuthors() { try { var o = {}; for (var k in authorImg) o[k] = { img: authorImg[k], bio: authorBio[k] || '' }; localStorage.setItem('authors', JSON.stringify(o)); } catch (e) {} }
+  function initials(a) { return a.split(/\s+/).map(function (w) { return w.charAt(0); }).join('').slice(0, 2).toUpperCase(); }
+  function authorPic(a, cls) {
+    // your own picture in the author's folder wins over Wikipedia
+    var own = ''; abList().forEach(function (b) { if (b.author === a && b.authorPhoto) own = b.authorPhoto; });
+    if (own) authorImg[a] = own;
+    else if (authorImg[a] === undefined && !authorAsked[a]) askWiki(a);
+    // the same violet-blue for every author, so the row reads as one set
+    return '<span class="' + cls + '" style="background:radial-gradient(120% 90% at 30% 15%,#8E6BFF 0%,#3B2E8F 45%,#141030 100%)">' +
+      '<span class="auini">' + esc(initials(a)) + '</span>' +
+      (authorImg[a] ? '<img src="' + esc(authorImg[a]) + '" alt="" onerror="this.remove()"><i class="autint"></i>' : '') + '</span>';
+  }
+  function askWiki(a) {
+    authorAsked[a] = true;
+    if (!window.fetch) return;
+    var title = encodeURIComponent(a.replace(/\s+/g, '_'));
+    fetch('https://ru.wikipedia.org/api/rest_v1/page/summary/' + title).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      // only an article about this very person (Wikipedia may redirect a name to a book or a teaching)
+      var norm = function (x) { return String(x || '').toLowerCase().replace(/ё/g, 'е').replace(/[^а-яa-z]+/g, ' ').trim(); };
+      var same = j && j.type === 'standard' && norm(j.title).indexOf(norm(a).split(' ').pop()) >= 0;
+      authorImg[a] = same && (j.originalimage || j.thumbnail) ? (j.thumbnail ? j.thumbnail.source.replace(/\/\d+px-/, '/600px-') : j.originalimage.source) : '';
+      authorBio[a] = same && j.extract ? String(j.extract).split('. ').slice(0, 2).join('. ').slice(0, 260) : '';
+      saveAuthors();
+      if (view.name === 'books' || view.name === 'author') render(null, true);
+    }).catch(function () { authorImg[a] = ''; });
   }
 
   function bookPlayer() {
@@ -934,6 +995,7 @@
       '<div class="abtop"><button class="btn small" data-f data-key="ab-back" data-act="back">' + I.back + ' Назад</button></div>' +
       '<div class="abmain">' + abCover(b, 'abbig') +
       '<div class="abinfo"><span class="hchip">Аудиокнига</span><h1>' + esc(b.title || '') + '</h1>' + (b.author ? '<div class="abauth2">' + esc(b.author) + '</div>' : '') +
+      '<div class="abst" id="abst" style="display:none"></div>' +
       '<div class="abch" id="abch">' + esc((ch[ci] && ch[ci].title) || '') + ' · ' + (ci + 1) + ' из ' + ch.length + '</div>' +
       '<div class="abbar"><div class="abfill" id="abfill"></div></div><div class="abtimes"><span id="abcur">' + fmtT(playingThis ? AU.currentTime : sv.c === ci ? sv.t : 0) + '</span><span id="abdur">' + (playingThis && AU.duration ? fmtT(AU.duration) : (sv.d && sv.c === ci ? fmtT(sv.d) : '')) + '</span></div>' +
       '<div class="abbtns">' +
@@ -971,6 +1033,8 @@
       else { abSave(b ? b.id : '', 0, 0, 0); abUi(); }
     });
     AU.addEventListener('play', abUi);
+    AU.addEventListener('waiting', function () { abStatus('Загружаю…'); });
+    AU.addEventListener('playing', function () { abStatus(''); clearTimeout(abLoadT); });
     AU.addEventListener('pause', abUi);
     AU.addEventListener('loadedmetadata', abUi);
     AU.addEventListener('error', function () {
@@ -978,7 +1042,8 @@
       if (A.resolveUrl && !AU.getAttribute('data-resolved')) {
         try { var u = A.resolveUrl(AU.src); if (u && u !== AU.src) { var t = AU.currentTime; AU.setAttribute('data-resolved', '1'); AU.src = u; AU.currentTime = t; AU.play(); return; } } catch (e) {}
       }
-      var el = document.getElementById('abch'); if (el) el.textContent = 'Не получилось открыть файл — проверь доступ к папке на Диске';
+      clearTimeout(abLoadT);
+      abStatus('Не получилось открыть файл' + (AU.error ? ' (код ' + AU.error.code + ')' : '') + ' — проверь, что папка на Диске открыта по ссылке');
     });
     return AU;
   }
@@ -995,7 +1060,18 @@
       a.addEventListener('loadedmetadata', once);
     }
     a.volume = 1; abFading = false;
-    if (autoplay) { var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    if (autoplay) {
+      abStatus('Загружаю…');
+      var pr = a.play(); if (pr && pr.catch) pr.catch(function (e) { abStatus('Не запускается: ' + (e && e.name || 'ошибка') + ' — нажми ▶ ещё раз'); });
+      // nothing after 15 s: ask for the file once more
+      clearTimeout(abLoadT);
+      abLoadT = setTimeout(function () {
+        if (a.paused || a.currentTime > 0.5) return;
+        abStatus('Долго грузится, пробую ещё раз…');
+        var u = a.src; if (A.resolveUrl) { try { u = A.resolveUrl(u) || u; } catch (e) {} }
+        a.src = u; var p2 = a.play(); if (p2 && p2.catch) p2.catch(function () {});
+      }, 15000);
+    }
     abSave(b.id, ci, seekTo, 0);
     if (view.name === 'book') render('ab-play', true);
   }
@@ -1051,6 +1127,7 @@
     var a = abEnsure(), b = abById(a.getAttribute('data-book') || view.id);
     switch (cmd) {
       case 'book': go({ name: 'book', id: arg }, 'ab-play'); abWake(); return true;
+      case 'author': go({ name: 'author', id: arg }); return true;
       case 'abcat': view = { name: 'books', cat: arg }; render('abcat-' + arg, true); return true;
       case 'abplay': abToggle(arg); abWake(); return true;
       case 'abseek': if (a.src) { try { a.currentTime = Math.max(0, a.currentTime + (+arg)); } catch (e) {} abUi(); } return true;
@@ -1080,6 +1157,7 @@
     if (view.name === 'savers') return savers();
     if (view.name === 'books') return books();
     if (view.name === 'book') return bookPlayer();
+    if (view.name === 'author') return authorPage();
     if (view.name === 'tv') return tvPage();
     if (view.name === 'coll') return collection();
     return home();

@@ -307,3 +307,10 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .tvword { font-size: 46px; margin-top: 30px; }
   html.web .w-fri .tvword { font-size: 38px; }
 }
+@media (max-width: 900px) {
+  html.web .augrid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  html.web .aupic { width: 120px; height: 120px; }
+  html.web .auhead { flex-direction: column; text-align: center; padding: 22px; }
+  html.web .aubig { width: 150px; height: 150px; margin: 0 0 14px; }
+  html.web .auinfo h1 { font-size: 26px; }
+}

@@ -930,3 +930,34 @@ html.web section.hero.drag { transition: none !important; will-change: transform
 @media (prefers-reduced-transparency: reduce) {
   .glass, .nav, .chip, .backhint { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; background-color: #17131f !important; }
 }
+
+/* ---------- audiobooks: authors with one-look portraits ---------- */
+.absec { flex-shrink: 0; }
+.absec .h2 { margin-bottom: 14px; }
+.augrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 24px; }
+@supports not (display: grid) { .augrid { display: flex; flex-wrap: wrap; } .aucard { width: 170px; margin: 0 24px 24px 0; } }
+.aucard { background: transparent; border: 0; color: #F4F0FA; cursor: pointer; display: flex; flex-direction: column; align-items: center; text-align: center; padding: 6px 0; border-radius: 24px; outline: none; }
+.aupic, .aubig { position: relative; display: block; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+  box-shadow: 0 0 0 3px rgba(183,156,255,0.35), 0 14px 40px rgba(0,0,0,0.5), 0 0 50px rgba(130,110,255,0.25); transition: transform .2s ease, box-shadow .25s ease; }
+.aupic { width: 150px; height: 150px; }
+.aubig { width: 190px; height: 190px; margin-right: 34px; }
+.aupic img, .aubig img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 22%;
+  filter: grayscale(1) contrast(1.12) brightness(0.95); }
+/* the same violet-blue tint over every portrait so they read as one set */
+.autint { position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: linear-gradient(160deg, #8E6BFF 0%, #4FA8FF 60%, #1b1440 100%); mix-blend-mode: color; opacity: .85; }
+.autint::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: radial-gradient(80% 60% at 50% 110%, rgba(8,6,20,0.65), rgba(8,6,20,0) 70%); mix-blend-mode: normal; }
+.auini { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  font-family: Unbounded, sans-serif; font-weight: 700; font-size: 44px; color: rgba(255,255,255,0.85); }
+.aubig .auini { font-size: 56px; }
+.aucard:focus .aupic, html.mac .aucard:hover .aupic { transform: scale(1.06); box-shadow: 0 0 0 3px #fff, 0 0 46px rgba(160,130,255,0.7); }
+.auname { font-weight: 800; font-size: 16px; margin-top: 14px; }
+.aucount { color: #9FD9FF; font-size: 13px; font-weight: 700; margin-top: 5px; display: flex; align-items: center; justify-content: center; }
+.auhead { display: flex; align-items: center; border-radius: 28px; padding: 28px 32px; flex-shrink: 0; }
+.auinfo h1 { font-family: Unbounded, sans-serif; font-size: 36px; letter-spacing: -0.02em; margin: 12px 0 6px; }
+.aucount2 { color: #9FD9FF; font-weight: 700; font-size: 15px; }
+.aubio { color: #CFC4DE; font-size: 15px; line-height: 1.5; max-width: 680px; margin: 12px 0 0; }
+/* «30» sits inside the circular arrow, not on top of it */
+.abb svg { width: 30px; height: 30px; }
+.abb small { bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -40%); font-size: 9px; line-height: 1; letter-spacing: 0; }
+.abb.abplay svg { width: 26px; height: 26px; }
+.abst { margin-top: 14px; color: #FFE9A8; font-size: 14px; font-weight: 700; }
