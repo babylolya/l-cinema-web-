@@ -75,7 +75,9 @@
     if (f.original && !CYR.test(f.original)) return false;
     return CYR.test(f.title || '') && !f.original;
   }
-  function originOk(f, o) { return !o || o === 'all' || (o === 'ru' ? isRu(f) : !isRu(f)); }
+  function isCartoon(f) { return (f.genres || []).indexOf('Мультфильмы') >= 0; }
+  // «Мультсериалы» is a shelf inside «Сериалы»; the other chips are about the country
+  function originOk(f, o) { return !o || o === 'all' || (o === 'cartoon' ? isCartoon(f) : o === 'ru' ? isRu(f) : !isRu(f)); }
   function isWant(f) { return f.status === 'want'; }
   function isNew(f) { return !watched(f) && !isWant(f); }
   function byId(id) { for (var i = 0; i < S.films.length; i++) if (S.films[i].id === id) return S.films[i]; return null; }
@@ -584,7 +586,7 @@
     side += '</aside>';
     var list = S.films.filter(function (f) { return (cur === 'Все' || genresOf(f).indexOf(cur) >= 0) && originOk(f, origin); });
     var seenN = list.filter(watched).length;
-    var titleText = cur === 'Все' ? (origin === 'ru' ? 'Русские' : origin === 'foreign' ? 'Иностранные' : 'Все') : cur + (origin === 'ru' ? ' · русские' : origin === 'foreign' ? ' · иностранные' : '');
+    var titleText = origin === 'cartoon' ? 'Мультсериалы' : cur === 'Все' ? (origin === 'ru' ? 'Русские' : origin === 'foreign' ? 'Иностранные' : 'Все') : cur + (origin === 'ru' ? ' · русские' : origin === 'foreign' ? ' · иностранные' : '');
     if (filter === 'want') list = list.filter(isWant);
     if (filter === 'seen') list = list.filter(watched);
     var fl = [['all', 'Все'], ['want', 'Хочу посмотреть'], ['seen', 'Посмотрела']];
@@ -595,7 +597,7 @@
     for (var k = 0; k < list.length; k++) grid += card(list[k], 'grid');
     grid += '</div>';
     var total = S.films.filter(function (f) { return (cur === 'Все' || genresOf(f).indexOf(cur) >= 0) && originOk(f, origin); }).length;
-    var ol = [['all', 'Все страны'], ['ru', 'Русские'], ['foreign', 'Иностранные']];
+    var ol = [['all', 'Все'], ['cartoon', '✦ Мультсериалы'], ['ru', 'Русские'], ['foreign', 'Иностранные']];
     var ochips = cur !== 'Сериалы' ? '' : '<div class="chips">';
     for (var q = 0; q < ol.length && cur === 'Сериалы'; q++) ochips += '<button class="chip' + (origin === ol[q][0] ? ' on' : '') + '" data-f data-key="o-' + ol[q][0] + '" data-act="origin:' + ol[q][0] + '">' + ol[q][1] + '</button>';
     if (cur !== 'Сериалы') ochips = ''; else ochips += '</div>';
