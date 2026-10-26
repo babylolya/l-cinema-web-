@@ -204,7 +204,11 @@
     var id = driveId(it.url);
     var next = i + 1 < list.length;
     // Safari often can't start Google's player inside a page, so the Drive app / page is one tap away
-    var media = id
+    var rtId = (/rutube\.ru\/video\/([a-f0-9]{32})/.exec(it.url) || [])[1];
+    var from = Math.floor(((P.progress[it.key] || {}).done ? 0 : ((P.progress[it.key] || {}).pos || 0)) / 1000);
+    var media = rtId
+      ? '<div class="pwrap"><iframe id="rtf" src="https://rutube.ru/play/embed/' + rtId + '/?autoplay=1' + (from > 5 ? '&t=' + from : '') + '" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></div>'
+      : id
       ? '<div class="pwrap"><iframe src="https://drive.google.com/file/d/' + id + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
         '<a class="btn pri pdrive" href="https://drive.google.com/file/d/' + id + '/view" target="_blank" rel="noopener">▶ Открыть в Google Диске</a>' +
         '<p class="phint">Если видео не запускается здесь, нажми кнопку — фильм откроется в приложении Google Диск или в новой вкладке.</p>'
@@ -217,6 +221,24 @@
     if (nb) nb.onclick = function () { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; saveP(); openPlayer(list, i + 1, filmId); };
     var db = document.getElementById('pDone');
     if (db) db.onclick = function () { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; markWatched(filmId); closePlayer(); };
+    // RUTUBE: the embedded player reports its time, so the place you stopped is saved like everywhere else
+    if (rtId) {
+      var rt = { time: 0, dur: 0, saved: 0 };
+      if (window.__rtMsg) window.removeEventListener('message', window.__rtMsg);
+      window.__rtMsg = function (e) {
+        if (!/rutube\.ru$/.test((function () { try { return new URL(e.origin).hostname; } catch (x) { return ''; } })())) return;
+        var m = e.data; try { if (typeof m === 'string') m = JSON.parse(m); } catch (x) { return; }
+        if (!m || !m.type) return; var d = m.data || {};
+        if (m.type === 'player:ready' && from > 5) { try { document.getElementById('rtf').contentWindow.postMessage(JSON.stringify({ type: 'player:setCurrentTime', data: { time: from } }), '*'); } catch (x) {} }
+        if (m.type === 'player:durationChange' && d.duration) rt.dur = d.duration;
+        if (m.type === 'player:currentTime' && d.time != null) {
+          rt.time = d.time;
+          if (Date.now() - rt.saved > 5000 && rt.dur) { rt.saved = Date.now(); P.progress[it.key] = { pos: Math.round(rt.time * 1000), dur: Math.round(rt.dur * 1000), done: rt.time > rt.dur - 60, t: Date.now() }; saveP(); }
+        }
+        if (m.type === 'player:changeState' && d.state === 'ended') { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; saveP(); if (next) openPlayer(list, i + 1, filmId); else { markWatched(filmId); closePlayer(); } }
+      };
+      window.addEventListener('message', window.__rtMsg);
+    }
     var v = box.querySelector('video');
     if (v) {
       var p0 = (P.progress[it.key] || {}).pos || 0;

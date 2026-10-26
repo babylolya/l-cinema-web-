@@ -648,8 +648,8 @@
 
     var btns = '<button class="btn pri" data-f data-key="f-play" data-act="play:' + esc(f.id) + ':' + esc(r.key) + '">' + I.play + esc(r.label) + '</button>';
     if (!isSeries(f) && r.active) btns += '<button class="btn" data-f data-key="f-restart" data-act="restart:' + esc(f.id) + ':' + esc(f.key) + '">Сначала</button>';
-    if (S.noDownloads) {
-      // the Mac plays everything straight from Drive
+    if (S.noDownloads || f.online) {
+      // the Mac plays everything straight from Drive; RUTUBE series are online only
     } else if (isSeries(f)) {
       if (d.none + d.failed > 0) btns += '<button class="btn" data-f data-key="f-dlall" data-act="dlall:' + esc(f.id) + '">' + I.down + ' Скачать все серии</button>';
     } else {
@@ -674,14 +674,31 @@
     var episodes = '';
     if (isSeries(f)) {
       var list = eps(f), season = null;
-      episodes = '<section class="section"><h2 class="h2">Серии</h2><div class="eps">';
+      // a long series shows one season at a time, with the seasons as chips on top
+      var seasons = []; list.forEach(function (x) { if (seasons.indexOf(x.season || 1) < 0) seasons.push(x.season || 1); });
+      var curSeason = null;
+      if (list.length > 40 && seasons.length > 1) {
+        var rk = null; for (var q = 0; q < list.length; q++) if (list[q].key === r.key) rk = list[q];
+        curSeason = view.season || (rk ? rk.season || 1 : seasons[0]);
+      }
+      episodes = '<section class="section"><h2 class="h2">Серии' + (f.online ? ' <span class="sub">онлайн · RUTUBE</span>' : '') + '</h2>';
+      if (curSeason !== null) {
+        episodes += '<div class="chips seasons">';
+        seasons.forEach(function (sn) {
+          var all = list.filter(function (x) { return (x.season || 1) === sn; }), seen = all.filter(function (x) { return x.watchedPart; }).length;
+          episodes += '<button class="chip' + (sn === curSeason ? ' on' : '') + (seen === all.length ? ' seen' : '') + '" data-f data-key="sn-' + sn + '" data-act="season:' + sn + '">' + sn + (seen && seen < all.length ? ' <small>' + seen + '/' + all.length + '</small>' : (seen === all.length ? ' ✓' : '')) + '</button>';
+        });
+        episodes += '</div>';
+      }
+      episodes += '<div class="eps">';
       for (var e = 0; e < list.length; e++) {
         var ep = list[e];
+        if (curSeason !== null && (ep.season || 1) !== curSeason) continue;
         if (ep.season !== season) { season = ep.season; episodes += '<div class="season">Сезон ' + esc(season || 1) + '</div>'; }
         var isNext = r.active && ep.key === r.key;
         var cls = 'ep' + (ep.watchedPart ? ' done' : '') + (isNext ? ' last' : '');
         var dd = ep.dl || {};
-        var state = dd.status === 'done' ? 'скачана' : (dd.status === 'running' || dd.status === 'paused' ? '<span data-prog="' + esc(ep.key) + '">Скачивается ' + pct(dd) + '%</span>' : (ep.url ? 'онлайн' : 'нет ссылки'));
+        var state = ep.watchedPart ? 'просмотрена' : dd.status === 'done' ? 'скачана' : (dd.status === 'running' || dd.status === 'paused' ? '<span data-prog="' + esc(ep.key) + '">Скачивается ' + pct(dd) + '%</span>' : (ep.url ? 'онлайн' : 'нет ссылки'));
         var here = '';
         if (isNext && ep.pos > 5000) here = '<span class="here">Ты остановилась здесь · ' + clock(ep.pos) + '</span>';
         else if (isNext) here = '<span class="here">Следующая серия</span>';
@@ -750,6 +767,7 @@
     var any = false;
     for (var i = 0; i < S.films.length; i++) {
       var f = S.films[i];
+      if (f.online) continue;
       var items = isSeries(f) ? eps(f) : [f];
       for (var j = 0; j < items.length; j++) {
         var it = items[j];
@@ -1317,6 +1335,7 @@
       case 'url': if (A.openUrl) A.openUrl(arg); return;
       case 'mkhome': if (A.homeSettings) A.homeSettings(); return;
       case 'openhome': if (A.openHome) A.openHome(); return;
+      case 'season': view = { name: 'film', id: view.id, season: parseInt(arg, 10) }; render('sn-' + arg, true); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
       case 'pickgenre': view = { name: 'genres', genre: arg, filter: view.filter, origin: arg === 'Сериалы' ? view.origin : 'all' }; render('g-' + arg, false); return;

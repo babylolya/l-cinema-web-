@@ -971,3 +971,8 @@ html.lite .card, html.lite .tile, html.lite .ctile, html.lite .btile, html.lite 
 .abdrive { margin-top: 14px; max-width: 640px; }
 .abdrive iframe { width: 100%; height: 150px; border: 0; border-radius: 16px; background: #000; }
 .abdnote { color: #B0A6C0; font-size: 13px; margin-top: 8px; line-height: 1.4; }
+.chips.seasons { display: flex; flex-wrap: wrap; margin: 4px 0 14px; }
+.chips.seasons .chip { margin: 0 8px 8px 0; min-width: 44px; justify-content: center; }
+.chips.seasons .chip small { opacity: .7; font-size: 11px; margin-left: 4px; }
+.chips.seasons .chip.seen { color: #9FD9FF; }
+.h2 .sub { font-size: 14px; font-weight: 700; color: #9C92AE; margin-left: 8px; }
