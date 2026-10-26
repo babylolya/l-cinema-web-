@@ -816,7 +816,7 @@
     var h = '<div class="ctop"><button class="btn small" data-f data-key="tv-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
       '<section class="tvhead glass"><span class="hchip">Live</span><h1>TV</h1>' +
       '<p>Прямой эфир российских каналов. За границей СТС, ТНТ и Пятница закрыты, поэтому они идут через VPN' +
-      (web ? ' — включи его перед тем, как открыть канал.' : ': приложение само включит его при открытии и выключит, когда вернёшься.') + '</p></section>' +
+      (web ? ' — включи его перед тем, как открыть канал.' : ': при нажатии откроется VPN — нажми «Подключить» и «Назад», эфир включится сам. Когда вернёшься, VPN откроется снова, чтобы его выключить.') + '</p></section>' +
       '<div class="tvmain">';
     for (var i = 0; i < TV_MAIN.length; i++) {
       var c = TV_MAIN[i];
