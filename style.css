@@ -1009,3 +1009,6 @@ html:not(.web) .deco.deco-gar { transform: none; }
 .deco-gar .gk.k1 .la { animation-delay: .7s; }
 .deco-gar .gk.k2 .la { animation-delay: 1.9s; }
 html:not(.web) .film.th-christmas { padding-top: 5.5vw; }
+.abser { color: #B79CFF; font-size: 13px; font-weight: 700; margin-top: 3px; }
+html.web section.hero { overflow: hidden; }
+html.web section.hero.drag .bg, html.web section.hero.drag .info, html.web section.hero.drag .bgblur { transition: none !important; will-change: transform, opacity; }

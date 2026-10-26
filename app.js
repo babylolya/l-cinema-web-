@@ -482,14 +482,20 @@
   }
   var sw = null, swStop = null;
   function heroSec() { return document.querySelector('section.hero'); }
-  function setX(sec, x) { var w = sec.offsetWidth || 1; sec.style.transform = 'translateX(' + x + 'px)'; sec.style.opacity = String(Math.max(0.35, 1 - Math.abs(x) / w * 0.6)); }
+  // the frame stays put; only the picture and the text inside it slide
+  function heroParts(sec) { return sec.querySelectorAll('.bg, .info, .bgblur, .pst'); }
+  function setX(sec, x) {
+    var w = sec.offsetWidth || 1, ps = heroParts(sec), op = String(Math.max(0.2, 1 - Math.abs(x) / w * 0.9));
+    sec.setAttribute('data-x', String(x));
+    for (var i = 0; i < ps.length; i++) { ps[i].style.transform = x ? 'translateX(' + x + 'px)' : ''; ps[i].style.opacity = x ? op : ''; }
+  }
   document.addEventListener('touchstart', function (e) {
     var t = e.touches && e.touches[0];
     var sec = t && e.target.closest ? e.target.closest('section.hero') : null;
     if (!sec || heroList.length < 2) { sw = null; return; }
     if (swStop) { swStop(); swStop = null; }
     // grab it where it is right now (it may still be settling)
-    var cur = 0, m = /translateX\((-?[\d.]+)px\)/.exec(sec.style.transform || ''); if (m) cur = parseFloat(m[1]);
+    var cur = parseFloat(sec.getAttribute('data-x') || '0') || 0;
     sw = { x0: t.clientX - cur, y0: t.clientY, dir: null, hist: [{ x: cur, t: Date.now() }], sec: sec };
   }, { passive: true });
   document.addEventListener('touchmove', function (e) {
@@ -519,10 +525,10 @@
         var nx = heroSec(); if (!nx) return;
         nx.classList.remove('fade'); nx.classList.add('drag');
         setX(nx, dirn * wdt * 0.5);
-        swStop = spring(dirn * wdt * 0.5, 0, v * 0.5, function (val) { setX(nx, val); }, function () { nx.classList.remove('drag'); nx.style.transform = ''; nx.style.opacity = ''; });
+        swStop = spring(dirn * wdt * 0.5, 0, v * 0.5, function (val) { setX(nx, val); }, function () { nx.classList.remove('drag'); setX(nx, 0); });
       });
     } else {
-      swStop = spring(x, 0, v, function (val) { setX(g.sec, val); }, function () { g.sec.classList.remove('drag'); g.sec.style.transform = ''; g.sec.style.opacity = ''; });
+      swStop = spring(x, 0, v, function (val) { setX(g.sec, val); }, function () { g.sec.classList.remove('drag'); setX(g.sec, 0); });
     }
   }, { passive: true });
 
@@ -981,7 +987,7 @@
       var b = list[i], sv = abSaved(b.id), n = (b.chapters || []).length;
       var prog = sv.at ? 'Часть ' + (sv.c + 1) + ' из ' + n + ' · ' + fmtT(sv.t) : n + ' ' + plural(n, 'часть', 'части', 'частей');
       h += '<button class="abcard' + (cur === b.id ? ' cur' : '') + '" data-f data-key="ab-' + esc(b.id) + '" data-act="book:' + esc(b.id) + '">' + abCover(b, 'abcv') +
-        '<span class="abname">' + esc(b.title || '') + '</span>' + (b.author && view.name !== 'author' ? '<span class="abauth">' + esc(b.author) + '</span>' : '') +
+        '<span class="abname">' + esc(b.title || '') + '</span>' + (b.series ? '<span class="abser">' + esc(b.series) + '</span>' : '') + (b.author && view.name !== 'author' ? '<span class="abauth">' + esc(b.author) + '</span>' : '') +
         '<span class="abprog">' + (cur === b.id && AU && !AU.paused ? '<i class="eq"><b></b><b></b><b></b></i> Играет' : esc(prog)) + '</span></button>';
     }
     return h + '</div>';
@@ -1037,7 +1043,7 @@
       '<div class="abplayer">' +
       '<div class="abtop"><button class="btn small" data-f data-key="ab-back" data-act="back">' + I.back + ' Назад</button></div>' +
       '<div class="abmain">' + abCover(b, 'abbig') +
-      '<div class="abinfo"><span class="hchip">Аудиокнига</span><h1>' + esc(b.title || '') + '</h1>' + (b.author ? '<div class="abauth2">' + esc(b.author) + '</div>' : '') +
+      '<div class="abinfo"><span class="hchip">' + (b.series ? esc(b.series) : 'Аудиокнига') + '</span><h1>' + esc(b.title || '') + '</h1>' + (b.author ? '<div class="abauth2">' + esc(b.author) + '</div>' : '') +
       '<div class="abst" id="abst" style="display:none"></div><div class="abdrive" id="abdrive" style="display:none"></div>' +
       '<div class="abch" id="abch">' + esc((ch[ci] && ch[ci].title) || '') + ' · ' + (ci + 1) + ' из ' + ch.length + '</div>' +
       '<div class="abbar"><div class="abfill" id="abfill"></div></div><div class="abtimes"><span id="abcur">' + fmtT(playingThis ? AU.currentTime : sv.c === ci ? sv.t : 0) + '</span><span id="abdur">' + (playingThis && AU.duration ? fmtT(AU.duration) : (sv.d && sv.c === ci ? fmtT(sv.d) : '')) + '</span></div>' +
