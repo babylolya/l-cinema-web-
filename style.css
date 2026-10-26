@@ -745,3 +745,128 @@ html.nogap .ep + .ep { margin-top: 8px; }
 /* holiday capsules */
 .hol.hw { color: #FFC08A; border-color: rgba(255,140,60,0.55); background: rgba(255,122,26,0.16); }
 .hol.xm { color: #CFE6FF; border-color: rgba(150,200,255,0.55); background: rgba(120,180,255,0.14); }
+
+/* ---------- side nav: bright icons + labels (readable on TV) ---------- */
+.nav { width: 92px; }
+.ni { width: 76px; height: 64px; border-radius: 20px; flex-direction: column; color: #E6DDF2; }
+.ni svg { stroke: #E6DDF2; }
+.ni .nl { display: block; font-size: 11px; font-weight: 600; margin-top: 5px; letter-spacing: 0.2px; color: #CFC4DE; line-height: 1; }
+.ni.sync { height: 50px; }
+.ni:focus, .ni.on { color: #fff; }
+.ni:focus svg, .ni.on svg { stroke: #fff; }
+.ni:focus .nl, .ni.on .nl { color: #fff; }
+.ni:focus { background: rgba(255,255,255,0.16); box-shadow: 0 0 0 2px #FF7BE5, 0 0 22px rgba(255,79,216,0.55); }
+.ni.on:focus { background: linear-gradient(135deg, #FF5FDB 0%, #C84BFF 100%); }
+html.web .ni .nl { display: none; }
+
+/* ---------- big screens (TV, projector, Mac): film page = the wide picture + text under it, no small poster ---------- */
+html:not(.web) .film.has-bd { margin-top: 0; padding: 28px 34px 0; }
+html:not(.web) .film.has-bd .fpost { display: none; }
+html:not(.web) .film.has-bd .body { padding-top: 0; max-width: 1100px; }
+html:not(.web) .fbanner { height: 46vh; min-height: 300px; }
+/* icicles hang from the picture's lower edge; the text starts below their tips */
+html:not(.web) .deco.deco-ice { left: -40px; width: calc(100% + 80px); transform: translateY(34%); }
+html:not(.web) .film.th-christmas { padding-top: 8vw; }
+html:not(.web) .deco-branch .br { top: auto; bottom: -70px; width: 24%; max-width: 420px; left: -30px; }
+html:not(.web) .film.th-halloween { padding-top: 64px; }
+
+/* ---------- brand tiles: three in a row with Russian TV ---------- */
+.btiles { grid-template-columns: 1fr 1fr 1fr; }
+.b-tv { background: radial-gradient(90% 130% at 100% 0%, rgba(43,107,255,0.55) 0%, rgba(43,107,255,0) 60%), radial-gradient(70% 120% at 0% 100%, rgba(226,38,59,0.45) 0%, rgba(226,38,59,0) 60%), linear-gradient(135deg, #0d1020 0%, #0b0a14 100%); }
+.b-tv:focus, html.mac .b-tv:hover { box-shadow: 0 0 36px rgba(80,130,255,0.5); }
+.b-tv .tvglow { position: absolute; right: 24px; top: 24px; width: 12px; height: 12px; border-radius: 50%; background: #ff3b4e; box-shadow: 0 0 0 0 rgba(255,59,78,0.7); animation: livePulse 1.8s ease-out infinite; }
+@keyframes livePulse { 0% { box-shadow: 0 0 0 0 rgba(255,59,78,0.7); } 100% { box-shadow: 0 0 0 16px rgba(255,59,78,0); } }
+
+/* ---------- Russian TV page ---------- */
+.tvhead { border-radius: 26px; padding: 28px 32px; flex-shrink: 0; }
+.tvhead h1 { font-family: Unbounded, sans-serif; font-size: 34px; margin: 12px 0 10px; }
+.tvhead p { margin: 0; color: #CFC4DE; font-size: 16px; line-height: 1.5; max-width: 760px; }
+.tvhead .tvnote { margin-top: 8px; color: #9C92AE; font-size: 14px; }
+.tvgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; flex-shrink: 0; }
+.tvtile { position: relative; height: 170px; border-radius: 22px; border: 1px solid rgba(255,255,255,0.18); color: #fff; cursor: pointer; text-align: left;
+  padding: 20px 22px; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; transition: transform .15s ease, box-shadow .25s ease; }
+.tvtile::after { content: ''; position: absolute; top: 0; right: 0; bottom: 0; left: 0; background: linear-gradient(0deg, rgba(0,0,0,0.45), rgba(0,0,0,0) 60%); }
+.tvtile > * { position: relative; z-index: 1; }
+.tvtile:focus, html.mac .tvtile:hover { transform: scale(1.04); box-shadow: 0 0 0 3px #fff, 0 0 40px rgba(255,255,255,0.35); }
+.tvlive { position: absolute; top: 16px; left: 18px; font-size: 12px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; background: rgba(0,0,0,0.35); border-radius: 999px; padding: 5px 10px 5px 22px; }
+.tvlive i { position: absolute; left: 9px; top: 50%; margin-top: -4px; width: 8px; height: 8px; border-radius: 50%; background: #ff3b4e; animation: livePulse 1.8s ease-out infinite; }
+.tvname { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 22px; line-height: 1.1; }
+.tvsub { font-size: 14px; opacity: 0.85; margin-top: 6px; }
+html.nogap .tvgrid, .nogrid .tvgrid { display: flex; flex-wrap: wrap; }
+@supports not (display: grid) { .tvgrid { display: flex; flex-wrap: wrap; } .tvtile { width: 23%; margin: 0 2% 18px 0; } }
+
+/* ---------- audiobooks: list ---------- */
+.absub { margin: -6px 0 0; color: #B0A6C0; font-size: 15px; }
+.abgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 22px; flex-shrink: 0; }
+@supports not (display: grid) { .abgrid { display: flex; flex-wrap: wrap; } .abcard { width: 200px; margin: 0 22px 22px 0; } }
+.abcard { background: transparent; border: 0; color: #F4F0FA; text-align: left; cursor: pointer; padding: 0; display: flex; flex-direction: column; border-radius: 22px; }
+.abcv, .abbig { position: relative; width: 100%; padding-top: 100%; border-radius: 20px; overflow: hidden; box-shadow: 0 18px 40px rgba(0,0,0,0.45); border: 1px solid rgba(255,255,255,0.12); transition: transform .2s ease, box-shadow .25s ease; }
+.abcv img, .abbig img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.abct { position: absolute; left: 16px; right: 16px; bottom: 16px; font-family: Unbounded, sans-serif; font-weight: 700; font-size: 17px; line-height: 1.2; color: rgba(255,255,255,0.9); }
+.abcard:focus .abcv, html.mac .abcard:hover .abcv { transform: scale(1.04); box-shadow: 0 0 0 3px #B79CFF, 0 0 34px rgba(160,120,255,0.55); }
+.abcard:focus { outline: none; }
+.abname { font-weight: 800; font-size: 16px; margin-top: 12px; line-height: 1.25; }
+.abauth { color: #B0A6C0; font-size: 14px; margin-top: 3px; }
+.abprog { color: #9FD9FF; font-size: 13px; font-weight: 700; margin-top: 6px; display: flex; align-items: center; }
+.eq { display: inline-flex; align-items: flex-end; height: 12px; margin-right: 7px; }
+.eq b { display: block; width: 3px; margin-right: 2px; background: #9FD9FF; border-radius: 2px; animation: eq 1s ease-in-out infinite alternate; }
+.eq b:nth-child(2) { animation-delay: .3s; } .eq b:nth-child(3) { animation-delay: .6s; }
+@keyframes eq { from { height: 3px; } to { height: 12px; } }
+.ni.live::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: #9FD9FF; box-shadow: 0 0 10px #9FD9FF; margin: -34px 0 0 34px; animation: livePulseB 2s ease-out infinite; }
+.ni { position: relative; }
+@keyframes livePulseB { 0% { opacity: 1; } 50% { opacity: .35; } 100% { opacity: 1; } }
+
+/* ---------- audiobooks: the night player ---------- */
+body.inbook { background: #040308; }
+.abstage { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; pointer-events: none; overflow: hidden; background: #040308; }
+.ablight { position: absolute; border-radius: 50%; filter: blur(70px); opacity: .55; will-change: transform; }
+.ablight.l1 { width: 60vw; height: 60vw; left: -14vw; top: -22vw; background: radial-gradient(circle, rgba(120,70,255,0.75) 0%, rgba(120,70,255,0) 65%); animation: drift1 26s ease-in-out infinite alternate; }
+.ablight.l2 { width: 55vw; height: 55vw; right: -16vw; bottom: -26vw; background: radial-gradient(circle, rgba(40,170,255,0.6) 0%, rgba(40,170,255,0) 65%); animation: drift2 32s ease-in-out infinite alternate; }
+.ablight.l3 { width: 40vw; height: 40vw; left: 34vw; top: 30vh; background: radial-gradient(circle, rgba(255,90,200,0.38) 0%, rgba(255,90,200,0) 65%); animation: drift3 38s ease-in-out infinite alternate; }
+@keyframes drift1 { from { transform: translate(0, 0) scale(1); } to { transform: translate(18vw, 14vh) scale(1.25); } }
+@keyframes drift2 { from { transform: translate(0, 0) scale(1.1); } to { transform: translate(-22vw, -12vh) scale(0.9); } }
+@keyframes drift3 { from { transform: translate(0, 0) scale(0.9); opacity: .25; } to { transform: translate(-16vw, -18vh) scale(1.2); opacity: .5; } }
+/* faint glittering dust */
+.abdust { position: absolute; top: 0; right: 0; bottom: 0; left: 0;
+  background-image: radial-gradient(1.5px 1.5px at 12% 22%, rgba(255,255,255,0.8), transparent), radial-gradient(1px 1px at 33% 68%, rgba(255,255,255,0.7), transparent),
+    radial-gradient(1.5px 1.5px at 57% 31%, rgba(200,220,255,0.8), transparent), radial-gradient(1px 1px at 78% 77%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.2px 1.2px at 88% 18%, rgba(230,200,255,0.8), transparent), radial-gradient(1px 1px at 46% 88%, rgba(255,255,255,0.6), transparent),
+    radial-gradient(1.3px 1.3px at 6% 80%, rgba(200,230,255,0.7), transparent), radial-gradient(1px 1px at 68% 52%, rgba(255,255,255,0.5), transparent);
+  animation: twinkle 7s ease-in-out infinite alternate; }
+@keyframes twinkle { from { opacity: .25; } to { opacity: .85; } }
+.abplayer { position: relative; z-index: 1; display: flex; flex-direction: column; transition: opacity 3s ease; }
+html.abdim .abplayer, html.abdim .nav { opacity: 0.06; transition: opacity 4s ease; }
+.nav { transition: opacity 1s ease; }
+.abtop { margin-bottom: 18px; }
+.abmain { display: flex; align-items: center; }
+.abmain .abbig { width: 34vh; padding-top: 34vh; flex-shrink: 0; margin-right: 48px; box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 80px rgba(140,100,255,0.25); animation: coverBreath 9s ease-in-out infinite alternate; }
+@keyframes coverBreath { from { box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 60px rgba(140,100,255,0.18); } to { box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 110px rgba(90,180,255,0.35); } }
+.abinfo { flex: 1; min-width: 0; }
+.abinfo h1 { font-family: Unbounded, sans-serif; font-weight: 700; font-size: 34px; line-height: 1.15; margin: 14px 0 6px; color: #F4F0FA; }
+.abauth2 { color: #C6BCD6; font-size: 17px; }
+.abch { color: #9FD9FF; font-size: 15px; font-weight: 700; margin-top: 18px; }
+.abbar { height: 5px; border-radius: 3px; background: rgba(255,255,255,0.12); margin-top: 14px; overflow: hidden; max-width: 640px; }
+.abfill { height: 100%; width: 0; border-radius: 3px; background: linear-gradient(90deg, #8E6BFF, #5CC8FF); box-shadow: 0 0 12px rgba(120,160,255,0.8); transition: width 1s linear; }
+.abtimes { display: flex; justify-content: space-between; max-width: 640px; color: #9C92AE; font-size: 13px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+.abbtns { display: flex; align-items: center; margin-top: 22px; }
+.abb { position: relative; width: 58px; height: 58px; border-radius: 50%; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); color: #E6DDF2;
+  display: flex; align-items: center; justify-content: center; cursor: pointer; margin-right: 14px; transition: transform .15s ease, box-shadow .2s ease, background .2s ease; }
+.abb svg { stroke: currentColor; }
+.abb small { position: absolute; font-size: 9px; font-weight: 800; bottom: 13px; }
+.abb:focus, html.mac .abb:hover { background: rgba(255,255,255,0.16); box-shadow: 0 0 0 2px #B79CFF, 0 0 24px rgba(160,120,255,0.5); color: #fff; outline: none; }
+.abb.abplay { width: 78px; height: 78px; padding: 0; justify-content: center; background: linear-gradient(135deg, #8E6BFF 0%, #4FA8FF 100%); color: #fff; border: 0; box-shadow: 0 10px 30px rgba(110,120,255,0.45); }
+.abb.abplay svg { width: 26px; height: 26px; }
+.abb.abplay:focus { box-shadow: 0 0 0 3px #fff, 0 0 40px rgba(130,150,255,0.7); }
+.absleep { margin-top: 18px; color: #C6BCD6; }
+.absleep.on { color: #FFE9A8; border-color: rgba(255,220,140,0.5); background: rgba(255,210,120,0.10); }
+.absleep svg { margin-right: 6px; }
+.abchapters { margin-top: 34px; display: flex; flex-direction: column; max-width: 760px; }
+.abrow { display: flex; align-items: center; text-align: left; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); color: #DCD3E8; border-radius: 14px; padding: 12px 16px; margin-top: 8px; cursor: pointer; font-size: 15px; }
+.abrow .n { width: 34px; color: #8D83A0; font-weight: 800; flex-shrink: 0; }
+.abrow.cur { color: #9FD9FF; border-color: rgba(120,190,255,0.35); }
+.abrow:focus, html.mac .abrow:hover { background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px #B79CFF; outline: none; }
+html.nogap .abbtns > *, html.nogap .abtimes > * { margin-right: 14px; }
+.nav { position: relative; z-index: 3; }
+#main { position: relative; z-index: 1; }
+.eq b { height: 6px; }
+.ablight { opacity: .7; }

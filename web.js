@@ -99,6 +99,14 @@
     });
   }
 
+  function audiobooks() {
+    var src = clone(LIB.audiobooks || []), have = {};
+    src.forEach(function (b) { if (b.driveId) have[b.driveId] = 1; });
+    (SHARED.audiobooks || []).forEach(function (a) { if (!have[a.driveId]) src.push(clone(a)); });
+    src.forEach(function (b) { (b.chapters || []).forEach(function (c) { var id = driveId(c.url); if (id) c.url = 'https://drive.usercontent.google.com/download?id=' + id + '&export=download&confirm=t'; }); });
+    return src;
+  }
+
   function putProgress(o, key) {
     var p = P.progress[key] || {};
     o.key = key; o.dl = { status: 'none', done: 0, total: 0 };
@@ -122,7 +130,7 @@
     });
     return {
       films: out, platform: 'web', noDownloads: true, syncedAt: P.syncedAt || '', syncing: syncing, error: lastError,
-      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), collections: LIB.collections || [],
+      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), collections: LIB.collections || [],
       scanReport: 'список файлов приходит с проектора и Mac' + (syncNote ? ' · ' + syncNote : ''), update: ''
     };
   }

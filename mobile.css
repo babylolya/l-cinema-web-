@@ -283,3 +283,21 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .grid { gap: 18px 12px; }
   html.web .grid .card, html.web .grid .poster { width: 100%; min-width: 0; }
 }
+
+/* phone: three brand tiles wrap, TV grid two in a row, player stacks */
+@media (max-width: 900px) {
+  html.web .btiles { grid-template-columns: 1fr 1fr; }
+  html.web .b-tv { grid-column: span 2; height: 110px; }
+  html.web .tvgrid { grid-template-columns: 1fr 1fr; gap: 10px; }
+  html.web .tvtile { height: 130px; }
+  html.web .tvhead { padding: 20px; }
+  html.web .tvhead h1 { font-size: 26px; }
+  html.web .abgrid { grid-template-columns: 1fr 1fr; gap: 14px; }
+  html.web .abmain { flex-direction: column; align-items: stretch; }
+  html.web .abmain .abbig { width: 72vw; padding-top: 72vw; margin: 0 auto 22px; }
+  html.web .abinfo h1 { font-size: 24px; }
+  html.web .abbtns { justify-content: center; }
+  html.web .abb { margin: 0 6px; }
+  html.web .absleep { align-self: center; display: flex; margin-left: auto; margin-right: auto; }
+  html.web .abplayer { padding-bottom: 90px; }
+}

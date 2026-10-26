@@ -12,6 +12,22 @@
       if (!ok) document.documentElement.className += ' nogap';
     } catch (e) {}
   })();
+  // very old TV browsers ignore CSS variables (colours fall back to black): rewrite the stylesheet with real values
+  (function () {
+    var ok = false;
+    try { ok = !!(window.CSS && CSS.supports && CSS.supports('--a', '0')); } catch (e) {}
+    if (ok) return;
+    document.documentElement.className += ' novars';
+    try {
+      var x = new XMLHttpRequest(); x.open('GET', 'style.css', false); x.send();
+      var css = x.responseText; if (!css) return;
+      var vars = {}, m, re = /--([\w-]+)\s*:\s*([^;}]+)/g;
+      var rootBlock = css.match(/:root\s*\{([^}]*)\}/);
+      if (rootBlock) while ((m = re.exec(rootBlock[1]))) vars[m[1]] = m[2].trim();
+      for (var k = 0; k < 3; k++) css = css.replace(/var\(--([\w-]+)\s*(?:,\s*([^()]*(?:\([^()]*\))?[^()]*))?\)/g, function (all, n, fb) { return vars[n] || (fb ? fb.trim() : 'inherit'); });
+      var st = document.createElement('style'); st.appendChild(document.createTextNode(css)); document.head.appendChild(st);
+    } catch (e) {}
+  })();
   if (window.Element && !Element.prototype.closest) Element.prototype.closest = function (sel) { var el = this; while (el && el.nodeType === 1) { if (el.matches(sel)) return el; el = el.parentElement; } return null; };
 
   var A = window.Android;
@@ -139,6 +155,14 @@
   // ---------- icons ----------
 
   var I = {
+    book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></svg>',
+    pause: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.5" height="16" rx="1.4"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.4"/></svg>',
+    prev: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>',
+    next: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg>',
+    rew: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg>',
+    fwd: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>',
+    moon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>',
+    tv: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="3"/><path d="M8 2l4 4 4-4"/></svg>',
     home: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>',
     grid: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>',
     diary: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg>',
@@ -190,11 +214,12 @@
   }
 
   function nav() {
-    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
+    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['books', 'Книги', I.book], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
     var h = '<nav class="nav glass"><div class="logo">L·C</div>';
     for (var i = 0; i < items.length; i++) {
       var on = view.name === items[i][0] || (view.name === 'film' && false);
-      h += '<button class="ni' + (on ? ' on' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '</button>';
+      if (items[i][0] === 'books') on = on || view.name === 'book';
+      h += '<button class="ni' + (on ? ' on' : '') + (items[i][0] === 'books' && AU && !AU.paused ? ' live' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '<span class="nl">' + items[i][1] + '</span></button>';
     }
     h += '<div class="spacer"></div><button class="ni sync' + (S.syncing ? ' spin' : '') + '" data-f data-key="nav-sync" data-act="sync" aria-label="Обновить">' + I.sync + '</button></nav>';
     return h;
@@ -285,6 +310,8 @@
         '<span class="btext"><span class="bname">Netflix</span><span class="bsub">' + (list.length ? (web ? '' : 'Фильмы студии · ') + list.length + ' шт.' : 'скоро') + '</span></span></button>' : '') +
       '<button class="btile b-yt" data-f data-key="b-yt" data-act="url:https://www.youtube.com">' +
         '<span class="bplay"><i></i></span><span class="btext"><span class="bname">YouTube</span><span class="bsub">' + (web ? 'Открыть сайт' : 'Открыть в Brave') + '</span></span></button>' +
+      '<button class="btile b-tv" data-f data-key="b-tv" data-act="go:tv"><span class="tvglow"></span>' +
+        '<span class="btext"><span class="bname">Русское ТВ</span><span class="bsub">Прямой эфир · без VPN</span></span></button>' +
       '</div>';
   }
 
@@ -633,7 +660,7 @@
       '<button class="btn small fback" data-f data-key="f-back" data-act="back">' + I.back + ' Назад</button></section>' : '';
     var deco = bds.length ? decoHtml(filmTheme(f)) : '';
     if (deco) banner = '<div class="fbwrap">' + banner + deco + '</div>';
-    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + '"><div class="fpost">' + (bds.length ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
+    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + (deco ? ' th-' + filmTheme(f) : '') + '"><div class="fpost">' + (bds.length ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
       '<div class="body"><div class="chips">' + tags + '</div><h1>' + esc(f.title) + '</h1>' +
       (f.original && f.original !== f.title ? '<div class="sub">' + esc(f.original) + '</div>' : '') +
       '<div class="meta">' + esc(filmMeta(f)) + '</div>' +
@@ -755,6 +782,214 @@
     }
   }
 
+
+  // ---------- Russian TV: live channels that open from Thailand without VPN ----------
+
+  var TV = [
+    { id: 'kartina', name: 'Kartina.TV', note: 'СТС, ТНТ, Пятница · платно, 30 дней бесплатно', url: 'https://www.kartina.tv/channel', c1: '#E8452C', c2: '#5A1238' },
+    { id: 'r1', name: 'Россия 1', note: 'Бесплатно · фильмы, сериалы, шоу', url: 'https://smotrim.ru/channel/1', c1: '#2B6BFF', c2: '#E2263B' },
+    { id: 'kult', name: 'Культура', note: 'Бесплатно · кино, театр', url: 'https://smotrim.ru/channel/4', c1: '#B8892E', c2: '#3A2A12' }
+  ];
+
+  function tvPage() {
+    var web = document.documentElement.classList.contains('web');
+    var h = '<div class="ctop"><button class="btn small" data-f data-key="tv-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
+      '<section class="tvhead glass"><span class="hchip">Прямой эфир</span><h1>Русское ТВ</h1>' +
+      '<p>Эти каналы открываются из Таиланда без VPN. ' + (web ? 'Откроется сайт канала.' : 'Откроется в Brave — нажми ▶ на плеере, если эфир не стартует сам.') + '</p>' +
+      '<p class="tvnote">Бесплатно СТС, ТНТ, Пятница и Первый из Таиланда не показывают — проверено: «показ в вашем регионе запрещён правообладателем». Легально их показывает Kartina.TV — сервис для тех, кто живёт за границей.'+'</p></section>' +
+      '<div class="tvgrid">';
+    for (var i = 0; i < TV.length; i++) {
+      var c = TV[i];
+      h += '<button class="tvtile" data-f data-key="tv-' + c.id + '" data-act="url:' + esc(c.url) + '" style="background:linear-gradient(135deg,' + c.c1 + ' 0%,' + c.c2 + ' 100%)">' +
+        '<span class="tvlive"><i></i>эфир</span><span class="tvname">' + esc(c.name) + '</span><span class="tvsub">' + esc(c.note) + '</span></button>';
+    }
+    return h + '</div>';
+  }
+
+  // ---------- audiobooks: a calm player for falling asleep ----------
+
+  var AU = null, abTick = null, abSleep = 0, abSleepEnd = 0, abFading = false, abDimT = null;
+  var SLEEP_STEPS = [0, 15, 30, 45, 60, 90];
+
+  function abList() { return S.audiobooks || []; }
+  function abById(id) { var l = abList(); for (var i = 0; i < l.length; i++) if (l[i].id === id) return l[i]; return null; }
+  function abSaved(id) { try { return JSON.parse(localStorage.getItem('ab:' + id) || 'null') || { c: 0, t: 0 }; } catch (e) { return { c: 0, t: 0 }; } }
+  function abSave(id, c, t, d) { try { localStorage.setItem('ab:' + id, JSON.stringify({ c: c, t: Math.floor(t), d: Math.floor(d || 0), at: Date.now() })); } catch (e) {} }
+  function fmtT(sec) {
+    sec = Math.max(0, Math.floor(sec || 0));
+    var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), x = sec % 60;
+    return (h ? h + ':' + (m < 10 ? '0' : '') : '') + m + ':' + (x < 10 ? '0' : '') + x;
+  }
+  function abCover(b, cls) {
+    var hue = hash(b.id) % 360;
+    return '<div class="' + cls + '" style="background:linear-gradient(150deg,hsl(' + hue + ',55%,32%) 0%,hsl(' + ((hue + 60) % 360) + ',60%,14%) 100%)">' +
+      '<span class="abct">' + esc(b.title || '') + '</span>' +
+      (b.cover ? '<img src="' + esc(b.cover) + '" alt="" onerror="this.remove()">' : '') + '</div>';
+  }
+
+  function books() {
+    var list = abList();
+    var h = '<div class="topline"><h1 class="title-glow">Аудиокниги</h1>' + statusLine() + '</div>';
+    if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Создай на Google Диске в папке с фильмами папку «аудиокниги», а в ней — по папке на каждую книгу с mp3-файлами. После «Обновить» книги появятся здесь.</p></div>';
+    var cur = AU && AU.getAttribute('data-book');
+    h += '<p class="absub">Тихий плеер для сна: свет медленно переливается, экран сам затемняется, таймер выключит книгу.</p><div class="abgrid">';
+    for (var i = 0; i < list.length; i++) {
+      var b = list[i], sv = abSaved(b.id), n = (b.chapters || []).length;
+      var prog = sv.at ? 'Глава ' + (sv.c + 1) + ' из ' + n + ' · ' + fmtT(sv.t) : n + ' ' + plural(n, 'часть', 'части', 'частей');
+      h += '<button class="abcard' + (cur === b.id ? ' cur' : '') + '" data-f data-key="ab-' + esc(b.id) + '" data-act="book:' + esc(b.id) + '">' + abCover(b, 'abcv') +
+        '<span class="abname">' + esc(b.title || '') + '</span>' + (b.author ? '<span class="abauth">' + esc(b.author) + '</span>' : '') +
+        '<span class="abprog">' + (cur === b.id && !AU.paused ? '<i class="eq"><b></b><b></b><b></b></i> Играет' : esc(prog)) + '</span></button>';
+    }
+    return h + '</div>';
+  }
+
+  function bookPlayer() {
+    var b = abById(view.id);
+    if (!b) return '<div class="empty glass"><h1>Книга не найдена</h1></div>';
+    var ch = b.chapters || [], sv = abSaved(b.id);
+    var playingThis = AU && AU.getAttribute('data-book') === b.id;
+    var ci = playingThis ? +AU.getAttribute('data-ch') : Math.min(sv.c || 0, Math.max(0, ch.length - 1));
+    var paused = !playingThis || AU.paused;
+    var h = '<section class="abstage"><i class="ablight l1"></i><i class="ablight l2"></i><i class="ablight l3"></i><i class="abdust"></i></section>' +
+      '<div class="abplayer">' +
+      '<div class="abtop"><button class="btn small" data-f data-key="ab-back" data-act="back">' + I.back + ' Назад</button></div>' +
+      '<div class="abmain">' + abCover(b, 'abbig') +
+      '<div class="abinfo"><span class="hchip">Аудиокнига</span><h1>' + esc(b.title || '') + '</h1>' + (b.author ? '<div class="abauth2">' + esc(b.author) + '</div>' : '') +
+      '<div class="abch" id="abch">' + esc((ch[ci] && ch[ci].title) || '') + ' · ' + (ci + 1) + ' из ' + ch.length + '</div>' +
+      '<div class="abbar"><div class="abfill" id="abfill"></div></div><div class="abtimes"><span id="abcur">' + fmtT(playingThis ? AU.currentTime : sv.c === ci ? sv.t : 0) + '</span><span id="abdur">' + (playingThis && AU.duration ? fmtT(AU.duration) : (sv.d && sv.c === ci ? fmtT(sv.d) : '')) + '</span></div>' +
+      '<div class="abbtns">' +
+        '<button class="abb" data-f data-key="ab-prev" data-act="abprev" aria-label="Предыдущая часть">' + I.prev + '</button>' +
+        '<button class="abb" data-f data-key="ab-rew" data-act="abseek:-30" aria-label="Назад 30 секунд">' + I.rew + '<small>30</small></button>' +
+        '<button class="abb abplay btn pri" data-f data-key="ab-play" data-act="abplay:' + esc(b.id) + '" aria-label="Играть">' + (paused ? I.play : I.pause) + '</button>' +
+        '<button class="abb" data-f data-key="ab-fwd" data-act="abseek:30" aria-label="Вперёд 30 секунд">' + I.fwd + '<small>30</small></button>' +
+        '<button class="abb" data-f data-key="ab-next" data-act="abnext" aria-label="Следующая часть">' + I.next + '</button>' +
+      '</div>' +
+      '<button class="btn small absleep' + (abSleep ? ' on' : '') + '" data-f data-key="ab-sleep" data-act="absleep">' + I.moon + ' <span id="absl">' + sleepLabel() + '</span></button>' +
+      '</div></div>';
+    if (ch.length > 1) {
+      h += '<section class="abchapters"><h2 class="h2">Части</h2>';
+      for (var i = 0; i < ch.length; i++) h += '<button class="abrow' + (i === ci ? ' cur' : '') + '" data-f data-key="abc-' + i + '" data-act="abch:' + i + '"><span class="n">' + (i + 1) + '</span><span class="t">' + esc(ch[i].title || ('Часть ' + (i + 1))) + '</span></button>';
+      h += '</section>';
+    }
+    return h + '</div>';
+  }
+
+  function sleepLabel() {
+    if (!abSleep) return 'Таймер сна';
+    var left = Math.max(0, Math.ceil((abSleepEnd - Date.now()) / 60000));
+    return 'Выключу через ' + left + ' мин';
+  }
+
+  function abEnsure() {
+    if (AU) return AU;
+    AU = document.createElement('audio');
+    AU.preload = 'auto';
+    AU.style.display = 'none';
+    document.body.appendChild(AU);
+    AU.addEventListener('ended', function () {
+      var b = abById(AU.getAttribute('data-book')); var ci = +AU.getAttribute('data-ch');
+      if (b && ci + 1 < (b.chapters || []).length) abStart(b, ci + 1, 0, true);
+      else { abSave(b ? b.id : '', 0, 0, 0); abUi(); }
+    });
+    AU.addEventListener('play', abUi);
+    AU.addEventListener('pause', abUi);
+    AU.addEventListener('loadedmetadata', abUi);
+    AU.addEventListener('error', function () {
+      // big files: let the Android side follow Drive's "download anyway" page once
+      if (A.resolveUrl && !AU.getAttribute('data-resolved')) {
+        try { var u = A.resolveUrl(AU.src); if (u && u !== AU.src) { var t = AU.currentTime; AU.setAttribute('data-resolved', '1'); AU.src = u; AU.currentTime = t; AU.play(); return; } } catch (e) {}
+      }
+      var el = document.getElementById('abch'); if (el) el.textContent = 'Не получилось открыть файл — проверь доступ к папке на Диске';
+    });
+    return AU;
+  }
+
+  function abStart(b, ci, t, autoplay) {
+    var a = abEnsure(), ch = (b.chapters || [])[ci];
+    if (!ch) return;
+    a.removeAttribute('data-resolved');
+    a.setAttribute('data-book', b.id); a.setAttribute('data-ch', String(ci));
+    a.src = ch.url;
+    var seekTo = t || 0;
+    if (seekTo > 0) {
+      var once = function () { a.removeEventListener('loadedmetadata', once); try { a.currentTime = seekTo; } catch (e) {} };
+      a.addEventListener('loadedmetadata', once);
+    }
+    a.volume = 1; abFading = false;
+    if (autoplay) { var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); }
+    abSave(b.id, ci, seekTo, 0);
+    if (view.name === 'book') render('ab-play', true);
+  }
+
+  function abToggle(id) {
+    var b = abById(id); if (!b) return;
+    var a = abEnsure();
+    if (a.getAttribute('data-book') === id && a.src) {
+      if (a.paused) { a.volume = 1; var pr = a.play(); if (pr && pr.catch) pr.catch(function () {}); } else a.pause();
+      return;
+    }
+    var sv = abSaved(id);
+    abStart(b, Math.min(sv.c || 0, (b.chapters || []).length - 1), sv.t || 0, true);
+  }
+
+  // refresh the bits of the player that move, without re-rendering the page
+  function abUi() {
+    if (!AU) return;
+    var b = abById(AU.getAttribute('data-book'));
+    if (b && AU.currentTime > 0) abSave(b.id, +AU.getAttribute('data-ch'), AU.currentTime, AU.duration || 0);
+    var ni = document.querySelector('[data-key="nav-books"]');
+    if (ni) { if (AU.paused) ni.classList.remove('live'); else ni.classList.add('live'); }
+    if (view.name !== 'book' || !b || b.id !== view.id) return;
+    var fill = document.getElementById('abfill'), cur = document.getElementById('abcur'), dur = document.getElementById('abdur');
+    if (fill && AU.duration) fill.style.width = (AU.currentTime / AU.duration * 100).toFixed(2) + '%';
+    if (cur) cur.textContent = fmtT(AU.currentTime);
+    if (dur && AU.duration) dur.textContent = fmtT(AU.duration);
+    var pb = document.querySelector('[data-key="ab-play"]');
+    if (pb) { var want = AU.paused ? I.play : I.pause; if (pb.getAttribute('data-ic') !== (AU.paused ? 'p' : 'z')) { pb.innerHTML = want; pb.setAttribute('data-ic', AU.paused ? 'p' : 'z'); } }
+    var sl = document.getElementById('absl'); if (sl) sl.textContent = sleepLabel();
+  }
+
+  function abSleepTick() {
+    if (!abSleep || !AU) return;
+    var left = abSleepEnd - Date.now();
+    if (left <= 0) { AU.pause(); AU.volume = 1; abSleep = 0; abFading = false; abUi(); var sb = document.querySelector('[data-key="ab-sleep"]'); if (sb) sb.classList.remove('on'); return; }
+    if (left < 60000) { abFading = true; AU.volume = Math.max(0.05, left / 60000); }
+  }
+
+  // the screen sinks into darkness after a while; any key brings it back
+  function abWake() {
+    document.documentElement.classList.remove('abdim');
+    clearTimeout(abDimT);
+    if (view.name === 'book') abDimT = setTimeout(function () { if (view.name === 'book') document.documentElement.classList.add('abdim'); }, 15000);
+  }
+
+  setInterval(function () { if (AU && !AU.paused) { abUi(); abSleepTick(); } }, 1000);
+  document.addEventListener('keydown', abWake, true);
+  document.addEventListener('mousemove', abWake, true);
+  document.addEventListener('touchstart', abWake, true);
+
+  function abAct(cmd, arg) {
+    var a = abEnsure(), b = abById(a.getAttribute('data-book') || view.id);
+    switch (cmd) {
+      case 'book': go({ name: 'book', id: arg }, 'ab-play'); abWake(); return true;
+      case 'abplay': abToggle(arg); abWake(); return true;
+      case 'abseek': if (a.src) { try { a.currentTime = Math.max(0, a.currentTime + (+arg)); } catch (e) {} abUi(); } return true;
+      case 'abprev':
+        if (!b) return true;
+        if (a.src && a.currentTime > 10) { a.currentTime = 0; abUi(); return true; }
+        abStart(b, Math.max(0, +(a.getAttribute('data-ch') || 0) - 1), 0, true); return true;
+      case 'abnext': if (b) { var n = +(a.getAttribute('data-ch') || 0) + 1; if (n < (b.chapters || []).length) abStart(b, n, 0, true); } return true;
+      case 'abch': { var bk = abById(view.id); if (bk) abStart(bk, +arg, 0, true); render('abc-' + arg, true); return true; }
+      case 'absleep': {
+        var idx = SLEEP_STEPS.indexOf(abSleep); abSleep = SLEEP_STEPS[(idx + 1) % SLEEP_STEPS.length];
+        abSleepEnd = Date.now() + abSleep * 60000; if (!abSleep && AU) AU.volume = 1;
+        var sb = document.querySelector('[data-key="ab-sleep"]'); if (sb) { if (abSleep) sb.classList.add('on'); else sb.classList.remove('on'); }
+        abUi(); return true;
+      }
+    }
+    return false;
+  }
+
   // ---------- render ----------
 
   function screen() {
@@ -763,14 +998,41 @@
     if (view.name === 'diary') return diary();
     if (view.name === 'downloads') return downloads();
     if (view.name === 'savers') return savers();
+    if (view.name === 'books') return books();
+    if (view.name === 'book') return bookPlayer();
+    if (view.name === 'tv') return tvPage();
     if (view.name === 'coll') return collection();
     return home();
   }
 
   function focusEl(el) {
     if (!el) return;
-    el.focus();
-    try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) { el.scrollIntoView(false); }
+    try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
+    // keep the focused row in the middle of the screen (TV remote), sideways just enough to show the card
+    var main = document.getElementById('main');
+    var row = el.closest ? el.closest('.row') : null;
+    if (row && row.scrollWidth > row.clientWidth) {
+      var rr = row.getBoundingClientRect(), er = el.getBoundingClientRect(), pad = 30;
+      if (er.left < rr.left + pad) row.scrollLeft -= (rr.left + pad - er.left);
+      else if (er.right > rr.right - pad) row.scrollLeft += (er.right - (rr.right - pad));
+    }
+    if (main && main.contains(el) && main.scrollHeight > main.clientHeight) {
+      var mr = main.getBoundingClientRect(), r = el.getBoundingClientRect();
+      var sec = el.closest ? (el.closest('.row') && (el.closest('.section') || el.closest('.row'))) : null;
+      if (sec) {
+        // a row of cards: bring the whole row to the middle of the screen
+        var tr = sec.getBoundingClientRect();
+        var box = tr.height < mr.height * 0.9 ? tr : r;
+        main.scrollTop = Math.max(0, main.scrollTop + (box.top + box.height / 2) - (mr.top + mr.height / 2));
+      } else {
+        // anything else: scroll only as much as needed to show it with some air around
+        var air = Math.min(120, mr.height * 0.18);
+        if (r.top < mr.top + air) main.scrollTop = Math.max(0, main.scrollTop - (mr.top + air - r.top));
+        else if (r.bottom > mr.bottom - air) main.scrollTop += r.bottom - (mr.bottom - air);
+      }
+    } else if (!main || !main.contains(el)) {
+      try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (e) {}
+    }
   }
 
   function render(focusKey, keepScroll) {
@@ -785,7 +1047,8 @@
     }
     var theme = '';
     if (view.name === 'coll') { var cc = collById(view.id); theme = cc ? 'theme-' + (cc.theme || 'default') : ''; }
-    document.body.className = theme;
+    document.body.className = theme + (view.name === 'book' ? ' inbook' : '');
+    if (view.name !== 'book') document.documentElement.classList.remove('abdim');
     var oldVid = document.querySelector('.svvid');
     var scr = screen();
     var rp = rateFor && view.name === 'film' ? ratePrompt() : '';
@@ -862,6 +1125,8 @@
     var parts = a.split(':');
     var cmd = parts[0], arg = parts.slice(1).join(':');
     if (cmd !== 'rm') confirmKey = null;
+    if (cmd === 'play' || cmd === 'restart' || cmd === 'saver') { if (AU && !AU.paused) AU.pause(); }
+    if (abAct(cmd, arg)) return;
     switch (cmd) {
       case 'go':
         full = -1;
