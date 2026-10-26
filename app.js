@@ -776,7 +776,7 @@
     var h = '<div class="topline"><h1 class="title-glow">Загрузки</h1>' + statusLine() + '</div>' +
       '<div class="storage glass"><div class="sub">Свободно ' + gb(S.free || 0) + ' из ' + gb(S.total || 0) + '</div><div class="bar cy"><i style="width:' + usedPct + '%"></i></div>' +
       '<div class="sub">Папки на Диске: ' + esc(S.scanReport || 'ещё не проверялись — нажми обновление') + '</div>' +
-      (A.homeSettings ? '<div class="btns" style="margin-top:14px"><button class="btn" data-f data-key="mk-home" data-act="mkhome">🏠 Сделать L-HOME главным экраном</button><button class="btn" data-f data-key="open-home" data-act="openhome">Открыть L-HOME</button></div>' : '') +
+      (A.homeSettings ? '<div class="btns" style="margin-top:14px"><button class="btn" data-f data-key="mk-home" data-act="mkhome">🏠 Сделать L-HOME главным экраном</button><button class="btn" data-f data-key="open-home" data-act="openhome">Открыть L-HOME</button>' + (A.androidSettings ? '<button class="btn" data-f data-key="and-set" data-act="andset">⚙ Настройки Android</button>' : '') + '</div>' : '') +
       '</div><div class="list">';
     var any = false;
     for (var i = 0; i < S.films.length; i++) {
@@ -1078,12 +1078,20 @@
     document.body.appendChild(AU);
     AU.addEventListener('ended', function () {
       var b = abById(AU.getAttribute('data-book')); var ci = +AU.getAttribute('data-ch');
-      if (b && ci + 1 < (b.chapters || []).length) abStart(b, ci + 1, 0, true);
-      else { abSave(b ? b.id : '', 0, 0, 0); abUi(); }
+      var nx = b ? abNextOf(b, ci) : null;
+      if (nx) {
+        if (nx.b !== b) abSave(b.id, 0, 0, 0); // this step is finished: the next one of the cycle starts by itself
+        if (nx.b !== b && view.name === 'book' && view.id === b.id) view = { name: 'book', id: nx.b.id, prev: view.prev };
+        abStart(nx.b, nx.ci, 0, true);
+      } else { abSave(b ? b.id : '', 0, 0, 0); abUi(); }
     });
     AU.addEventListener('play', abUi);
     AU.addEventListener('waiting', function () { abStatus('Загружаю…'); });
-    AU.addEventListener('playing', function () { abStatus(''); clearTimeout(abLoadT); });
+    AU.addEventListener('playing', function () {
+      abStatus(''); clearTimeout(abLoadT);
+      // in the browser the next part is fetched ahead, so it starts at once — also with the screen locked
+      if (abNeedBlob) { var b = abById(AU.getAttribute('data-book')), nx = b && abNextOf(b, +AU.getAttribute('data-ch')); if (nx) abFetchBlob(nx.b.chapters[nx.ci].url); }
+    });
     AU.addEventListener('pause', abUi);
     AU.addEventListener('loadedmetadata', abUi);
     AU.addEventListener('error', function () {
@@ -1092,21 +1100,81 @@
         try { var u = A.resolveUrl(AU.src); if (u && u !== AU.src) { var t = AU.currentTime; AU.setAttribute('data-resolved', '1'); AU.src = u; AU.currentTime = t; AU.play(); return; } } catch (e) {}
       }
       clearTimeout(abLoadT);
-      // iPhone Safari won't play Drive's «download» files: use Google Drive's own player for this part
-      var fid = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(AU.src || '') || /\/drive\/([A-Za-z0-9_-]{10,})/.exec(AU.src || '') || [])[1];
-      if (fid && document.documentElement.classList.contains('web')) { abDrivePlayer(fid); return; }
+      var orig = AU.getAttribute('data-url') || AU.src || '';
+      var fid = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(orig) || /\/drive\/([A-Za-z0-9_-]{10,})/.exec(orig) || [])[1];
+      if (fid && abIsWeb()) {
+        // iPhone Safari won't stream Drive's «download» files: load the part whole and play it from memory,
+        // so parts still follow one another; only if even that fails, Google Drive's own player
+        if (!AU.getAttribute('data-blob')) {
+          var bk = AU.getAttribute('data-book'), cn = AU.getAttribute('data-ch'), at = AU.currentTime || +(AU.getAttribute('data-seek') || 0);
+          AU.setAttribute('data-blob', '1'); abStatus('Загружаю часть…');
+          var pr0 = abFetchBlob(orig);
+          if (pr0) { pr0.then(function (u) {
+            if (AU.getAttribute('data-book') !== bk || AU.getAttribute('data-ch') !== cn) return;
+            abNeedBlob = true; AU.src = u;
+            if (at > 0) { var once = function () { AU.removeEventListener('loadedmetadata', once); try { AU.currentTime = at; } catch (e) {} }; AU.addEventListener('loadedmetadata', once); }
+            var p = AU.play(); if (p && p.catch) p.catch(function () { abStatus('Часть загружена — нажми ▶'); });
+          }, function () { if (AU.getAttribute('data-book') === bk && AU.getAttribute('data-ch') === cn) abDrivePlayer(fid); }); return; }
+        }
+        abDrivePlayer(fid); return;
+      }
       abStatus('Не получилось открыть файл' + (AU.error ? ' (код ' + AU.error.code + ')' : '') + ' — проверь, что папка на Диске открыта по ссылке');
     });
     return AU;
   }
 
+  // the part after this one: the next file, or the first part of the next step of the same cycle
+  function abNextOf(b, ci) {
+    var ch = b.chapters || [];
+    if (ci + 1 < ch.length) return { b: b, ci: ci + 1 };
+    if (!b.series) return null;
+    var same = abList().filter(function (x) { return x.series === b.series && (x.author || '') === (b.author || '') && (x.chapters || []).length; });
+    var i = same.indexOf(b);
+    return i >= 0 && i + 1 < same.length ? { b: same[i + 1], ci: 0 } : null;
+  }
+  function abIsWeb() { return document.documentElement.classList.contains('web'); }
+  // browser only: a part loaded whole into memory (Safari can't stream Drive files); keep just a few
+  var abNeedBlob = false, abBlobP = {}, abBlobU = {}, abBlobOrder = [];
+  function abFetchBlob(url) {
+    if (abBlobP[url]) return abBlobP[url];
+    if (!window.fetch || !window.URL || !URL.createObjectURL || !window.Blob) return null;
+    var p = fetch(url, { mode: 'cors', credentials: 'omit' }).then(function (r) {
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.arrayBuffer();
+    }).then(function (buf) {
+      var u = URL.createObjectURL(new Blob([buf], { type: 'audio/mpeg' }));
+      abBlobU[url] = u; abBlobOrder.push(url);
+      while (abBlobOrder.length > 3) { var old = abBlobOrder.shift(); if (AU && AU.src === abBlobU[old]) { abBlobOrder.push(old); break; } try { URL.revokeObjectURL(abBlobU[old]); } catch (e) {} delete abBlobU[old]; delete abBlobP[old]; }
+      return u;
+    });
+    p.catch(function () { delete abBlobP[url]; });
+    abBlobP[url] = p;
+    return p;
+  }
+
   function abStart(b, ci, t, autoplay) {
     var a = abEnsure(), ch = (b.chapters || [])[ci];
     if (!ch) return;
-    a.removeAttribute('data-resolved');
+    a.removeAttribute('data-resolved'); a.removeAttribute('data-blob');
     var dbx = document.getElementById('abdrive'); if (dbx) { dbx.innerHTML = ''; dbx.style.display = 'none'; }
     a.setAttribute('data-book', b.id); a.setAttribute('data-ch', String(ci));
-    a.src = ch.url;
+    a.setAttribute('data-url', ch.url); a.setAttribute('data-seek', String(t || 0));
+    if (abNeedBlob && abBlobU[ch.url]) { a.setAttribute('data-blob', '1'); a.src = abBlobU[ch.url]; }
+    else if (abNeedBlob && abIsWeb()) {
+      // this browser can only play parts from memory: load it, then start
+      a.setAttribute('data-blob', '1'); a.removeAttribute('src'); abStatus('Загружаю часть…');
+      var bp = abFetchBlob(ch.url), bid = b.id, bci = String(ci);
+      if (bp) bp.then(function (u) {
+        if (a.getAttribute('data-book') !== bid || a.getAttribute('data-ch') !== bci) return;
+        a.src = u;
+        if (t > 0) { var o2 = function () { a.removeEventListener('loadedmetadata', o2); try { a.currentTime = t; } catch (e) {} }; a.addEventListener('loadedmetadata', o2); }
+        if (autoplay) { var p3 = a.play(); if (p3 && p3.catch) p3.catch(function () { abStatus('Часть загружена — нажми ▶'); }); }
+      }, function () { var f2 = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(ch.url) || [])[1]; if (f2) abDrivePlayer(f2); });
+      abSave(b.id, ci, t || 0, 0);
+      if (view.name === 'book') render('ab-play', true);
+      return;
+    }
+    else a.src = ch.url;
     var seekTo = t || 0;
     if (seekTo > 0) {
       var once = function () { a.removeEventListener('loadedmetadata', once); try { a.currentTime = seekTo; } catch (e) {} };
@@ -1360,6 +1428,7 @@
       case 'url': if (A.openUrl) A.openUrl(arg); return;
       case 'mkhome': if (A.homeSettings) A.homeSettings(); return;
       case 'openhome': if (A.openHome) A.openHome(); return;
+      case 'andset': if (A.androidSettings) A.androidSettings(); return;
       case 'season': view = { name: 'film', id: view.id, season: parseInt(arg, 10) }; render('sn-' + arg, true); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
