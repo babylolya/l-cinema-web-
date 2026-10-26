@@ -744,7 +744,9 @@
     var usedPct = S.total ? Math.round(used / S.total * 100) : 0;
     var h = '<div class="topline"><h1 class="title-glow">Загрузки</h1>' + statusLine() + '</div>' +
       '<div class="storage glass"><div class="sub">Свободно ' + gb(S.free || 0) + ' из ' + gb(S.total || 0) + '</div><div class="bar cy"><i style="width:' + usedPct + '%"></i></div>' +
-      '<div class="sub">Папки на Диске: ' + esc(S.scanReport || 'ещё не проверялись — нажми обновление') + '</div></div><div class="list">';
+      '<div class="sub">Папки на Диске: ' + esc(S.scanReport || 'ещё не проверялись — нажми обновление') + '</div>' +
+      (A.homeSettings ? '<div class="btns" style="margin-top:14px"><button class="btn" data-f data-key="mk-home" data-act="mkhome">🏠 Сделать L-HOME главным экраном</button><button class="btn" data-f data-key="open-home" data-act="openhome">Открыть L-HOME</button></div>' : '') +
+      '</div><div class="list">';
     var any = false;
     for (var i = 0; i < S.films.length; i++) {
       var f = S.films[i];
@@ -1223,6 +1225,8 @@
       case 'update': A.installUpdate(); return;
       case 'coll': go({ name: 'coll', id: arg }); return;
       case 'url': if (A.openUrl) A.openUrl(arg); return;
+      case 'mkhome': if (A.homeSettings) A.homeSettings(); return;
+      case 'openhome': if (A.openHome) A.openHome(); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
       case 'pickgenre': view = { name: 'genres', genre: arg, filter: view.filter, origin: arg === 'Сериалы' ? view.origin : 'all' }; render('g-' + arg, false); return;
