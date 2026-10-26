@@ -301,3 +301,9 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .absleep { align-self: center; display: flex; margin-left: auto; margin-right: auto; }
   html.web .abplayer { padding-bottom: 90px; }
 }
+@media (max-width: 900px) {
+  html.web .tvmain { grid-template-columns: 1fr; gap: 12px; }
+  html.web .tvbig { height: 190px; padding: 20px; }
+  html.web .tvword { font-size: 46px; margin-top: 30px; }
+  html.web .w-fri .tvword { font-size: 38px; }
+}

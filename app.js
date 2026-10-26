@@ -311,7 +311,7 @@
       '<button class="btile b-yt" data-f data-key="b-yt" data-act="url:https://www.youtube.com">' +
         '<span class="bplay"><i></i></span><span class="btext"><span class="bname">YouTube</span><span class="bsub">' + (web ? 'Открыть сайт' : 'Открыть в Brave') + '</span></span></button>' +
       '<button class="btile b-tv" data-f data-key="b-tv" data-act="go:tv"><span class="tvglow"></span>' +
-        '<span class="btext"><span class="bname">Русское ТВ</span><span class="bsub">Прямой эфир · без VPN</span></span></button>' +
+        '<span class="btext"><span class="bname">TV</span><span class="bsub">Live · СТС, ТНТ, Пятница</span></span></button>' +
       '</div>';
   }
 
@@ -785,25 +785,49 @@
 
   // ---------- Russian TV: live channels that open from Thailand without VPN ----------
 
-  var TV = [
-    { id: 'kartina', name: 'Kartina.TV', note: 'СТС, ТНТ, Пятница · платно, 30 дней бесплатно', url: 'https://www.kartina.tv/channel', c1: '#E8452C', c2: '#5A1238' },
-    { id: 'r1', name: 'Россия 1', note: 'Бесплатно · фильмы, сериалы, шоу', url: 'https://smotrim.ru/channel/1', c1: '#2B6BFF', c2: '#E2263B' },
-    { id: 'kult', name: 'Культура', note: 'Бесплатно · кино, театр', url: 'https://smotrim.ru/channel/4', c1: '#B8892E', c2: '#3A2A12' }
+  // the main three are closed abroad: on the projector they switch the WireGuard tunnel «ru» on, and off when you come back
+  var TV_MAIN = [
+    { id: 'sts', name: 'СТС', cls: 'w-sts', url: 'https://smotrim.ru/channel/258',
+      about: 'Семейные комедии и сериалы: «Воронины», «Кухня», «Папины дочки», большое кино по выходным.' },
+    { id: 'tnt', name: 'ТНТ', cls: 'w-tnt', url: 'https://smotrim.ru/channel/266',
+      about: 'Юмор и ситкомы: Comedy Club, «Универ», «Интерны», «Однажды в России», стендап.' },
+    { id: 'friday', name: 'Пятница!', cls: 'w-fri', url: 'https://smotrim.ru/channel/265',
+      about: 'Путешествия и реалити: «Орёл и решка», «Ревизорро», «Адская кухня», «Мир наизнанку».' }
   ];
+  // official live streams on RUTUBE that open from Thailand without VPN (checked 26.10.2026); on the projector they play right in our player
+  var TV_FREE = [
+    { id: 'perviy', name: 'Первый канал', rt: 'c58f502c7bb34a8fcdd976b221fca292' },
+    { id: 'r1', name: 'Россия 1', rt: '2742a3c42be661ea732705f80adb7bdd' },
+    { id: 'ntv', name: 'НТВ', rt: 'c37cd74192c6bc3d6cd6077c0c4fd686' },
+    { id: 'stslove', name: 'СТС Love', rt: '32dc45cf878497abe1c9695e228f039b' },
+    { id: 'subbota', name: 'Суббота!', rt: '310744c10a5809da38aa445c952976da' }
+  ];
+  function tvUrl(c) { return c.url || ('https://rutube.ru/live/video/' + c.rt + '/'); }
+  function playTv(group, i) {
+    var c = (group === 'm' ? TV_MAIN : TV_FREE)[i]; if (!c) return;
+    if (AU && !AU.paused) AU.pause();
+    if (group === 'm' && A.openVpn) A.openVpn(tvUrl(c));
+    else if (c.rt && A.playLive) A.playLive(c.rt, c.name, tvUrl(c));
+    else if (A.openUrl) A.openUrl(tvUrl(c));
+  }
 
   function tvPage() {
     var web = document.documentElement.classList.contains('web');
     var h = '<div class="ctop"><button class="btn small" data-f data-key="tv-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
-      '<section class="tvhead glass"><span class="hchip">Прямой эфир</span><h1>Русское ТВ</h1>' +
-      '<p>Эти каналы открываются из Таиланда без VPN. ' + (web ? 'Откроется сайт канала.' : 'Откроется в Brave — нажми ▶ на плеере, если эфир не стартует сам.') + '</p>' +
-      '<p class="tvnote">Бесплатно СТС, ТНТ, Пятница и Первый из Таиланда не показывают — проверено: «показ в вашем регионе запрещён правообладателем». Легально их показывает Kartina.TV — сервис для тех, кто живёт за границей.'+'</p></section>' +
-      '<div class="tvgrid">';
-    for (var i = 0; i < TV.length; i++) {
-      var c = TV[i];
-      h += '<button class="tvtile" data-f data-key="tv-' + c.id + '" data-act="url:' + esc(c.url) + '" style="background:linear-gradient(135deg,' + c.c1 + ' 0%,' + c.c2 + ' 100%)">' +
-        '<span class="tvlive"><i></i>эфир</span><span class="tvname">' + esc(c.name) + '</span><span class="tvsub">' + esc(c.note) + '</span></button>';
+      '<section class="tvhead glass"><span class="hchip">Live</span><h1>TV</h1>' +
+      '<p>Прямой эфир российских каналов. За границей СТС, ТНТ и Пятница закрыты, поэтому они идут через VPN' +
+      (web ? ' — включи его перед тем, как открыть канал.' : ': приложение само включит его при открытии и выключит, когда вернёшься.') + '</p></section>' +
+      '<div class="tvmain">';
+    for (var i = 0; i < TV_MAIN.length; i++) {
+      var c = TV_MAIN[i];
+      h += '<button class="tvbig ' + c.cls + '" data-f data-key="tv-' + c.id + '" data-act="tvplay:m:' + i + '">' +
+        '<span class="tvlive"><i></i>Эфир · VPN</span>' +
+        '<span class="tvword">' + esc(c.name) + '</span>' +
+        '<span class="tvabout">' + esc(c.about) + '</span></button>';
     }
-    return h + '</div>';
+    h += '</div><section class="tvfree"><h2 class="h2">Без VPN</h2><div class="tvchips">';
+    for (var j = 0; j < TV_FREE.length; j++) h += '<button class="tvchip" data-f data-key="tvf-' + TV_FREE[j].id + '" data-act="tvplay:f:' + j + '"><i></i>' + esc(TV_FREE[j].name) + '</button>';
+    return h + '</div></section>';
   }
 
   // ---------- audiobooks: a calm player for falling asleep ----------
@@ -832,6 +856,15 @@
     var h = '<div class="topline"><h1 class="title-glow">Аудиокниги</h1>' + statusLine() + '</div>';
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Создай на Google Диске в папке с фильмами папку «аудиокниги», а в ней — по папке на каждую книгу с mp3-файлами. После «Обновить» книги появятся здесь.</p></div>';
     var cur = AU && AU.getAttribute('data-book');
+    // tabs on top: everything, plain books, meditations and any other subfolder
+    var cats = ['Все', 'Книги', 'Медитации'];
+    list.forEach(function (b) { if (b.category && cats.indexOf(b.category) < 0) cats.push(b.category); });
+    var pick = view.cat || 'Все';
+    h += '<div class="chips abcats">';
+    for (var ci2 = 0; ci2 < cats.length; ci2++) h += '<button class="chip' + (cats[ci2] === pick ? ' on' : '') + '" data-f data-key="abcat-' + esc(cats[ci2]) + '" data-act="abcat:' + esc(cats[ci2]) + '">' + (cats[ci2] === 'Медитации' ? '✦ ' : '') + esc(cats[ci2]) + '</button>';
+    h += '</div>';
+    list = list.filter(function (b) { return pick === 'Все' || (pick === 'Книги' ? !b.category : b.category === pick); });
+    if (!list.length) return h + '<div class="empty glass"><h1>Здесь пока пусто</h1><p>' + (pick === 'Медитации' ? 'Положи на Диске в папку «аудиокниги» папку «медитации» с аудиофайлами — они появятся тут.' : 'Нет записей в этом разделе.') + '</p></div>';
     h += '<p class="absub">Тихий плеер для сна: свет медленно переливается, экран сам затемняется, таймер выключит книгу.</p><div class="abgrid">';
     for (var i = 0; i < list.length; i++) {
       var b = list[i], sv = abSaved(b.id), n = (b.chapters || []).length;
@@ -972,6 +1005,7 @@
     var a = abEnsure(), b = abById(a.getAttribute('data-book') || view.id);
     switch (cmd) {
       case 'book': go({ name: 'book', id: arg }, 'ab-play'); abWake(); return true;
+      case 'abcat': view = { name: 'books', cat: arg }; render('abcat-' + arg, true); return true;
       case 'abplay': abToggle(arg); abWake(); return true;
       case 'abseek': if (a.src) { try { a.currentTime = Math.max(0, a.currentTime + (+arg)); } catch (e) {} abUi(); } return true;
       case 'abprev':
@@ -1142,6 +1176,7 @@
       case 'update': A.installUpdate(); return;
       case 'coll': go({ name: 'coll', id: arg }); return;
       case 'url': if (A.openUrl) A.openUrl(arg); return;
+      case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
       case 'pickgenre': view = { name: 'genres', genre: arg, filter: view.filter, origin: arg === 'Сериалы' ? view.origin : 'all' }; render('g-' + arg, false); return;
       case 'filter': view = { name: 'genres', genre: view.genre, filter: arg, origin: view.origin }; render('f-' + arg, true); return;
