@@ -214,7 +214,7 @@
   }
 
   function nav() {
-    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['books', 'Книги', I.book], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
+    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['books', 'Слушать', I.book], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
     var h = '<nav class="nav glass"><div class="logo">L·C</div>';
     for (var i = 0; i < items.length; i++) {
       var on = view.name === items[i][0] || (view.name === 'film' && false);
@@ -456,23 +456,66 @@
   var lastHeroTouch = 0;
   setInterval(function () { if (Date.now() - lastHeroTouch > 8000) rotateHero(); }, 8000);
 
-  // on a phone the top panel turns with a swipe
-  var sx = 0, sy = 0, sOn = false;
+  // on a phone the top panel follows the finger, keeps its speed and settles with a soft spring
+  // critically damped spring (Apple: damping 1.0, response ~0.35 s), starting from the live value and velocity
+  function spring(from, to, v0, set, done) {
+    var w = 2 * Math.PI / 0.35, x0 = from - to, t0 = null;
+    function step(ts) {
+      if (t0 === null) t0 = ts;
+      var t = (ts - t0) / 1000, e = Math.exp(-w * t);
+      var x = to + (x0 + (v0 + w * x0) * t) * e;
+      var v = (v0 - w * (v0 + w * x0) * t) * e;
+      set(x);
+      if (Math.abs(x - to) < 0.5 && Math.abs(v) < 8) { set(to); if (done) done(); return; }
+      raf = requestAnimationFrame(step);
+    }
+    var raf = requestAnimationFrame(step);
+    return function () { cancelAnimationFrame(raf); };
+  }
+  var sw = null, swStop = null;
+  function heroSec() { return document.querySelector('section.hero'); }
+  function setX(sec, x) { var w = sec.offsetWidth || 1; sec.style.transform = 'translateX(' + x + 'px)'; sec.style.opacity = String(Math.max(0.35, 1 - Math.abs(x) / w * 0.6)); }
   document.addEventListener('touchstart', function (e) {
     var t = e.touches && e.touches[0];
-    sOn = !!(t && e.target.closest && e.target.closest('section.hero'));
-    if (sOn) { sx = t.clientX; sy = t.clientY; }
+    var sec = t && e.target.closest ? e.target.closest('section.hero') : null;
+    if (!sec || heroList.length < 2) { sw = null; return; }
+    if (swStop) { swStop(); swStop = null; }
+    // grab it where it is right now (it may still be settling)
+    var cur = 0, m = /translateX\((-?[\d.]+)px\)/.exec(sec.style.transform || ''); if (m) cur = parseFloat(m[1]);
+    sw = { x0: t.clientX - cur, y0: t.clientY, dir: null, hist: [{ x: cur, t: Date.now() }], sec: sec };
   }, { passive: true });
-  document.addEventListener('touchend', function (e) {
-    if (!sOn) return;
-    sOn = false;
-    var t = e.changedTouches && e.changedTouches[0];
-    if (!t || heroList.length < 2) return;
-    var dx = t.clientX - sx, dy = t.clientY - sy;
-    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.3) return;
+  document.addEventListener('touchmove', function (e) {
+    if (!sw) return;
+    var t = e.touches && e.touches[0]; if (!t) return;
+    var dx = t.clientX - sw.x0, dy = t.clientY - sw.y0;
+    if (!sw.dir) { if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return; sw.dir = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'; if (sw.dir === 'x') sw.sec.classList.add('drag'); }
+    if (sw.dir !== 'x') return;
     lastHeroTouch = Date.now();
-    var n = (heroIdx + (dx < 0 ? 1 : -1) + heroList.length) % heroList.length;
-    showHero(n, false);
+    setX(sw.sec, dx);
+    sw.hist.push({ x: dx, t: Date.now() }); if (sw.hist.length > 6) sw.hist.shift();
+  }, { passive: true });
+  document.addEventListener('touchend', function () {
+    if (!sw) return;
+    var g = sw; sw = null;
+    if (g.dir !== 'x') return;
+    var h = g.hist, last = h[h.length - 1], first = h[0];
+    var dt = Math.max(16, last.t - first.t), v = (last.x - first.x) / dt * 1000; // px/s
+    var x = last.x, wdt = g.sec.offsetWidth || 360;
+    // where the flick is going, not where the finger let go
+    var projected = x + (v / 1000) * 0.998 / (1 - 0.998);
+    if (Math.abs(projected) > wdt * 0.35) {
+      var dirn = projected < 0 ? 1 : -1;
+      swStop = spring(x, -dirn * wdt, v, function (val) { setX(g.sec, val); }, function () {
+        var n = (heroIdx + dirn + heroList.length) % heroList.length;
+        showHero(n, false);
+        var nx = heroSec(); if (!nx) return;
+        nx.classList.remove('fade'); nx.classList.add('drag');
+        setX(nx, dirn * wdt * 0.5);
+        swStop = spring(dirn * wdt * 0.5, 0, v * 0.5, function (val) { setX(nx, val); }, function () { nx.classList.remove('drag'); nx.style.transform = ''; nx.style.opacity = ''; });
+      });
+    } else {
+      swStop = spring(x, 0, v, function (val) { setX(g.sec, val); }, function () { g.sec.classList.remove('drag'); g.sec.style.transform = ''; g.sec.style.opacity = ''; });
+    }
   }, { passive: true });
 
   function home() {
@@ -832,6 +875,7 @@
 
   // ---------- audiobooks: a calm player for falling asleep ----------
 
+  var lastHintView = '';
   var AU = null, abTick = null, abSleep = 0, abSleepEnd = 0, abFading = false, abDimT = null;
   var SLEEP_STEPS = [0, 15, 30, 45, 60, 90];
 
@@ -853,7 +897,7 @@
 
   function books() {
     var list = abList();
-    var h = '<div class="topline"><h1 class="title-glow">Аудиокниги</h1>' + statusLine() + '</div>';
+    var h = '<div class="topline"><h1 class="title-glow">Слушать</h1>' + statusLine() + '</div>';
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Создай на Google Диске в папке с фильмами папку «аудиокниги», а в ней — по папке на каждую книгу с mp3-файлами. После «Обновить» книги появятся здесь.</p></div>';
     var cur = AU && AU.getAttribute('data-book');
     // tabs on top: everything, plain books, meditations and any other subfolder
@@ -1082,12 +1126,15 @@
     var theme = '';
     if (view.name === 'coll') { var cc = collById(view.id); theme = cc ? 'theme-' + (cc.theme || 'default') : ''; }
     document.body.className = theme + (view.name === 'book' ? ' inbook' : '');
+    var hintNow = (view.name === 'tv' || view.name === 'book' || view.name === 'savers') && lastHintView !== view.name;
+    lastHintView = view.name;
     if (view.name !== 'book') document.documentElement.classList.remove('abdim');
     var oldVid = document.querySelector('.svvid');
     var scr = screen();
     var rp = rateFor && view.name === 'film' ? ratePrompt() : '';
     if (rp) scr = '<div class="under">' + scr.replace(/ data-f/g, '') + '</div>';
-    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '');
+    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '') +
+      (hintNow ? '<div class="backhint">◀ «Назад» на пульте — выйти</div>' : '');
     var newVid = document.querySelector('.svvid');
     if (oldVid && newVid && oldVid.getAttribute('data-src') === newVid.getAttribute('data-src')) newVid.parentNode.replaceChild(oldVid, newVid);
     main = document.getElementById('main');
@@ -1345,6 +1392,13 @@
 
   var app = {
     refresh: function () { refresh(false); },
+    // from the L-HOME screen: "tv", "books", "savers", "home" or "film:<id>"
+    open: function (where) {
+      stack = []; full = -1; rateFor = '';
+      if (where.indexOf('film:') === 0) { view = { name: 'home' }; go({ name: 'film', id: where.slice(5) }); return; }
+      view = { name: where || 'home' };
+      render(where === 'tv' ? null : 'nav-' + where, false);
+    },
     back: function () {
       if (rateFor) { rateFor = ''; render('f-play', false); return true; }
       if (full >= 0) { full = -1; render(null, true); return true; }
