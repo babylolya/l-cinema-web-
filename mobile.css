@@ -278,3 +278,8 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .hero .vines { left: 0; bottom: auto; height: auto; aspect-ratio: 16 / 9; }
   html.web .hero.has-bd .vines { left: 0; }
 }
+/* grids (collections, genres): cards fill their column, equal gaps and equal margins on both sides */
+@media (max-width: 900px) {
+  html.web .grid { gap: 18px 12px; }
+  html.web .grid .card, html.web .grid .poster { width: 100%; min-width: 0; }
+}

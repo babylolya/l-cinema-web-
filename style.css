@@ -741,3 +741,7 @@ html.nogap .ep + .ep { margin-top: 8px; }
 .v2 svg { transform: scaleX(-1) rotate(4deg); }
 .v3 svg { transform: scaleY(-1) rotate(-3deg); }
 .v4 svg { transform: rotate(180deg) rotate(-4deg); }
+
+/* holiday capsules */
+.hol.hw { color: #FFC08A; border-color: rgba(255,140,60,0.55); background: rgba(255,122,26,0.16); }
+.hol.xm { color: #CFE6FF; border-color: rgba(150,200,255,0.55); background: rgba(120,180,255,0.14); }

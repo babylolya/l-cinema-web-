@@ -376,7 +376,9 @@
     var g = genresOf(hero);
     if (g.length) chips.push(g[0]);
     if (isSeries(hero)) chips.push(eps(hero).length + ' сер.'); else if (hero.duration) chips.push(hero.duration);
-    var chipHtml = '<div class="hchips">' + chips.map(function (c) { return '<span class="hchip">' + esc(c) + '</span>'; }).join('') +
+    var hol = filmTheme(hero);
+    var holChip = hol === 'halloween' ? '<span class="hchip hol hw">🎃 Хэллоуин</span>' : (hol === 'christmas' ? '<span class="hchip hol xm">❄ Рождество</span>' : '');
+    var chipHtml = '<div class="hchips">' + chips.map(function (c) { return '<span class="hchip">' + esc(c) + '</span>'; }).join('') + holChip +
       (hero.rating ? '<span class="hchip rate">★ ' + esc(String(hero.rating).replace('.', ',')) + '</span>' : '') + '</div>';
     var desc = hero.description ? '<p class="hdesc">' + esc(hero.description) + '</p>' : '';
     var wantOn = isWant(hero);
@@ -566,6 +568,9 @@
     var tags = '';
     var gl = genresOf(f);
     for (var i = 0; i < gl.length; i++) tags += '<span class="tag">' + esc(gl[i]) + '</span>';
+    var fth = filmTheme(f);
+    if (fth === 'halloween') tags += '<span class="tag hol hw">🎃 Хэллоуин</span>';
+    else if (fth === 'christmas') tags += '<span class="tag hol xm">❄ Рождество</span>';
     if (d.done === d.count && d.count) tags += '<span class="tag ok">На проекторе</span>';
     else if (d.running) tags += '<span class="tag ok" data-prog="' + esc(d.key) + '">Скачивается ' + (d.bytesTotal ? Math.round(d.bytesDone / d.bytesTotal * 100) : 0) + '%</span>';
     else if (d.done) tags += '<span class="tag ok">Скачано ' + d.done + ' из ' + d.count + '</span>';
