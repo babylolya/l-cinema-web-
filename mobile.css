@@ -314,3 +314,15 @@ html.web body { min-height: 100vh; min-height: 100dvh; }
   html.web .aubig { width: 150px; height: 150px; margin: 0 0 14px; }
   html.web .auinfo h1 { font-size: 26px; }
 }
+@media (max-width: 900px) {
+  html.web .deco.deco-gar { width: calc(100vw + 40px); left: 50%; margin-left: calc(-50vw - 20px); transform: translateY(48%); }
+  html.web .film.has-bd.th-christmas { margin-top: -10px; padding-top: 26vw; }
+}
+@media (max-width: 900px) {
+  html.web .deco.deco-gar { width: calc(100vw + 30px); left: 50%; margin-left: calc(-50vw - 15px); transform: none; }
+  html.web .deco-gar .gk { width: 56%; }
+  html.web .deco-gar .gk.k0 { left: -2%; }
+  html.web .deco-gar .gk.k1 { left: 46%; }
+  html.web .deco-gar .gk.k2 { display: none; }
+  html.web .film.has-bd.th-christmas { padding-top: 14vw; }
+}

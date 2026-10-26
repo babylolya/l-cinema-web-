@@ -976,3 +976,36 @@ html.lite .card, html.lite .tile, html.lite .ctile, html.lite .btile, html.lite 
 .chips.seasons .chip small { opacity: .7; font-size: 11px; margin-left: 4px; }
 .chips.seasons .chip.seen { color: #9FD9FF; }
 .h2 .sub { font-size: 14px; font-weight: 700; color: #9C92AE; margin-left: 8px; }
+
+/* ---------- Christmas: a pine garland with twinkling lights over the picture's lower edge ---------- */
+.deco.deco-gar { left: -30px; width: calc(100% + 60px); transform: translateY(46%); }
+.deco-gar img { display: block; width: 100%; height: auto; filter: drop-shadow(0 14px 18px rgba(0,0,0,0.55)); }
+.deco-gar .gl { position: absolute; top: 0; left: 0; filter: none; mix-blend-mode: screen; }
+.deco-gar .la { animation: lightsA 2.8s ease-in-out infinite; }
+.deco-gar .lb { animation: lightsA 2.8s ease-in-out 1.4s infinite; }
+@keyframes lightsA { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
+html:not(.web) .deco.deco-gar { left: -30px; width: calc(100% + 60px); transform: translateY(46%); }
+html:not(.web) .film.th-christmas { padding-top: 11vw; }
+
+/* magic glitter drifting slowly up over the dark */
+.glitter { position: fixed; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+.glitter .sp { position: absolute; border-radius: 50%; background: #fff; will-change: transform, opacity;
+  animation-name: spDrift, spTwinkle; animation-timing-function: linear, ease-in-out; animation-iteration-count: infinite, infinite; animation-direction: normal, alternate; }
+.glitter .s0 { background: #FFF4D6; box-shadow: 0 0 6px 2px rgba(255,220,150,0.85); }
+.glitter .s1 { background: #FFFFFF; box-shadow: 0 0 7px 2px rgba(200,220,255,0.9); }
+.glitter .s2 { background: #FFD9F2; box-shadow: 0 0 6px 2px rgba(255,150,220,0.8); }
+@keyframes spDrift { from { transform: translateY(12vh); } to { transform: translateY(-12vh); } }
+@keyframes spTwinkle { from { opacity: .15; } to { opacity: 1; } }
+html.lite .glitter .sp { box-shadow: none; }
+@media (prefers-reduced-motion: reduce) { .glitter { display: none; } }
+.deco.deco-gar { height: 0; transform: none; bottom: 0; }
+html:not(.web) .deco.deco-gar { transform: none; }
+.deco-gar .gk { position: absolute; top: 0; width: 37%; transform: translateY(-48%); }
+.deco-gar .gk.k0 { left: -1%; }
+.deco-gar .gk.k1 { left: 31.5%; transform: translateY(-44%) scaleX(-1); }
+.deco-gar .gk.k2 { left: 64%; }
+.deco-gar .gk img { display: block; width: 100%; height: auto; }
+.deco-gar .gk .gl { position: absolute; top: 0; left: 0; }
+.deco-gar .gk.k1 .la { animation-delay: .7s; }
+.deco-gar .gk.k2 .la { animation-delay: 1.9s; }
+html:not(.web) .film.th-christmas { padding-top: 5.5vw; }

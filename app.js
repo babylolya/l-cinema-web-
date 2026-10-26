@@ -318,7 +318,13 @@
   // a cobweb under Halloween things, a pine garland with lights under Christmas ones
   var DECO = { halloween: 'web', christmas: 'garland' };
   function decoHtml(theme) {
-    if (theme === 'christmas') return '<div class="deco deco-ice"><img src="stk/ice.webp" alt=""><i class="sheen"></i></div>';
+    // a pine garland with warm lights that twinkle in two groups
+    if (theme === 'christmas') {
+      // three overlapping links, so the garland stays slim on a wide screen (two on a phone)
+      var g = '<div class="deco deco-gar">';
+      for (var gi = 0; gi < 3; gi++) g += '<span class="gk k' + gi + '"><img src="stk/garland.webp" alt=""><img class="gl la" src="stk/garland-la.webp" alt=""><img class="gl lb" src="stk/garland-lb.webp" alt=""></span>';
+      return g + '</div>';
+    }
     if (theme === 'halloween') return '<div class="deco-branch"><img class="br" src="stk/branch.webp" alt="">' +
       '<img class="fcandy fc-1" src="stk/candy.webp" alt=""><img class="fcandy fc-2" src="stk/candy.webp" alt=""><img class="fcandy fc-3" src="stk/candy.webp" alt=""></div>';
     return '';
@@ -896,6 +902,15 @@
   // ---------- audiobooks: a calm player for falling asleep ----------
 
   var lastHintView = '';
+  function glitterHtml() {
+    var h = '<div class="glitter" aria-hidden="true">';
+    // a fixed scatter, so it doesn't jump between renders
+    for (var i = 0; i < 46; i++) {
+      var x = (i * 37 + 11) % 100, y = (i * 53 + 7) % 100, sz = 2 + (i * 7 % 5), d = 6 + (i * 13 % 9), dl = -(i * 1.7 % 9);
+      h += '<i class="sp s' + (i % 3) + '" style="left:' + x + '%;top:' + y + '%;width:' + sz + 'px;height:' + sz + 'px;animation-duration:' + d + 's,' + (2 + i % 4) + 's;animation-delay:' + dl + 's,' + (dl / 2) + 's"></i>';
+    }
+    return h + '</div>';
+  }
   var abLoadT = null;
   function abDrivePlayer(fid) {
     abStatus('');
@@ -1236,6 +1251,8 @@
     var theme = '';
     if (view.name === 'coll') { var cc = collById(view.id); theme = cc ? 'theme-' + (cc.theme || 'default') : ''; }
     document.body.className = theme + (view.name === 'book' ? ' inbook' : '');
+    // Christmas: magic glitter drifting over the dark background (the collection and its films)
+    var sparkle = (view.name === 'coll' && (collById(view.id) || {}).theme === 'christmas') || (view.name === 'film' && byId(view.id) && filmTheme(byId(view.id)) === 'christmas');
     var hintNow = (view.name === 'tv' || view.name === 'book' || view.name === 'savers') && lastHintView !== view.name;
     lastHintView = view.name;
     if (view.name !== 'book') document.documentElement.classList.remove('abdim');
@@ -1244,7 +1261,7 @@
     var rp = rateFor && view.name === 'film' ? ratePrompt() : '';
     if (rp) scr = '<div class="under">' + scr.replace(/ data-f/g, '') + '</div>';
     root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '') +
-      (hintNow ? '<div class="backhint">◀ «Назад» на пульте — выйти</div>' : '');
+      (hintNow ? '<div class="backhint">◀ «Назад» на пульте — выйти</div>' : '') + (sparkle ? glitterHtml() : '');
     var newVid = document.querySelector('.svvid');
     if (oldVid && newVid && oldVid.getAttribute('data-src') === newVid.getAttribute('data-src')) newVid.parentNode.replaceChild(oldVid, newVid);
     main = document.getElementById('main');
