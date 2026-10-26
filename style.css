@@ -961,3 +961,10 @@ html.web section.hero.drag { transition: none !important; will-change: transform
 .abb small { bottom: auto; top: 50%; left: 50%; transform: translate(-50%, -40%); font-size: 9px; line-height: 1; letter-spacing: 0; }
 .abb.abplay svg { width: 26px; height: 26px; }
 .abst { margin-top: 14px; color: #FFE9A8; font-size: 14px; font-weight: 700; }
+
+/* ---------- projector / TV: light mode for a weak graphics chip ---------- */
+html.lite *, html.lite *::before, html.lite *::after { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+html.lite .glass { background: rgba(28,22,38,0.92); }
+html.lite .nav { background: rgba(22,18,30,0.96); }
+html.lite .chip { background: rgba(255,255,255,0.10); }
+html.lite .card, html.lite .tile, html.lite .ctile, html.lite .btile, html.lite .ni, html.lite .btn, html.lite .tvbig, html.lite .abcard .abcv, html.lite .aupic { transition-duration: .1s !important; }

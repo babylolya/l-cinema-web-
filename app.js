@@ -1499,6 +1499,8 @@
 
   load();
   if (S.platform === 'mac') document.documentElement.classList.add('mac');
+  // projector / TV: a lighter look (no live blur), so the remote stays quick on a small graphics chip
+  if (!S.platform) document.documentElement.classList.add('lite');
   lastShape = shape(S);
   render(null, false);
 })();
