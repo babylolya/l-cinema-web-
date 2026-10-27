@@ -776,6 +776,7 @@
     var h = '<div class="topline"><h1 class="title-glow">Загрузки</h1>' + statusLine() + '</div>' +
       '<div class="storage glass"><div class="sub">Свободно ' + gb(S.free || 0) + ' из ' + gb(S.total || 0) + '</div><div class="bar cy"><i style="width:' + usedPct + '%"></i></div>' +
       '<div class="sub">Папки на Диске: ' + esc(S.scanReport || 'ещё не проверялись — нажми обновление') + '</div>' +
+      clockNote() +
       (A.homeSettings ? '<div class="btns" style="margin-top:14px"><button class="btn" data-f data-key="mk-home" data-act="mkhome">🏠 Сделать L-HOME главным экраном</button><button class="btn" data-f data-key="open-home" data-act="openhome">Открыть L-HOME</button>' + (A.androidSettings ? '<button class="btn" data-f data-key="and-set" data-act="andset">⚙ Настройки Android</button>' : '') + '</div>' : '') +
       '</div><div class="list">';
     var any = false;
@@ -920,6 +921,14 @@
     return h + '</div>';
   }
   var abLoadT = null;
+  // the projector has no clock battery: after a power cut it wakes up on an old date
+  function clockNote() {
+    var off = 0; try { off = A.clockOff ? +A.clockOff() : 0; } catch (e) {}
+    if (!off) return '';
+    var d = Math.abs(off) >= 1440 ? Math.round(Math.abs(off) / 1440) + ' ' + plural(Math.round(Math.abs(off) / 1440), 'день', 'дня', 'дней') : Math.round(Math.abs(off) / 60) + ' ч';
+    return '<div class="sub" style="margin-top:12px;color:#FFD27A">🕑 Часы проектора ' + (off > 0 ? 'отстают' : 'спешат') + ' на ' + d + '. Приложение уже работает по правильному времени, но Play Store и браузер — нет. Включи «Автоматически» в дате и времени:</div>' +
+      '<div class="btns" style="margin-top:8px"><button class="btn" data-f data-key="date-set" data-act="dateset">🕑 Дата и время</button></div>';
+  }
   function abDrivePlayer(fid) {
     abStatus('');
     var box = document.getElementById('abdrive');
@@ -1429,6 +1438,7 @@
       case 'mkhome': if (A.homeSettings) A.homeSettings(); return;
       case 'openhome': if (A.openHome) A.openHome(); return;
       case 'andset': if (A.androidSettings) A.androidSettings(); return;
+      case 'dateset': if (A.dateSettings) A.dateSettings(); return;
       case 'season': view = { name: 'film', id: view.id, season: parseInt(arg, 10) }; render('sn-' + arg, true); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
