@@ -1015,3 +1015,10 @@ html:not(.web) .film.th-christmas { padding-top: 5.5vw; }
 .abser { color: #B79CFF; font-size: 13px; font-weight: 700; margin-top: 3px; }
 html.web section.hero { overflow: hidden; }
 html.web section.hero.drag .bg, html.web section.hero.drag .info, html.web section.hero.drag .bgblur { transition: none !important; will-change: transform, opacity; }
+
+/* projector (1 GB of memory): the same look, without the endless motion — nothing keeps redrawing in the background */
+html.lite body::before, html.lite body::after { animation: none !important; }
+html.lite .glitter .sp { animation: none !important; opacity: .75; }
+html.lite .ablight, html.lite .abdust { animation: none !important; }
+html.lite .ctile:focus .stk, html.lite .hstk, html.lite .vines svg, html.lite .deco.deco-ice, html.lite .iceSheen { animation: none !important; }
+html.lite .hs-a, html.lite .hs-b, html.lite .hs-c, html.lite .fcandy, html.lite .hbat img { animation-iteration-count: 1 !important; }

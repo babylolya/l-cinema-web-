@@ -367,7 +367,14 @@
       '<button class="btn" data-f data-key="empty-sync" data-act="sync">' + I.sync + ' Обновить</button></div>';
   }
 
-  var heroList = [], heroIdx = 0;
+  var heroList = [], heroIdx = 0, heroCont = null;
+  function heroSkips() { try { return JSON.parse(localStorage.getItem('heroSkip') || '{}') || {}; } catch (e) { return {}; } }
+  // another film was picked over the one waiting in the top panel: next time the panel shows the new films again
+  function heroPicked(id) {
+    if (!heroCont || heroCont.id === id) return;
+    var s = heroSkips(); s[heroCont.id] = String(heroCont.lastAt || 0);
+    try { localStorage.setItem('heroSkip', JSON.stringify(s)); } catch (e) {}
+  }
   var SEED = String(Math.random()).slice(2);
 
   function kickerOf(hero) { return resume(hero).active ? 'Продолжить просмотр' : (watched(hero) ? 'Уже смотрела' : (isWant(hero) ? 'Хочу посмотреть' : 'Новое')); }
@@ -445,6 +452,7 @@
   /** The top panel turns to the next new film every few seconds (not while the remote is on its buttons). */
   function rotateHero() {
     if (view.name !== 'home' || full >= 0 || heroList.length < 2) return;
+    if (heroCont && heroList[heroIdx] === heroCont.id) return; // «Продолжить» stays until you choose
     var a = document.activeElement;
     if (a && a.closest && a.closest('.hero')) return;
     var sec = document.querySelector('section.hero');
@@ -560,6 +568,11 @@
 
     // top panel: new films one after another (or, if nothing is new, what you want to watch)
     var pool = (fresh.length ? fresh : (want.length ? want : films)).slice(0, 12);
+    // the film you stopped last comes first, as «Продолжить» — until you pick something else instead
+    var skip = heroSkips();
+    heroCont = null;
+    for (var ci = 0; ci < cont.length && !heroCont; ci++) if (skip[cont[ci].id] !== String(cont[ci].lastAt || 0)) heroCont = cont[ci];
+    if (heroCont) pool = [heroCont].concat(pool.filter(function (f) { return f.id !== heroCont.id; })).slice(0, 12);
     var ids = pool.map(function (f) { return f.id; });
     if (ids.join('|') !== heroList.join('|')) { heroList = ids; heroIdx = 0; }
     if (heroIdx >= heroList.length) heroIdx = 0;
@@ -1449,8 +1462,8 @@
         view = { name: 'genres', genre: view.genre, filter: view.filter, origin: arg }; render('o-' + arg, true); return;
       case 'back': app.back(); return;
       case 'sync': A.sync(); S.syncing = true; render(null, true); return;
-      case 'play': A.play(parts[1], parts.slice(2).join(':')); return;
-      case 'restart': A.restart(parts[1], parts.slice(2).join(':')); return;
+      case 'play': heroPicked(parts[1]); A.play(parts[1], parts.slice(2).join(':')); return;
+      case 'restart': heroPicked(parts[1]); A.restart(parts[1], parts.slice(2).join(':')); return;
       case 'dl': A.download(arg); return;
       case 'dlall': A.downloadAll(arg); return;
       case 'rm':
