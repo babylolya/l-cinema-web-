@@ -250,10 +250,45 @@
     return out;
   }
 
+  // ---------- Netflix films find their way into the Netflix shelf by themselves ----------
+  // English Wikipedia names the distributor in the film's card; a Netflix film (or series) has Netflix first there.
+  var NF = {};
+  try { NF = JSON.parse(localStorage.getItem('nf1') || '{}') || {}; } catch (e) { NF = {}; }
+  function nfKey(f) { return String(f.original || f.title || '') + '|' + (f.year || ''); }
+  function isNetflix(f) { return NF[nfKey(f)] === 1; }
+  var nfBusy = false, nfFound = false;
+  function nfScan() {
+    if (nfBusy || !window.fetch || !S.films) return;
+    // Netflix makes films since 2015; Russian films aren't theirs
+    var todo = S.films.filter(function (f) { return f.original && +f.year >= 2014 && f.lang !== 'ru' && !(nfKey(f) in NF); });
+    if (!todo.length) return;
+    nfBusy = true;
+    var f = todo[0], series = isSeries(f);
+    var u = 'https://en.wikipedia.org/w/api.php?action=query&format=json&origin=*&generator=search&gsrlimit=1&prop=revisions&rvprop=content&rvslots=main&rvsection=0&gsrsearch=' +
+      encodeURIComponent(f.original + ' ' + f.year + (series ? ' TV series' : ' film'));
+    fetch(u).then(function (r) { return r.json(); }).then(function (j) {
+      var pages = j && j.query && j.query.pages, txt = '';
+      for (var k in pages) { try { txt = pages[k].revisions[0].slots.main['*'] || ''; } catch (e) {} break; }
+      var m = /\|\s*(?:distributor|network|channel)\s*=\s*([^\n]*(?:\n\s*\*[^\n]*)?)/i.exec(txt);
+      var first = m ? m[1].replace(/\{\{\s*(?:plain ?list|ubl|unbulleted list)\s*\|/i, '').replace(/^[\s*|]+/, '') : '';
+      var yes = /^\[\[\s*Netflix\s*[\]|]/i.test(first);
+      NF[nfKey(f)] = yes ? 1 : 0;
+      try { localStorage.setItem('nf1', JSON.stringify(NF)); } catch (e) {}
+      if (yes) nfFound = true;
+    }).catch(function () { NF[nfKey(f)] = 0; }).then(function () {
+      nfBusy = false;
+      // one question every few seconds, so the projector stays responsive
+      setTimeout(nfScan, 3000);
+      if (nfFound && (view.name === 'home' || view.name === 'coll')) { nfFound = false; render(null, true); }
+    });
+  }
+  setTimeout(nfScan, 20000);
+
   function collFilms(c) {
     if (c.auto === 'liked') return S.films.filter(function (f) { return f.liked; });
     var out = [];
     (c.films || []).forEach(function (id) { var f = byId(id); if (f) out.push(f); });
+    if (c.id === 'netflix') S.films.forEach(function (f) { if (isNetflix(f) && out.indexOf(f) < 0) out.push(f); });
     S.films.forEach(function (f) { if (f.collection === c.id && out.indexOf(f) < 0) out.push(f); });
     // films whose title or description mention the collection's words (Рождество, Санта…) join it by themselves
     if (c.exclude && c.exclude.length) out = out.filter(function (f) { return c.exclude.indexOf(f.id) < 0; });

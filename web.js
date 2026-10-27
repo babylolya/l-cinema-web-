@@ -238,7 +238,7 @@
           rt.time = d.time;
           if (Date.now() - rt.saved > 5000 && rt.dur) { rt.saved = Date.now(); P.progress[it.key] = { pos: Math.round(rt.time * 1000), dur: Math.round(rt.dur * 1000), done: rt.time > rt.dur - 60, t: Date.now() }; saveP(); }
         }
-        if (m.type === 'player:changeState' && d.state === 'ended') { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; saveP(); if (next) openPlayer(list, i + 1, filmId); else { markWatched(filmId); closePlayer(); } }
+        if (m.type === 'player:changeState' && (d.state === 'ended' || (d.state === 'stopped' && rt.dur && rt.time > rt.dur - 30))) { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; saveP(); if (next) openPlayer(list, i + 1, filmId); else { markWatched(filmId); closePlayer(); } }
       };
       window.addEventListener('message', window.__rtMsg);
     }
