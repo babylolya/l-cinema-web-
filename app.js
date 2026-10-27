@@ -1101,7 +1101,7 @@
       }
       clearTimeout(abLoadT);
       var orig = AU.getAttribute('data-url') || AU.src || '';
-      var fid = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(orig) || /\/drive\/([A-Za-z0-9_-]{10,})/.exec(orig) || [])[1];
+      var fid = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(orig) || /\/files\/([A-Za-z0-9_-]{10,})/.exec(orig) || /\/drive\/([A-Za-z0-9_-]{10,})/.exec(orig) || [])[1];
       if (fid && abIsWeb()) {
         // iPhone Safari won't stream Drive's «download» files: load the part whole and play it from memory,
         // so parts still follow one another; only if even that fails, Google Drive's own player
@@ -1169,7 +1169,7 @@
         a.src = u;
         if (t > 0) { var o2 = function () { a.removeEventListener('loadedmetadata', o2); try { a.currentTime = t; } catch (e) {} }; a.addEventListener('loadedmetadata', o2); }
         if (autoplay) { var p3 = a.play(); if (p3 && p3.catch) p3.catch(function () { abStatus('Часть загружена — нажми ▶'); }); }
-      }, function () { var f2 = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(ch.url) || [])[1]; if (f2) abDrivePlayer(f2); });
+      }, function () { var f2 = (/[?&]id=([A-Za-z0-9_-]{10,})/.exec(ch.url) || /\/files\/([A-Za-z0-9_-]{10,})/.exec(ch.url) || [])[1]; if (f2) abDrivePlayer(f2); });
       abSave(b.id, ci, t || 0, 0);
       if (view.name === 'book') render('ab-play', true);
       return;

@@ -99,11 +99,14 @@
     });
   }
 
+  // a public key, usable only from this site and only to read Drive files shared by link:
+  // Safari plays these straight away (with seeking), so audiobook parts follow one another
+  var DRIVE_API = 'https://www.googleapis.com/drive/v3/files/', DRIVE_KEY = 'AIzaSyDiMJRkIt6Rp_KnIeQwvXPDSSW995YUQfk';
   function audiobooks() {
     var src = clone(LIB.audiobooks || []), have = {};
     src.forEach(function (b) { if (b.driveId) have[b.driveId] = 1; });
     (SHARED.audiobooks || []).forEach(function (a) { if (!have[a.driveId]) src.push(clone(a)); });
-    src.forEach(function (b) { (b.chapters || []).forEach(function (c) { var id = driveId(c.url); if (id) c.url = 'https://drive.usercontent.google.com/download?id=' + id + '&export=download&confirm=t'; }); });
+    src.forEach(function (b) { (b.chapters || []).forEach(function (c) { var id = driveId(c.url); if (id) c.url = DRIVE_API + id + '?alt=media&key=' + DRIVE_KEY; }); });
     return src;
   }
 
