@@ -209,7 +209,8 @@
     // Safari often can't start Google's player inside a page, so the Drive app / page is one tap away
     var rtId = (/rutube\.ru\/video\/([a-f0-9]{32})/.exec(it.url) || [])[1];
     var from = Math.floor(((P.progress[it.key] || {}).done ? 0 : ((P.progress[it.key] || {}).pos || 0)) / 1000);
-    var media = rtId
+    var ytId = youtubeId(it.url);
+    var media = ytId ? '<div class="pwrap"><div id="ytp"></div></div>' : rtId
       ? '<div class="pwrap"><iframe id="rtf" src="https://rutube.ru/play/embed/' + rtId + '/?autoplay=1' + (from > 5 ? '&t=' + from : '') + '" allow="autoplay; fullscreen; encrypted-media" allowfullscreen></iframe></div>'
       : id
       ? '<div class="pwrap"><iframe src="https://drive.google.com/file/d/' + id + '/preview" allow="autoplay; fullscreen" allowfullscreen></iframe></div>' +
@@ -242,6 +243,22 @@
       };
       window.addEventListener('message', window.__rtMsg);
     }
+    // YouTube (official channels): the IFrame player tells its time and when an episode ends
+    if (ytId) ytApi(function () {
+      var saved = 0;
+      var yp = new YT.Player('ytp', { videoId: ytId, width: '100%', height: '100%', playerVars: { autoplay: 1, start: from > 5 ? from : 0, rel: 0, playsinline: 1, iv_load_policy: 3 },
+        events: {
+          onStateChange: function (e) {
+            if (e.data === 0) { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; saveP(); if (next) openPlayer(list, i + 1, filmId); else { markWatched(filmId); closePlayer(); } }
+            if (e.data === 2) { try { P.progress[it.key] = { pos: Math.round(yp.getCurrentTime() * 1000), dur: Math.round(yp.getDuration() * 1000), done: false, t: Date.now() }; saveP(); } catch (x) {} }
+          }
+        } });
+      clearInterval(window.__ytT);
+      window.__ytT = setInterval(function () {
+        try { if (!document.getElementById('ytp')) { clearInterval(window.__ytT); return; }
+          if (yp.getPlayerState && yp.getPlayerState() === 1 && Date.now() - saved > 5000) { saved = Date.now(); P.progress[it.key] = { pos: Math.round(yp.getCurrentTime() * 1000), dur: Math.round(yp.getDuration() * 1000), done: false, t: Date.now() }; saveP(); } } catch (x) {}
+      }, 5000);
+    });
     var v = box.querySelector('video');
     if (v) {
       var p0 = (P.progress[it.key] || {}).pos || 0;
@@ -249,6 +266,12 @@
       v.addEventListener('pause', function () { P.progress[it.key] = { pos: Math.round(v.currentTime * 1000), dur: Math.round((v.duration || 0) * 1000), done: false, t: Date.now() }; saveP(); });
       v.addEventListener('ended', function () { P.progress[it.key] = { pos: 0, done: true, t: Date.now() }; saveP(); if (next) openPlayer(list, i + 1, filmId); else { markWatched(filmId); closePlayer(); } });
     }
+  }
+  var ytWait = null;
+  function ytApi(cb) {
+    if (window.YT && window.YT.Player) { cb(); return; }
+    if (!ytWait) { ytWait = []; window.onYouTubeIframeAPIReady = function () { var l = ytWait; ytWait = []; l.forEach(function (f) { f(); }); }; var sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc); }
+    ytWait.push(cb);
   }
   function play(filmId, key) {
     var all = items().filter(function (x) { return x.filmId === filmId && x.url; });
