@@ -1112,3 +1112,9 @@ html:not(.web) body.inmusic .minfo .abb.abplay { width: 62px; height: 62px; }
 .minfo .abtimes { max-width: 640px; }
 .mtx { -webkit-flex: 1 1 0; flex: 1 1 0; width: 0; }
 .mrow .mcv, .mnow .mbig { -webkit-flex-shrink: 0; flex-shrink: 0; }
+
+/* old TV browsers squeezed the rows of a scrolling list to fit it (covers stuck out, rows overlapped): rows keep their height */
+.mlist { display: block; }
+.mlist > .mrow { display: -webkit-flex; display: flex; -webkit-flex-shrink: 0; flex-shrink: 0; min-height: 78px; }
+.mrow .mcv { width: 58px; height: 58px; min-height: 58px; }
+html:not(.web) body.inmusic #main > .mnow { -webkit-flex-shrink: 0; flex-shrink: 0; }
