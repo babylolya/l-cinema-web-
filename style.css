@@ -1059,3 +1059,7 @@ html.lite .mrow { transition: none; }
   html.web .mrow { padding: 8px 10px; gap: 12px; }
   html.web .mcv { width: 50px; height: 50px; }
 }
+
+/* «Музыка»: tracks / audiobooks tabs right under the title */
+.ltabs { margin: -6px 0 20px; }
+.ltabs .chip { font-size: 16px; padding: 0 20px; }

@@ -218,12 +218,13 @@
   }
 
   function nav() {
-    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['books', 'Слушать', I.book], ['music', 'Музыка', I.note], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
+    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['music', 'Музыка', I.note], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
     var h = '<nav class="nav glass"><div class="logo">L·C</div>';
     for (var i = 0; i < items.length; i++) {
       var on = view.name === items[i][0] || (view.name === 'film' && false);
-      if (items[i][0] === 'books') on = on || view.name === 'book' || view.name === 'author';
-      h += '<button class="ni' + (on ? ' on' : '') + ((items[i][0] === 'books' && AU && !AU.paused) || (items[i][0] === 'music' && MU && !MU.paused) ? ' live' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '<span class="nl">' + items[i][1] + '</span></button>';
+      // audiobooks live inside «Музыка» as its second tab
+      if (items[i][0] === 'music') on = on || view.name === 'books' || view.name === 'book' || view.name === 'author';
+      h += '<button class="ni' + (on ? ' on' : '') + (items[i][0] === 'music' && ((MU && !MU.paused) || (AU && !AU.paused)) ? ' live' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '<span class="nl">' + items[i][1] + '</span></button>';
     }
     h += '<div class="spacer"></div><button class="ni sync' + (S.syncing ? ' spin' : '') + '" data-f data-key="nav-sync" data-act="sync" aria-label="Обновить">' + I.sync + '</button></nav>';
     return h;
@@ -1094,13 +1095,19 @@
     var e = document.getElementById('mu-err'); if (e) { e.textContent = muErr; e.style.display = muErr ? '' : 'none'; }
     var rows = document.querySelectorAll('.mrow');
     for (var i = 0; i < rows.length; i++) rows[i].classList.toggle('cur', !!t && rows[i].getAttribute('data-uid') === t.uid);
-    var nv = document.querySelector('[data-key="nav-music"]'); if (nv) nv.classList.toggle('live', !!MU && !MU.paused);
+    var nv = document.querySelector('[data-key="nav-music"]'); if (nv) nv.classList.toggle('live', (!!MU && !MU.paused) || (!!AU && !AU.paused));
   }
   setInterval(function () { if (MU && !MU.paused && view.name === 'music') muUi(); }, 1000);
 
+  // «Музыка» has two tabs: the channel's tracks and the audiobooks (with meditations inside)
+  function listenTabs(cur) {
+    return '<div class="chips ltabs">' +
+      '<button class="chip' + (cur === 'music' ? ' on' : '') + '" data-f data-key="lt-music" data-act="ltab:music">♪ Треки</button>' +
+      '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button></div>';
+  }
   function music() {
     var m = muData(), list = muTracks(), ch = m.channel || {};
-    var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>';
+    var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
       ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
     var t = muNow(), playing = MU && !MU.paused;
@@ -1155,7 +1162,7 @@
 
   function books() {
     var list = abList();
-    var h = '<div class="topline"><h1 class="title-glow">Слушать</h1>' + statusLine() + '</div>';
+    var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('books');
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Создай на Google Диске в папке с фильмами папку «аудиокниги», а в ней — по папке на каждую книгу с mp3-файлами. После «Обновить» книги появятся здесь.</p></div>';
     var cur = AU && AU.getAttribute('data-book');
     // tabs on top: everything, plain books, meditations and any other subfolder
@@ -1419,8 +1426,8 @@
     if (!AU) return;
     var b = abById(AU.getAttribute('data-book'));
     if (b && AU.currentTime > 0) abSave(b.id, +AU.getAttribute('data-ch'), AU.currentTime, AU.duration || 0);
-    var ni = document.querySelector('[data-key="nav-books"]');
-    if (ni) { if (AU.paused) ni.classList.remove('live'); else ni.classList.add('live'); }
+    var ni = document.querySelector('[data-key="nav-music"]');
+    if (ni) ni.classList.toggle('live', !AU.paused || (!!MU && !MU.paused));
     if (view.name !== 'book' || !b || b.id !== view.id) return;
     var fill = document.getElementById('abfill'), cur = document.getElementById('abcur'), dur = document.getElementById('abdur');
     if (fill && AU.duration) fill.style.width = (AU.currentTime / AU.duration * 100).toFixed(2) + '%';
@@ -1642,6 +1649,7 @@
       case 'openhome': if (A.openHome) A.openHome(); return;
       case 'andset': if (A.androidSettings) A.androidSettings(); return;
       case 'dateset': if (A.dateSettings) A.dateSettings(); return;
+      case 'ltab': if (view.name !== arg) { stack = []; view = { name: arg }; render('lt-' + arg, false); } return;
       case 'mutoggle': muToggle(); muUi(); return;
       case 'munext': muStep(1); return;
       case 'muprev': if (MU && MU.currentTime > 5) { MU.currentTime = 0; } else muStep(-1); return;
