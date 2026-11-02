@@ -1087,3 +1087,19 @@ html.lite .mrow { transition: none; }
   html.web .mnow .mbig { margin-right: 0; margin-bottom: 18px; }
   html.web .mrow .mcv { margin-right: 12px; }
 }
+
+/* «Музыка» on the TV, projector and Mac: the player stays on top, only the track list scrolls under it */
+html:not(.web) body.inmusic #main { overflow: hidden; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; }
+html:not(.web) body.inmusic #main > * { -webkit-flex-shrink: 0; flex-shrink: 0; }
+html:not(.web) body.inmusic #main > .mlist { -webkit-flex: 1 1 auto; flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 8px 40px 2px; margin-bottom: 0; }
+html:not(.web) body.inmusic .mnow { margin-bottom: 16px; padding: 20px 24px; }
+html:not(.web) body.inmusic .mbig { width: 190px; height: 190px; }
+html:not(.web) body.inmusic #main { padding-bottom: 12px; }
+html:not(.web) body.inmusic .mnow { padding: 16px 22px; }
+html:not(.web) body.inmusic .mbig { width: 150px; height: 150px; }
+html:not(.web) body.inmusic .mnow .mbig { margin-right: 26px; }
+html:not(.web) body.inmusic .minfo h2 { font-size: 24px; -webkit-line-clamp: 1; }
+html:not(.web) body.inmusic .minfo > * + * { margin-top: 6px; }
+html:not(.web) body.inmusic .minfo .abbtns { margin-top: 8px; }
+html:not(.web) body.inmusic .minfo .abb { width: 50px; height: 50px; }
+html:not(.web) body.inmusic .minfo .abb.abplay { width: 62px; height: 62px; }

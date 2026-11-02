@@ -1543,6 +1543,14 @@
     try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); }
     // keep the focused row in the middle of the screen (TV remote), sideways just enough to show the card
     var main = document.getElementById('main');
+    // «Музыка»: the player stays put and only the track list scrolls
+    var ml = el.closest ? el.closest('.mlist') : null;
+    if (ml && document.body.className.indexOf('inmusic') >= 0) {
+      var lr = ml.getBoundingClientRect(), er0 = el.getBoundingClientRect();
+      ml.scrollTop = Math.max(0, ml.scrollTop + (er0.top + er0.height / 2) - (lr.top + lr.height / 2));
+      return;
+    }
+    if (document.body.className.indexOf('inmusic') >= 0 && main && el.closest && el.closest('.mnow, .ltabs')) return;
     var row = el.closest ? el.closest('.row') : null;
     if (row && row.scrollWidth > row.clientWidth) {
       var rr = row.getBoundingClientRect(), er = el.getBoundingClientRect(), pad = 30;
@@ -1587,7 +1595,7 @@
     }
     var theme = '';
     if (view.name === 'coll') { var cc = collById(view.id); theme = cc ? 'theme-' + (cc.theme || 'default') : ''; }
-    document.body.className = theme + (view.name === 'book' ? ' inbook' : '');
+    document.body.className = theme + (view.name === 'book' ? ' inbook' : '') + (view.name === 'music' ? ' inmusic' : '');
     // Christmas: magic glitter drifting over the dark background (the collection and its films)
     var sparkle = (view.name === 'coll' && (collById(view.id) || {}).theme === 'christmas') || (view.name === 'film' && byId(view.id) && filmTheme(byId(view.id)) === 'christmas');
     var hintNow = (view.name === 'tv' || view.name === 'book' || view.name === 'savers') && lastHintView !== view.name;
