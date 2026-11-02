@@ -1101,7 +1101,7 @@
       var now = muNow(); if (!now || now.uid !== uid) return;
       a.src = u;
       if (autoplay) { var p = a.play(); if (p && p.catch) p.catch(function () { muErr = 'Нажми ▶, чтобы начать'; muUi(); }); }
-    }).catch(function (e) { muErr = (e && e.message) || 'Telegram не отвечает'; muUi(); });
+    }).catch(function (e) { var m = (e && e.message) || ''; muErr = /fetch|network|load/i.test(m) || !m ? 'Нет связи с Telegram — проверь интернет' : m; muUi(); });
     if (navigator.mediaSession && window.MediaMetadata) {
       try {
         var cu = muCoverUrl(t);

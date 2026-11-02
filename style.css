@@ -1071,3 +1071,19 @@ html.lite .mrow { transition: none; }
   .grid > .card:nth-child(4n) { margin-right: 0; }
   .grid > .card .poster { width: 100%; height: 0; padding-top: 148%; }
 }
+
+/* music on old TV browsers: no "gap" in flexbox there, so spacing is made with margins; the label hugs its text */
+.mnow, .mrow, .minfo, .mlist, .mtx { gap: 0; }
+.mnow .mbig { margin-right: 32px; }
+.minfo > * { margin-top: 0; margin-bottom: 0; }
+.minfo > * + * { margin-top: 10px; }
+.minfo .hchip { align-self: flex-start; max-width: 100%; }
+.mrow { box-sizing: border-box; max-width: 100%; margin-bottom: 6px; }
+.mrow .mcv { margin-right: 16px; }
+.mrow .mdur { margin-left: 14px; flex-shrink: 0; }
+.mtx .mta { margin-top: 2px; }
+
+@media (max-width: 760px) {
+  html.web .mnow .mbig { margin-right: 0; margin-bottom: 18px; }
+  html.web .mrow .mcv { margin-right: 12px; }
+}
