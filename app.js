@@ -26,9 +26,16 @@
       if (rootBlock) while ((m = re.exec(rootBlock[1]))) vars[m[1]] = m[2].trim();
       for (var k = 0; k < 3; k++) css = css.replace(/var\(--([\w-]+)\s*(?:,\s*([^()]*(?:\([^()]*\))?[^()]*))?\)/g, function (all, n, fb) { return vars[n] || (fb ? fb.trim() : 'inherit'); });
       var st = document.createElement('style'); st.appendChild(document.createTextNode(css)); document.head.appendChild(st);
+      // only the rewritten copy stays on: two full stylesheets make every redraw twice as slow on these TVs
+      var ls = document.querySelectorAll('link[rel="stylesheet"]');
+      for (var li = 0; li < ls.length; li++) if (/style\.css/.test(ls[li].getAttribute('href') || '')) ls[li].disabled = true;
     } catch (e) {}
   })();
   if (window.Element && !Element.prototype.closest) Element.prototype.closest = function (sel) { var el = this; while (el && el.nodeType === 1) { if (el.matches(sel)) return el; el = el.parentElement; } return null; };
+
+  // a small health report for Claude (TV only): errors, how long things take, what pictures loaded
+  var DIAG = { errs: [], tState: [], tRender: [] };
+  window.addEventListener('error', function (e) { if (DIAG.errs.length < 20) DIAG.errs.push(String(e.message || e) + ' @' + (e.lineno || '') + ':' + (e.colno || '')); });
 
   var A = window.Android;
   var root = document.getElementById('app');
@@ -286,6 +293,14 @@
     });
   }
   setTimeout(nfScan, 20000);
+  setTimeout(function () {
+    if (!A || !A.report || S.platform) return;
+    var im = document.images, ok = 0, bad = 0, wait = 0;
+    for (var i = 0; i < im.length; i++) { if (!im[i].complete) wait++; else if (im[i].naturalWidth > 0) ok++; else bad++; }
+    var badSrc = []; for (var j = 0; j < im.length && badSrc.length < 5; j++) if (im[j].complete && !im[j].naturalWidth) badSrc.push(String(im[j].src).slice(0, 90));
+    try { A.report(JSON.stringify({ ua: navigator.userAgent, screen: innerWidth + 'x' + innerHeight + '@' + (window.devicePixelRatio || 1), novars: document.documentElement.className.indexOf('novars') >= 0,
+      films: (S.films || []).length, imgsOk: ok, imgsBad: bad, imgsLoading: wait, badSrc: badSrc, errs: DIAG.errs, tState: DIAG.tState, tRender: DIAG.tRender, syncErr: S.error || '', syncedAt: S.syncedAt || '' })); } catch (e) {}
+  }, 70000);
 
   function collFilms(c) {
     if (c.auto === 'liked') return S.films.filter(function (f) { return f.liked; });
@@ -1512,7 +1527,10 @@
     if (main && main.contains(el) && main.scrollHeight > main.clientHeight) {
       var mr = main.getBoundingClientRect(), r = el.getBoundingClientRect();
       var sec = el.closest ? (el.closest('.row') && (el.closest('.section') || el.closest('.row'))) : null;
-      if (sec) {
+      if (el.closest && el.closest('section.hero')) {
+        // the top panel's buttons: show the panel whole, from the very top
+        main.scrollTop = 0;
+      } else if (sec) {
         // a row of cards: bring the whole row to the middle of the screen
         var tr = sec.getBoundingClientRect();
         var box = tr.height < mr.height * 0.9 ? tr : r;
@@ -1529,6 +1547,10 @@
   }
 
   function render(focusKey, keepScroll) {
+    var tr0 = Date.now();
+    try { renderNow(focusKey, keepScroll); } finally { if (DIAG.tRender.length < 12) DIAG.tRender.push(view.name + ' ' + (Date.now() - tr0) + 'ms'); }
+  }
+  function renderNow(focusKey, keepScroll) {
     var active = document.activeElement;
     var curKey = focusKey || (active && active.getAttribute && active.getAttribute('data-key'));
     var main = document.getElementById('main');
@@ -1577,7 +1599,9 @@
   }
 
   function load() {
-    try { S = JSON.parse(A.state()); } catch (e) { S = { films: [], error: 'Не получилось прочитать библиотеку' }; }
+    var t0 = Date.now(), txt = '';
+    try { txt = A.state(); S = JSON.parse(txt); } catch (e) { S = { films: [], error: 'Не получилось прочитать библиотеку' }; DIAG.errs.push('state: ' + e); }
+    if (DIAG.tState.length < 12) DIAG.tState.push((Date.now() - t0) + 'ms/' + Math.round(txt.length / 1024) + 'KB');
     if (!S.films) S.films = [];
     // projector (1 GB): smaller pictures — the big ones are sharp on a 4K screen but eat the memory and make the remote lag
     if (!S.platform) {
