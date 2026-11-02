@@ -1063,3 +1063,11 @@ html.lite .mrow { transition: none; }
 /* «Музыка»: tracks / audiobooks tabs right under the title */
 .ltabs { margin: -6px 0 20px; }
 .ltabs .chip { font-size: 16px; padding: 0 20px; }
+
+/* old TV browsers without CSS grid: «.grid .card { width: 100% }» outweighed the fallback, so one poster filled the page */
+@supports not (display: grid) {
+  .grid { gap: 0; }
+  .grid > .card { width: 23%; margin: 0 2.6% 28px 0; }
+  .grid > .card:nth-child(4n) { margin-right: 0; }
+  .grid > .card .poster { width: 100%; height: 0; padding-top: 148%; }
+}
