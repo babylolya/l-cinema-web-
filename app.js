@@ -1084,6 +1084,8 @@
     document.body.appendChild(MU);
     MU.addEventListener('ended', function () { muStep(1); });
     MU.addEventListener('play', muUi); MU.addEventListener('pause', muUi); MU.addEventListener('loadedmetadata', muUi);
+    var muLast = 0;
+    MU.addEventListener('timeupdate', function () { if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
     MU.addEventListener('error', function () { muErr = 'Не получилось включить трек — пробую следующий'; muUi(); setTimeout(function () { muStep(1); }, 1500); });
     return MU;
   }
@@ -1125,12 +1127,14 @@
   function muUi() {
     var t = muNow();
     var bt = document.getElementById('mu-pp'); if (bt) bt.innerHTML = MU && !MU.paused ? I.pause : I.play;
-    var f = document.getElementById('mu-fill'); if (f && MU) f.style.width = (MU.duration ? MU.currentTime / MU.duration * 100 : 0) + '%';
+    // a stream from Telegram may not tell its length to old browsers (Infinity): the length from the post is used then
+    var dur = MU && isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
+    var f = document.getElementById('mu-fill'); if (f && MU) f.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
     var c = document.getElementById('mu-cur'); if (c && MU) c.textContent = fmtT(MU.currentTime);
-    var d = document.getElementById('mu-dur'); if (d && t) d.textContent = fmtT((MU && MU.duration) || t.dur);
+    var d = document.getElementById('mu-dur'); if (d && t) d.textContent = fmtT(dur);
     var e = document.getElementById('mu-err'); if (e) { e.textContent = muErr; e.style.display = muErr ? '' : 'none'; }
     var rows = document.querySelectorAll('.mrow');
-    for (var i = 0; i < rows.length; i++) rows[i].classList.toggle('cur', !!t && rows[i].getAttribute('data-uid') === t.uid);
+    for (var i = 0; i < rows.length; i++) { var on = !!t && rows[i].getAttribute('data-uid') === t.uid; if (on) rows[i].classList.add('cur'); else rows[i].classList.remove('cur'); }
     var nv = document.querySelector('[data-key="nav-music"]'); if (nv) nv.classList.toggle('live', (!!MU && !MU.paused) || (!!AU && !AU.paused));
   }
   setInterval(function () { if (MU && !MU.paused && view.name === 'music') muUi(); }, 1000);
