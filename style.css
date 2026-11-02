@@ -1022,3 +1022,10 @@ html.lite .glitter .sp { animation: none !important; opacity: .75; }
 html.lite .ablight, html.lite .abdust { animation: none !important; }
 html.lite .ctile:focus .stk, html.lite .hstk, html.lite .vines svg, html.lite .deco.deco-ice, html.lite .iceSheen { animation: none !important; }
 html.lite .hs-a, html.lite .hs-b, html.lite .hs-c, html.lite .fcandy, html.lite .hbat img { animation-iteration-count: 1 !important; }
+
+/* phone: while swiping the top panel, the next film's picture and text follow right behind the current one */
+.hero .hpeek { position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 3; display: flex; pointer-events: none; overflow: hidden; background: #18151e; will-change: transform; }
+html.web .hero .hpeek { flex-direction: column; }
+html.web .hero .hpeek .bg { position: relative; left: auto; aspect-ratio: 16 / 9; width: 100%; flex-shrink: 0; }
+html.web .hero .hpeek .bgblur { display: block; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; overflow: hidden; }
+html.web .hero .hpeek .info { position: relative; z-index: 2; }

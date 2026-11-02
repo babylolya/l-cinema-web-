@@ -527,10 +527,30 @@
   function heroSec() { return document.querySelector('section.hero'); }
   // the frame stays put; only the picture and the text inside it slide
   function heroParts(sec) { return sec.querySelectorAll('.bg, .info, .bgblur, .pst'); }
+  // the neighbouring film rides right next to the current one, so pictures follow each other without a gap
+  function heroPeek(sec, dirn) {
+    if (sec._peekDir === dirn && sec._peek) return sec._peek;
+    if (sec._peek) sec._peek.remove();
+    var n = (heroIdx + dirn + heroList.length) % heroList.length, f = byId(heroList[n]);
+    sec._peekDir = dirn; sec._peek = null;
+    if (!f) return null;
+    var tmp = document.createElement('div');
+    tmp.innerHTML = heroHtml(f, n, heroList.length);
+    var pk = document.createElement('div');
+    pk.className = 'hpeek'; pk.setAttribute('aria-hidden', 'true');
+    var src = tmp.firstChild, parts = src.querySelectorAll('.bgblur, .bg, .shade, .info');
+    for (var i = 0; i < parts.length; i++) pk.appendChild(parts[i]);
+    sec.appendChild(pk);
+    sec._peek = pk;
+    return pk;
+  }
   function setX(sec, x) {
-    var w = sec.offsetWidth || 1, ps = heroParts(sec), op = String(Math.max(0.2, 1 - Math.abs(x) / w * 0.9));
+    var w = sec.offsetWidth || 1, ps = heroParts(sec);
     sec.setAttribute('data-x', String(x));
-    for (var i = 0; i < ps.length; i++) { ps[i].style.transform = x ? 'translateX(' + x + 'px)' : ''; ps[i].style.opacity = x ? op : ''; }
+    for (var i = 0; i < ps.length; i++) { ps[i].style.transform = x ? 'translateX(' + x + 'px)' : ''; ps[i].style.opacity = ''; }
+    if (!x) { if (sec._peek) { sec._peek.remove(); sec._peek = null; sec._peekDir = 0; } return; }
+    var pk = heroPeek(sec, x < 0 ? 1 : -1);
+    if (pk) pk.style.transform = 'translateX(' + (x < 0 ? x + w : x - w) + 'px)';
   }
   document.addEventListener('touchstart', function (e) {
     var t = e.touches && e.touches[0];
@@ -562,13 +582,11 @@
     var projected = x + (v / 1000) * 0.998 / (1 - 0.998);
     if (Math.abs(projected) > wdt * 0.35) {
       var dirn = projected < 0 ? 1 : -1;
+      // the current film slides out while the next one slides in right behind it; at the end the next one simply takes its place
       swStop = spring(x, -dirn * wdt, v, function (val) { setX(g.sec, val); }, function () {
         var n = (heroIdx + dirn + heroList.length) % heroList.length;
         showHero(n, false);
-        var nx = heroSec(); if (!nx) return;
-        nx.classList.remove('fade'); nx.classList.add('drag');
-        setX(nx, dirn * wdt * 0.5);
-        swStop = spring(dirn * wdt * 0.5, 0, v * 0.5, function (val) { setX(nx, val); }, function () { nx.classList.remove('drag'); setX(nx, 0); });
+        var nx = heroSec(); if (nx) nx.classList.remove('fade');
       });
     } else {
       swStop = spring(x, 0, v, function (val) { setX(g.sec, val); }, function () { g.sec.classList.remove('drag'); setX(g.sec, 0); });
@@ -1422,6 +1440,11 @@
   function load() {
     try { S = JSON.parse(A.state()); } catch (e) { S = { films: [], error: 'Не получилось прочитать библиотеку' }; }
     if (!S.films) S.films = [];
+    // projector (1 GB): smaller pictures — the big ones are sharp on a 4K screen but eat the memory and make the remote lag
+    if (!S.platform) {
+      var sm = function (u) { return typeof u === 'string' ? u.replace('/t/p/w500/', '/t/p/w342/').replace('/t/p/w1280/', '/t/p/w780/').replace('/t/p/original/', '/t/p/w780/') : u; };
+      S.films.forEach(function (f) { f.poster = sm(f.poster); f.backdrop = sm(f.backdrop); if (f.backdrops) f.backdrops = f.backdrops.map(sm); });
+    }
   }
 
   function patchProgress() {
