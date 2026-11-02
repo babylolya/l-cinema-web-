@@ -193,10 +193,31 @@
 
   // ---------- pieces ----------
 
+  // TVs and the projector (1 GB, the browser shares the app's memory on old Android): posters load only near the
+  // screen and are let go far away from it, so scrolling a long library doesn't run the memory out
+  function lazyOn() { return !S.platform; } // Android only; the Mac and the phone have memory to spare
+  function psrc(u) { return (lazyOn() ? 'data-src="' : 'src="') + esc(u) + '"'; }
+  var BLANK = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
+  var lzT = null;
+  function lazySoon() { if (!lazyOn()) return; clearTimeout(lzT); lzT = setTimeout(lazyPass, 120); }
+  function lazyPass() {
+    var vh = window.innerHeight || 720, vw = window.innerWidth || 1280;
+    var im = document.querySelectorAll('img[data-src], img[data-lz]');
+    for (var i = 0; i < im.length; i++) {
+      var el = im[i], r = el.getBoundingClientRect();
+      if (!r.width && !r.height && !el.getAttribute('data-src')) continue;
+      var near = r.bottom > -vh * 0.8 && r.top < vh * 1.8 && r.right > -vw * 0.5 && r.left < vw * 1.6;
+      var far = r.bottom < -vh * 2.5 || r.top > vh * 3.5 || r.right < -vw * 2 || r.left > vw * 3;
+      if (near && el.getAttribute('data-src')) { el.src = el.getAttribute('data-src'); el.setAttribute('data-lz', el.getAttribute('data-src')); el.removeAttribute('data-src'); }
+      else if (far && el.getAttribute('data-lz') && !el.getAttribute('data-src')) { el.setAttribute('data-src', el.getAttribute('data-lz')); el.src = BLANK; }
+    }
+  }
+  document.addEventListener('scroll', lazySoon, true); window.addEventListener('resize', lazySoon);
+
   function posterInner(f) {
     // the title is printed on the plate only when there is no picture (or it fails to load)
     if (!f.poster) return '<span class="ph">' + esc(f.title) + '</span>';
-    return '<img src="' + esc(f.poster) + '" alt="" onerror="this.nextSibling.style.display=&quot;block&quot;;this.remove()"><span class="ph" style="display:none">' + esc(f.title) + '</span>';
+    return '<img ' + psrc(f.poster) + ' alt="" onerror="this.nextSibling.style.display=&quot;block&quot;;this.remove()"><span class="ph" style="display:none">' + esc(f.title) + '</span>';
   }
 
   function card(f, row) {
@@ -212,7 +233,7 @@
     var sub = watched(f) && f.rating ? '<span class="stars-t">' + starsText(f.rating) + '</span>' + (f.liked ? ' <span style="color:#FF4FD8">♥</span>' : '')
       : (watched(f) ? 'посмотрела' : '<span class="want-t">' + (isWant(f) ? 'хочу' : (isSeries(f) ? 'сериал' : 'новое')) + '</span>' + (f.year ? ' · ' + f.year : ''));
     return '<div class="card' + (r.active ? ' resume' : '') + '" data-f tabindex="0" data-key="c-' + esc(row) + '-' + esc(f.id) + '" data-act="film:' + esc(f.id) + '">' +
-      '<div class="poster" style="background:' + color(f) + '">' + (over ? (f.poster ? '<img src="' + esc(f.poster) + '" alt="" onerror="this.remove()">' : '') : posterInner(f)) + over + '</div>' +
+      '<div class="poster" style="background:' + color(f) + '">' + (over ? (f.poster ? '<img ' + psrc(f.poster) + ' alt="" onerror="this.remove()">' : '') : posterInner(f)) + over + '</div>' +
       '<div class="ct">' + esc(f.title) + '</div><div class="cm">' + sub + '</div></div>';
   }
 
@@ -1548,7 +1569,7 @@
 
   function render(focusKey, keepScroll) {
     var tr0 = Date.now();
-    try { renderNow(focusKey, keepScroll); } finally { if (DIAG.tRender.length < 12) DIAG.tRender.push(view.name + ' ' + (Date.now() - tr0) + 'ms'); }
+    try { renderNow(focusKey, keepScroll); if (lazyOn()) lazyPass(); } finally { if (DIAG.tRender.length < 12) DIAG.tRender.push(view.name + ' ' + (Date.now() - tr0) + 'ms'); }
   }
   function renderNow(focusKey, keepScroll) {
     var active = document.activeElement;
