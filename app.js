@@ -157,6 +157,8 @@
   // ---------- icons ----------
 
   var I = {
+    note: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
+    shuffle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>',
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></svg>',
     pause: '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4.5" height="16" rx="1.4"/><rect x="13.5" y="4" width="4.5" height="16" rx="1.4"/></svg>',
     prev: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg>',
@@ -216,12 +218,12 @@
   }
 
   function nav() {
-    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['books', 'Слушать', I.book], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
+    var items = [['home', 'Главная', I.home], ['genres', 'Жанры', I.grid], ['diary', 'Дневник', I.diary], ['books', 'Слушать', I.book], ['music', 'Музыка', I.note], ['savers', 'Заставки', I.saver], ['downloads', 'Загрузки', I.down]];
     var h = '<nav class="nav glass"><div class="logo">L·C</div>';
     for (var i = 0; i < items.length; i++) {
       var on = view.name === items[i][0] || (view.name === 'film' && false);
       if (items[i][0] === 'books') on = on || view.name === 'book' || view.name === 'author';
-      h += '<button class="ni' + (on ? ' on' : '') + (items[i][0] === 'books' && AU && !AU.paused ? ' live' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '<span class="nl">' + items[i][1] + '</span></button>';
+      h += '<button class="ni' + (on ? ' on' : '') + ((items[i][0] === 'books' && AU && !AU.paused) || (items[i][0] === 'music' && MU && !MU.paused) ? ' live' : '') + '" data-f data-key="nav-' + items[i][0] + '" data-act="go:' + items[i][0] + '" aria-label="' + items[i][1] + '">' + items[i][2] + '<span class="nl">' + items[i][1] + '</span></button>';
     }
     h += '<div class="spacer"></div><button class="ni sync' + (S.syncing ? ' spin' : '') + '" data-f data-key="nav-sync" data-act="sync" aria-label="Обновить">' + I.sync + '</button></nav>';
     return h;
@@ -995,6 +997,134 @@
     return '<div class="sub" style="margin-top:12px;color:#FFD27A">🕑 Часы проектора ' + (off > 0 ? 'отстают' : 'спешат') + ' на ' + d + '. Приложение уже работает по правильному времени, но Play Store и браузер — нет. Включи «Автоматически» в дате и времени:</div>' +
       '<div class="btns" style="margin-top:8px"><button class="btn" data-f data-key="date-set" data-act="dateset">🕑 Дата и время</button></div>';
   }
+  // ---------- music: tracks of the Telegram channel ----------
+  // The list comes from GitHub (a bot collects the channel's posts every half hour). The files stay in Telegram:
+  // right before a track plays the bot is asked for a fresh link; covers are the tracks' own, as Telegram shows them.
+  var MU = null, muQueue = [], muPos = -1, muShuffle = false, muErr = '';
+  var muCov = {};
+  try { muCov = JSON.parse(localStorage.getItem('muCov') || '{}') || {}; } catch (e) { muCov = {}; }
+  function muData() { return S.music || {}; }
+  function muTracks() { return muData().tracks || []; }
+  function tgLink(fid) {
+    var m = muData();
+    if (!m.bot || !window.fetch) return Promise.reject(new Error('нет связи с Telegram'));
+    return fetch('https://api.telegram.org/bot' + m.bot + '/getFile?file_id=' + encodeURIComponent(fid)).then(function (r) { return r.json(); }).then(function (j) {
+      if (!j.ok) throw new Error(j.description || 'Telegram не отдал файл');
+      return 'https://api.telegram.org/file/bot' + m.bot + '/' + j.result.file_path;
+    });
+  }
+  // covers: a link lives about an hour, so it is kept for 50 minutes and asked again after that
+  var muAsking = 0, muWait = [];
+  function muCoverUrl(t) {
+    var c = muCov[t.uid];
+    if (c && Date.now() - c.at < 50 * 60000) return c.u;
+    if (t.cover && muWait.indexOf(t) < 0) { muWait.push(t); muPump(); }
+    return '';
+  }
+  function muPump() {
+    while (muAsking < 3 && muWait.length) {
+      var t = muWait.shift(); muAsking++;
+      (function (t) {
+        tgLink(t.cover).then(function (u) {
+          muCov[t.uid] = { u: u, at: Date.now() };
+          try { localStorage.setItem('muCov', JSON.stringify(muCov)); } catch (e) {}
+          var im = document.querySelectorAll('img[data-mc="' + t.uid + '"]');
+          for (var i = 0; i < im.length; i++) { im[i].src = u; im[i].style.display = ''; }
+        }).catch(function () {}).then(function () { muAsking--; muPump(); });
+      })(t);
+    }
+  }
+  function muCoverImg(t, cls) {
+    var hue = hash(t.uid || t.title || '') % 360, u = muCoverUrl(t);
+    return '<span class="' + cls + '" style="background:linear-gradient(150deg,hsl(' + hue + ',60%,38%),hsl(' + ((hue + 70) % 360) + ',65%,16%))">' + I.note +
+      '<img data-mc="' + esc(t.uid) + '" alt=""' + (u ? ' src="' + esc(u) + '"' : ' style="display:none"') + ' onerror="this.style.display=\'none\'"></span>';
+  }
+  function muNow() { return muPos >= 0 ? muQueue[muPos] : null; }
+  function muEnsure() {
+    if (MU) return MU;
+    MU = document.createElement('audio');
+    MU.preload = 'auto'; MU.style.display = 'none';
+    document.body.appendChild(MU);
+    MU.addEventListener('ended', function () { muStep(1); });
+    MU.addEventListener('play', muUi); MU.addEventListener('pause', muUi); MU.addEventListener('loadedmetadata', muUi);
+    MU.addEventListener('error', function () { muErr = 'Не получилось включить трек — пробую следующий'; muUi(); setTimeout(function () { muStep(1); }, 1500); });
+    return MU;
+  }
+  function muStart(list, i) {
+    if (AU && !AU.paused) AU.pause();
+    muQueue = list.slice(); muPos = i;
+    muLoad(true);
+  }
+  function muLoad(autoplay) {
+    var t = muNow(); if (!t) return;
+    var a = muEnsure(); muErr = '';
+    a.removeAttribute('src');
+    var uid = t.uid;
+    tgLink(t.file).then(function (u) {
+      var now = muNow(); if (!now || now.uid !== uid) return;
+      a.src = u;
+      if (autoplay) { var p = a.play(); if (p && p.catch) p.catch(function () { muErr = 'Нажми ▶, чтобы начать'; muUi(); }); }
+    }).catch(function (e) { muErr = (e && e.message) || 'Telegram не отвечает'; muUi(); });
+    if (navigator.mediaSession && window.MediaMetadata) {
+      try {
+        var cu = muCoverUrl(t);
+        navigator.mediaSession.metadata = new MediaMetadata({ title: t.title || '', artist: t.artist || '', album: (muData().channel || {}).title || 'Музыка', artwork: cu ? [{ src: cu, sizes: '320x320' }] : [] });
+        navigator.mediaSession.setActionHandler('nexttrack', function () { muStep(1); });
+        navigator.mediaSession.setActionHandler('previoustrack', function () { muStep(-1); });
+      } catch (e) {}
+    }
+    if (view.name === 'music') render(null, true);
+  }
+  function muStep(d) {
+    if (!muQueue.length) return;
+    muPos = (muPos + d + muQueue.length) % muQueue.length;
+    muLoad(true);
+  }
+  function muToggle() {
+    if (!MU || !muNow()) { var l = muTracks(); if (l.length) muStart(muShuffle ? shuffled(l) : l, 0); return; }
+    if (MU.paused) { var p = MU.play(); if (p && p.catch) p.catch(function () {}); } else MU.pause();
+  }
+  function shuffled(l) { var a = l.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+  function muUi() {
+    var t = muNow();
+    var bt = document.getElementById('mu-pp'); if (bt) bt.innerHTML = MU && !MU.paused ? I.pause : I.play;
+    var f = document.getElementById('mu-fill'); if (f && MU) f.style.width = (MU.duration ? MU.currentTime / MU.duration * 100 : 0) + '%';
+    var c = document.getElementById('mu-cur'); if (c && MU) c.textContent = fmtT(MU.currentTime);
+    var d = document.getElementById('mu-dur'); if (d && t) d.textContent = fmtT((MU && MU.duration) || t.dur);
+    var e = document.getElementById('mu-err'); if (e) { e.textContent = muErr; e.style.display = muErr ? '' : 'none'; }
+    var rows = document.querySelectorAll('.mrow');
+    for (var i = 0; i < rows.length; i++) rows[i].classList.toggle('cur', !!t && rows[i].getAttribute('data-uid') === t.uid);
+    var nv = document.querySelector('[data-key="nav-music"]'); if (nv) nv.classList.toggle('live', !!MU && !MU.paused);
+  }
+  setInterval(function () { if (MU && !MU.paused && view.name === 'music') muUi(); }, 1000);
+
+  function music() {
+    var m = muData(), list = muTracks(), ch = m.channel || {};
+    var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>';
+    if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
+      ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
+    var t = muNow(), playing = MU && !MU.paused;
+    h += '<section class="mnow glass">' + muCoverImg(t || list[0], 'mbig') +
+      '<div class="minfo"><span class="hchip">' + esc(ch.title || 'Telegram') + ' · ' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span>' +
+      '<h2>' + esc(t ? t.title : 'Вся музыка канала') + '</h2><div class="mart">' + esc(t ? (t.artist || '') : 'Новые сверху') + '</div>' +
+      '<div class="abst" id="mu-err" style="display:none"></div>' +
+      (t ? '<div class="abbar"><div class="abfill" id="mu-fill"></div></div><div class="abtimes"><span id="mu-cur">0:00</span><span id="mu-dur">' + fmtT(t.dur) + '</span></div>' : '') +
+      '<div class="abbtns">' +
+        (t ? '<button class="abb" data-f data-key="mu-prev" data-act="muprev" aria-label="Предыдущий трек">' + I.prev + '</button>' : '') +
+        '<button class="abb abplay btn pri" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
+        (t ? '<button class="abb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' : '') +
+        '<button class="abb' + (muShuffle ? ' on' : '') + '" data-f data-key="mu-shuf" data-act="mushuffle" aria-label="Вперемешку">' + I.shuffle + '</button>' +
+      '</div></div></section>';
+    h += '<section class="mlist">';
+    for (var i = 0; i < list.length; i++) {
+      var x = list[i];
+      h += '<button class="mrow' + (t && t.uid === x.uid ? ' cur' : '') + '" data-uid="' + esc(x.uid) + '" data-f data-key="mt-' + esc(x.uid) + '" data-act="muplay:' + i + '">' +
+        muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + '</span></span>' +
+        '<span class="mdur">' + (t && t.uid === x.uid && playing ? '<i class="eq"><b></b><b></b><b></b></i>' : fmtT(x.dur)) + '</span></button>';
+    }
+    return h + '</section>';
+  }
+
   function abDrivePlayer(fid) {
     abStatus('');
     var box = document.getElementById('abdrive');
@@ -1228,6 +1358,7 @@
   }
 
   function abStart(b, ci, t, autoplay) {
+    if (MU && !MU.paused) MU.pause();
     var a = abEnsure(), ch = (b.chapters || [])[ci];
     if (!ch) return;
     a.removeAttribute('data-resolved'); a.removeAttribute('data-blob');
@@ -1352,6 +1483,7 @@
     if (view.name === 'downloads') return downloads();
     if (view.name === 'savers') return savers();
     if (view.name === 'books') return books();
+    if (view.name === 'music') return music();
     if (view.name === 'book') return bookPlayer();
     if (view.name === 'author') return authorPage();
     if (view.name === 'tv') return tvPage();
@@ -1510,6 +1642,11 @@
       case 'openhome': if (A.openHome) A.openHome(); return;
       case 'andset': if (A.androidSettings) A.androidSettings(); return;
       case 'dateset': if (A.dateSettings) A.dateSettings(); return;
+      case 'mutoggle': muToggle(); muUi(); return;
+      case 'munext': muStep(1); return;
+      case 'muprev': if (MU && MU.currentTime > 5) { MU.currentTime = 0; } else muStep(-1); return;
+      case 'mushuffle': muShuffle = !muShuffle; if (muShuffle && muQueue.length) { var cur = muNow(); muQueue = shuffled(muTracks()); muPos = Math.max(0, muQueue.indexOf(cur)); } render('mu-shuf', true); return;
+      case 'muplay': { var ml = muTracks(), mi = +arg; if (muShuffle) { var q = shuffled(ml.filter(function (z, zi) { return zi !== mi; })); q.unshift(ml[mi]); muStart(q, 0); } else muStart(ml, mi); return; }
       case 'season': view = { name: 'film', id: view.id, season: parseInt(arg, 10) }; render('sn-' + arg, true); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;

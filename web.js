@@ -30,6 +30,7 @@
   // ---------- data ----------
   var LIB = get('lc_lib', {});
   var SHARED = get('lc_shared', {});
+  var MUSIC = get('lc_music', null);
   var P = get('lc_prefs', {});
   P.local = P.local || {}; P.progress = P.progress || {}; P.last = P.last || {};
   function saveP() { put('lc_prefs', P); }
@@ -133,7 +134,7 @@
     });
     return {
       films: out, platform: 'web', noDownloads: true, syncedAt: P.syncedAt || '', syncing: syncing, error: lastError,
-      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), collections: LIB.collections || [],
+      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), music: MUSIC, collections: LIB.collections || [],
       scanReport: 'список файлов приходит с проектора и Mac' + (syncNote ? ' · ' + syncNote : ''), update: ''
     };
   }
@@ -177,6 +178,7 @@
         LIB = await r.json(); put('lc_lib', LIB);
         var a = await gh('/contents/sync/auto.json', { headers: { Accept: 'application/vnd.github.raw+json' } });
         if (a.status === 200) { SHARED = await a.json(); put('lc_shared', SHARED); }
+        try { var mu = await gh('/contents/music/music.json', { headers: { Accept: 'application/vnd.github.raw+json' } }); if (mu.status === 200) { MUSIC = await mu.json(); put('lc_music', MUSIC); } } catch (e) { }
         lastError = ''; P.syncedAt = nowIso();
         try { await syncUser(); } catch (e) { syncNote = 'синхронизация не удалась'; }
         saveP();

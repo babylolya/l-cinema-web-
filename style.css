@@ -1029,3 +1029,33 @@ html.web .hero .hpeek { flex-direction: column; }
 html.web .hero .hpeek .bg { position: relative; left: auto; aspect-ratio: 16 / 9; width: 100%; flex-shrink: 0; }
 html.web .hero .hpeek .bgblur { display: block; position: absolute; top: 0; right: 0; bottom: 0; left: 0; z-index: 0; overflow: hidden; }
 html.web .hero .hpeek .info { position: relative; z-index: 2; }
+
+/* ---------- music from the Telegram channel ---------- */
+.mnow { display: flex; gap: 32px; align-items: center; padding: 28px; border-radius: 26px; margin-bottom: 26px; }
+.mbig, .mcv { position: relative; flex-shrink: 0; display: flex; align-items: center; justify-content: center; overflow: hidden; color: rgba(255,255,255,0.55); }
+.mbig { width: 240px; height: 240px; border-radius: 22px; box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.08); }
+.mbig svg { width: 64px; height: 64px; }
+.mcv { width: 58px; height: 58px; border-radius: 12px; }
+.mbig img, .mcv img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.minfo { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.minfo h2 { font-family: Unbounded, sans-serif; font-size: 30px; line-height: 1.15; margin: 4px 0 0; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.mart { color: rgba(255,255,255,0.7); font-size: 18px; }
+.minfo .abbtns { justify-content: flex-start; }
+.minfo .abb.on { color: #FF6FE0; box-shadow: inset 0 0 0 2px rgba(255,111,224,0.6); }
+.mlist { display: flex; flex-direction: column; gap: 6px; padding-bottom: 40px; }
+.mrow { display: flex; align-items: center; gap: 16px; width: 100%; text-align: left; padding: 10px 14px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 0; color: #fff; font: inherit; cursor: pointer; }
+.mrow:focus, html.mac .mrow:hover { background: rgba(255,255,255,0.12); outline: none; box-shadow: 0 0 0 2px rgba(110,231,255,0.7); }
+.mrow.cur { background: rgba(255,111,224,0.12); }
+.mtx { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.mtt { font-weight: 600; font-size: 17px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mta { color: rgba(255,255,255,0.6); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mdur { color: rgba(255,255,255,0.55); font-size: 14px; font-variant-numeric: tabular-nums; }
+html.lite .mrow { transition: none; }
+@media (max-width: 760px) {
+  html.web .mnow { flex-direction: column; align-items: stretch; gap: 18px; padding: 18px; }
+  html.web .mbig { width: 100%; height: auto; aspect-ratio: 1 / 1; max-width: 360px; align-self: center; }
+  html.web .minfo h2 { font-size: 22px; }
+  html.web .minfo .abbtns { justify-content: center; }
+  html.web .mrow { padding: 8px 10px; gap: 12px; }
+  html.web .mcv { width: 50px; height: 50px; }
+}
