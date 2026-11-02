@@ -1103,3 +1103,12 @@ html:not(.web) body.inmusic .minfo > * + * { margin-top: 6px; }
 html:not(.web) body.inmusic .minfo .abbtns { margin-top: 8px; }
 html:not(.web) body.inmusic .minfo .abb { width: 50px; height: 50px; }
 html:not(.web) body.inmusic .minfo .abb.abplay { width: 62px; height: 62px; }
+
+/* old TV browsers: nothing in «Музыка» may grow wider than the screen (buttons and rows ran off the right edge) */
+.mnow, .mlist, .mrow, .ltabs { width: 100%; max-width: 100%; box-sizing: border-box; min-width: 0; }
+.mnow { overflow: hidden; }
+.minfo { -webkit-flex: 1 1 0; flex: 1 1 0; width: 0; min-width: 0; overflow: hidden; }
+.minfo .abbar { width: 100%; max-width: 640px; }
+.minfo .abtimes { max-width: 640px; }
+.mtx { -webkit-flex: 1 1 0; flex: 1 1 0; width: 0; }
+.mrow .mcv, .mnow .mbig { -webkit-flex-shrink: 0; flex-shrink: 0; }

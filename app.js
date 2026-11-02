@@ -1041,7 +1041,14 @@
   var muCov = {};
   try { muCov = JSON.parse(localStorage.getItem('muCov') || '{}') || {}; } catch (e) { muCov = {}; }
   function muData() { return S.music || {}; }
-  function muTracks() { return muData().tracks || []; }
+  function muTracks() {
+    var base = muData().tracks || [], seen = {}, out = [];
+    base.forEach(function (t) { seen[t.uid] = 1; });
+    // tracks the app already saw itself, until the GitHub job has them too; newest first
+    (typeof muExtra !== 'undefined' ? muExtra : []).forEach(function (t) { if (!seen[t.uid]) { seen[t.uid] = 1; out.push(t); } });
+    out.sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
+    return out.concat(base);
+  }
   function tgLink(fid) {
     var m = muData();
     if (!m.bot || !window.fetch) return Promise.reject(new Error('нет связи с Telegram'));
@@ -1076,6 +1083,32 @@
     return '<span class="' + cls + '" style="background:linear-gradient(150deg,hsl(' + hue + ',60%,38%),hsl(' + ((hue + 70) % 360) + ',65%,16%))">' + I.note +
       '<img data-mc="' + esc(t.uid) + '" alt=""' + (u ? ' src="' + esc(u) + '"' : ' style="display:none"') + ' onerror="this.style.display=\'none\'"></span>';
   }
+  // new posts show up at once: the app peeks at the bot's fresh updates itself (the GitHub job saves them later)
+  var muLiveAt = 0, muLiveBusy = false, muExtra = [];
+  try { muExtra = JSON.parse(localStorage.getItem('muExtra') || '[]') || []; } catch (e) { muExtra = []; }
+  function muLive() {
+    var m = muData(); if (!m.bot || !window.fetch || muLiveBusy || Date.now() - muLiveAt < 45000) return;
+    muLiveBusy = true; muLiveAt = Date.now();
+    var ch = String((m.channel || {}).username || '').toLowerCase();
+    fetch('https://api.telegram.org/bot' + m.bot + '/getUpdates?timeout=0&offset=' + (m.offset || 0) + '&allowed_updates=' + encodeURIComponent('["channel_post","edited_channel_post","message"]'))
+      .then(function (r) { return r.json(); }).then(function (j) {
+        var have = {}, added = 0;
+        muTracks().forEach(function (t) { have[t.uid] = 1; });
+        (j.result || []).forEach(function (u) {
+          var msg = u.channel_post || u.edited_channel_post || u.message; if (!msg) return;
+          var c = msg.chat || {}, fo = msg.forward_origin || {}, fc = fo.chat || msg.forward_from_chat || {};
+          var mine = c.type === 'channel' ? String(c.username || '').toLowerCase() === ch : String(fc.username || '').toLowerCase() === ch;
+          var a = msg.audio || (msg.document && /^audio\//.test(msg.document.mime_type || '') ? msg.document : null);
+          if (!mine || !a || have[a.file_unique_id]) return;
+          var nm = String(a.file_name || '').replace(/\.[^.]+$/, '');
+          var t = { uid: a.file_unique_id, file: a.file_id, title: a.title || nm || 'Без названия', artist: a.performer || '', dur: a.duration || 0, at: fo.date || msg.forward_date || msg.date || 0 };
+          var th = a.thumbnail || a.thumb; if (th) t.cover = th.file_id;
+          muExtra.push(t); have[t.uid] = 1; added++;
+        });
+        if (added) { try { localStorage.setItem('muExtra', JSON.stringify(muExtra.slice(-200))); } catch (e) {} if (view.name === 'music') render(null, true); }
+      }).catch(function () {}).then(function () { muLiveBusy = false; });
+  }
+  setInterval(function () { if (view.name === 'music') muLive(); }, 60000);
   function muNow() { return muPos >= 0 ? muQueue[muPos] : null; }
   function muEnsure() {
     if (MU) return MU;
@@ -1146,6 +1179,7 @@
       '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button></div>';
   }
   function music() {
+    muLive();
     var m = muData(), list = muTracks(), ch = m.channel || {};
     var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
