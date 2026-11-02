@@ -308,7 +308,16 @@
     download: noop, downloadAll: noop, remove: noop, installUpdate: noop,
     play: play, restart: function (f, k) { P.progress[k] = { pos: 0, done: false, t: Date.now() }; saveP(); play(f, k); },
     playLoop: function (u) { var s = screensavers().filter(function (x) { return x.url === u; })[0]; if (s && s.drive) { window.open('https://drive.google.com/file/d/' + s.drive + '/view', '_blank'); return; } playLoop(u); },
-    openYoutube: function (id) { window.open('https://www.youtube.com/watch?v=' + id, '_blank'); },
+    openYoutube: function (id) {
+      // screensavers from YouTube play right here, on a loop
+      box.innerHTML = '<div class="pbar"><button class="btn small" id="pClose">← Назад</button></div><div class="pwrap"><div id="ytp"></div></div>';
+      box.hidden = false; document.body.classList.add('playing');
+      document.getElementById('pClose').onclick = closePlayer;
+      ytApi(function () {
+        var yp = new YT.Player('ytp', { videoId: id, width: '100%', height: '100%', playerVars: { autoplay: 1, rel: 0, playsinline: 1, iv_load_policy: 3, loop: 1, playlist: id },
+          events: { onStateChange: function (e) { if (e.data === 0) { yp.seekTo(0, true); yp.playVideo(); } } } });
+      });
+    },
     openUrl: function (u) { window.open(u, '_blank'); },
     setRating: function (id, r) { setLocal(id, 'rating', r); },
     setLiked: function (id, v) { setLocal(id, 'liked', v); },
