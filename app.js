@@ -314,6 +314,11 @@
     });
   }
   setTimeout(nfScan, 20000);
+  setInterval(function () {
+    if (!A || !A.beat || S.platform) return;
+    var im = document.images, ld = 0; for (var i = 0; i < im.length; i++) if (im[i].complete && im[i].naturalWidth > 1) ld++;
+    try { A.beat(view.name + ' imgs:' + ld + '/' + im.length + ' dom:' + document.getElementsByTagName('*').length); } catch (e) {}
+  }, 4000);
   setTimeout(function () {
     if (!A || !A.report || S.platform) return;
     var im = document.images, ok = 0, bad = 0, wait = 0;
@@ -321,7 +326,7 @@
     var badSrc = []; for (var j = 0; j < im.length && badSrc.length < 5; j++) if (im[j].complete && !im[j].naturalWidth) badSrc.push(String(im[j].src).slice(0, 90));
     try { A.report(JSON.stringify({ ua: navigator.userAgent, screen: innerWidth + 'x' + innerHeight + '@' + (window.devicePixelRatio || 1), novars: document.documentElement.className.indexOf('novars') >= 0,
       films: (S.films || []).length, imgsOk: ok, imgsBad: bad, imgsLoading: wait, badSrc: badSrc, errs: DIAG.errs, tState: DIAG.tState, tRender: DIAG.tRender, syncErr: S.error || '', syncedAt: S.syncedAt || '' })); } catch (e) {}
-  }, 70000);
+  }, 25000);
 
   function collFilms(c) {
     if (c.auto === 'liked') return S.films.filter(function (f) { return f.liked; });
