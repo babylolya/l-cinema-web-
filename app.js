@@ -1160,6 +1160,8 @@
   function muUi() {
     var t = muNow();
     var bt = document.getElementById('mu-pp'); if (bt) bt.innerHTML = MU && !MU.paused ? I.pause : I.play;
+    var mb = document.getElementById('mm-pp'); if (mb) mb.innerHTML = MU && !MU.paused ? I.pause : I.play;
+    if (t && !document.querySelector('.mmini') && document.documentElement.className.indexOf('web') >= 0) { var d0 = document.createElement('div'); d0.innerHTML = muMini(); if (d0.firstChild) root.appendChild(d0.firstChild); }
     // a stream from Telegram may not tell its length to old browsers (Infinity): the length from the post is used then
     var dur = MU && isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
     var f = document.getElementById('mu-fill'); if (f && MU) f.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
@@ -1177,6 +1179,14 @@
     return '<div class="chips ltabs">' +
       '<button class="chip' + (cur === 'music' ? ' on' : '') + '" data-f data-key="lt-music" data-act="ltab:music">♪ Треки</button>' +
       '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button></div>';
+  }
+  // phone: a small player above the bottom bar while a track is on, on every screen (pause, next, open the music)
+  function muMini() {
+    var t = muNow();
+    if (!t || !MU || document.documentElement.className.indexOf('web') < 0) return '';
+    return '<div class="mmini">' + muCoverImg(t, 'mmcv') + '<button class="mmtx" data-f data-key="mm-open" data-act="go:music"><span class="mtt">' + esc(t.title) + '</span><span class="mta">' + esc(t.artist || '') + '</span></button>' +
+      '<button class="mmb" id="mm-pp" data-f data-key="mm-pp" data-act="mutoggle" aria-label="Пауза">' + (MU.paused ? I.play : I.pause) + '</button>' +
+      '<button class="mmb" data-f data-key="mm-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button></div>';
   }
   function music() {
     muLive();
@@ -1639,7 +1649,7 @@
     var scr = screen();
     var rp = rateFor && view.name === 'film' ? ratePrompt() : '';
     if (rp) scr = '<div class="under">' + scr.replace(/ data-f/g, '') + '</div>';
-    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '') +
+    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '') + muMini() +
       (hintNow ? '<div class="backhint">◀ «Назад» на пульте — выйти</div>' : '') + (sparkle ? glitterHtml() : '');
     var newVid = document.querySelector('.svvid');
     if (oldVid && newVid && oldVid.getAttribute('data-src') === newVid.getAttribute('data-src')) newVid.parentNode.replaceChild(oldVid, newVid);

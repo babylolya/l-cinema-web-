@@ -1118,3 +1118,10 @@ html:not(.web) body.inmusic .minfo .abb.abplay { width: 62px; height: 62px; }
 .mlist > .mrow { display: -webkit-flex; display: flex; -webkit-flex-shrink: 0; flex-shrink: 0; min-height: 78px; }
 .mrow .mcv { width: 58px; height: 58px; min-height: 58px; }
 html:not(.web) body.inmusic #main > .mnow { -webkit-flex-shrink: 0; flex-shrink: 0; }
+
+/* phone: the player's text and buttons sit under the cover (the TV rule «width: 0» made them vanish there) */
+@media (max-width: 760px) {
+  html.web .mnow .minfo { -webkit-flex: none; flex: none; width: auto; overflow: visible; }
+  html.web .mnow .minfo .hchip { align-self: center; }
+  html.web .mnow .minfo h2, html.web .mnow .mart { text-align: center; }
+}
