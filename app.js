@@ -1262,7 +1262,10 @@
     for (var ci2 = 0; ci2 < cats.length; ci2++) h += '<button class="chip' + (cats[ci2] === pick ? ' on' : '') + '" data-f data-key="abcat-' + esc(cats[ci2]) + '" data-act="abcat:' + esc(cats[ci2]) + '">' + (cats[ci2] === 'Медитации' ? '✦ ' : '') + esc(cats[ci2]) + '</button>';
     h += '</div>';
     list = list.filter(function (b) { return pick === 'Все' || (pick === 'Книги' ? !b.category : b.category === pick); });
-    if (!list.length) return h + '<div class="empty glass"><h1>Здесь пока пусто</h1><p>' + (pick === 'Медитации' ? 'Положи на Диске в папку «аудиокниги» папку «медитации» с аудиофайлами — они появятся тут.' : 'Нет записей в этом разделе.') + '</p></div>';
+    // videos from her own YouTube channels for this section (Hz meditations), played in YouTube's player like screensavers
+    var yts = pick === 'Книги' ? '' : ytShelves(pick === 'Все' ? '' : pick);
+    h += yts;
+    if (!list.length) return h + (yts ? '' : '<div class="empty glass"><h1>Здесь пока пусто</h1><p>' + (pick === 'Медитации' ? 'Положи на Диске в папку «аудиокниги» папку «медитации» с аудиофайлами — они появятся тут.' : 'Нет записей в этом разделе.') + '</p></div>');
     // authors first (a round portrait each), their books one level deeper; books without an author below
     var authors = [], byAuthor = {}, loose = [];
     list.forEach(function (b) {
@@ -1280,6 +1283,26 @@
     }
     if (loose.length) h += '<section class="absec">' + (authors.length ? '<h2 class="h2">' + (pick === 'Медитации' ? 'Медитации' : 'Без автора') + '</h2>' : '') + bookGrid(loose, cur) + '</section>';
     return h;
+  }
+
+  function ytShelves(section) {
+    var out = '';
+    (S.ytChannels || []).forEach(function (c) {
+      if (section && c.section !== section) return;
+      var v = (c.videos || []).slice();
+      // a course («Day 1, Day 2…») goes in its order; everything else newest first, as YouTube lists it
+      var day = function (x) { var m = /Day\s*(\d+)/i.exec(x.title || ''); return m ? +m[1] : 0; };
+      if (v.some(day)) v.sort(function (a, b) { return (day(a) || 999) - (day(b) || 999); });
+      if (!v.length) return;
+      out += '<section class="absec"><h2 class="h2">✦ ' + esc(c.title || c.channel || 'YouTube') + '</h2><div class="ytgrid">';
+      v.forEach(function (x) {
+        var t = String(x.title || ''), m = /^(.*?)\s*[|·]\s*(.*)$/.exec(t), main = m ? m[1] : t, sub = m ? m[2] : '';
+        out += '<button class="ytcard" data-f data-key="yt-' + esc(x.id) + '" data-act="ytplay:' + esc(x.id) + '"><span class="ytth"><img ' + psrc('https://i.ytimg.com/vi/' + x.id + '/hqdefault.jpg') + ' alt="" onerror="this.remove()"><i class="ytpl"></i></span>' +
+          '<span class="ytt">' + esc(main) + '</span>' + (sub ? '<span class="yts">' + esc(sub) + '</span>' : '') + '</button>';
+      });
+      out += '</div></section>';
+    });
+    return out;
   }
 
   function bookGrid(list, cur) {
@@ -1755,6 +1778,7 @@
       case 'openhome': if (A.openHome) A.openHome(); return;
       case 'andset': if (A.androidSettings) A.androidSettings(); return;
       case 'dateset': if (A.dateSettings) A.dateSettings(); return;
+      case 'ytplay': if (MU && !MU.paused) MU.pause(); if (AU && !AU.paused) AU.pause(); A.openYoutube(arg); return;
       case 'ltab': if (view.name !== arg) { stack = []; view = { name: arg }; render('lt-' + arg, false); } return;
       case 'mutoggle': muToggle(); muUi(); return;
       case 'munext': muStep(1); return;
