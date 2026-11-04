@@ -43,6 +43,28 @@
   var S = { films: [] };          // state from Android
   var lastShape = '';
   var view = { name: 'home' };    // current screen
+  // the iPhone page: the screen lives in the address (#…), so pulling down to reload stays on the same screen
+  var WEB_URL = /^https?:/.test(location.protocol);
+  var restoreScroll = null;
+  if (WEB_URL) {
+    try {
+      var h0 = decodeURIComponent(location.hash.slice(1));
+      if (h0) { var v0 = JSON.parse(h0); if (v0 && typeof v0.name === 'string') view = v0; }
+      var sc0 = JSON.parse(sessionStorage.getItem('lcScroll') || 'null');
+      if (sc0 && sc0.h === location.hash) restoreScroll = sc0.y;
+    } catch (e) { view = { name: 'home' }; }
+    window.addEventListener('pagehide', function () {
+      try { var m = document.getElementById('main'); sessionStorage.setItem('lcScroll', JSON.stringify({ h: location.hash, y: m ? m.scrollTop : 0 })); } catch (e) {}
+    });
+  }
+  function saveViewUrl() {
+    if (!WEB_URL) return;
+    try {
+      var v = {}; for (var k in view) if (typeof view[k] !== 'object' && typeof view[k] !== 'function') v[k] = view[k];
+      var hh = view.name === 'home' ? '' : '#' + encodeURIComponent(JSON.stringify(v));
+      if (hh !== location.hash && !(hh === '' && !location.hash)) history.replaceState(null, '', location.pathname + location.search + hh);
+    } catch (e) {}
+  }
   var stack = [];                 // back history
   var confirmKey = null;          // "press again to delete"
   var full = -1;                  // index of the screensaver open on the whole screen
@@ -1938,7 +1960,13 @@
   function render(focusKey, keepScroll) {
     if (!muWrapChecked && S.music && view.name === 'home') setTimeout(muWrapAuto, 400);
     var tr0 = Date.now();
-    try { renderNow(focusKey, keepScroll); if (lazyOn()) lazyPass(); } finally { if (DIAG.tRender.length < 12) DIAG.tRender.push(view.name + ' ' + (Date.now() - tr0) + 'ms'); }
+    try {
+      try { renderNow(focusKey, keepScroll); }
+      catch (e) { if (view.name === 'home') throw e; view = { name: 'home' }; stack = []; renderNow(null, false); } // a remembered screen that no longer exists
+      saveViewUrl();
+      if (restoreScroll != null && S.films && S.films.length) { var mm = document.getElementById('main'); if (mm) mm.scrollTop = restoreScroll; restoreScroll = null; }
+      if (lazyOn()) lazyPass();
+    } finally { if (DIAG.tRender.length < 12) DIAG.tRender.push(view.name + ' ' + (Date.now() - tr0) + 'ms'); }
   }
   function renderNow(focusKey, keepScroll) {
     var active = document.activeElement;
