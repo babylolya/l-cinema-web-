@@ -1424,7 +1424,7 @@
       '<span class="wrstx"><span class="wrk">Исполнитель года</span><span class="wrsn">' + esc(top.name) + '</span><span class="wrss">' + fmtNum(Math.round(top.sec / 60)) + ' ' + plural(Math.round(top.sec / 60), 'минута', 'минуты', 'минут') + ' · ' + top.n + ' ' + plural(top.n, 'прослушивание', 'прослушивания', 'прослушиваний') + '</span></span></button>';
     if (st.artists.length > 1) {
       h += '<div class="h2 masub">Топ исполнителей</div><div class="marow row" data-row="wra">';
-      st.artists.slice(0, 10).forEach(function (a, i) { h += '<button class="macard" data-f data-key="wa-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muArtImg(a.name, a.t, 'macv') + '<span class="man">' + (i + 1) + '. ' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'раз', 'раза', 'раз') + '</span></button>'; });
+      st.artists.slice(0, 10).forEach(function (a, i) { h += '<button class="macard" data-f data-key="wa-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + '<span class="maring">' + muArtImg(a.name, a.t, 'macv') + '</span>' + '<span class="man">' + (i + 1) + '. ' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'раз', 'раза', 'раз') + '</span></button>'; });
       h += '</div>';
     }
     h += '<div class="h2 masub">Топ треков</div>';
@@ -1476,11 +1476,12 @@
       var arts = muArtistList();
       if (arts.length > 1) {
         h += '<div class="h2 masub">Исполнители</div><div class="marow row" data-row="ma">';
-        arts.forEach(function (a) { h += '<button class="macard" data-f data-key="ma-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muArtImg(a.name, a.t, 'macv') + '<span class="man">' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'трек', 'трека', 'треков') + '</span></button>'; });
+        arts.forEach(function (a) { h += '<button class="macard" data-f data-key="ma-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + '<span class="maring">' + muArtImg(a.name, a.t, 'macv') + '</span>' + '<span class="man">' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'трек', 'трека', 'треков') + '</span></button>'; });
         h += '</div>';
       }
-      h += '<div class="mallh"><span class="h2 masub">Все треки</span><button class="btn small pri" data-f data-key="mu-all" data-act="muplay:0">' + I.play + ' Слушать</button>' +
-        '<button class="btn small" data-f data-key="mu-allshuf" data-act="muallshuf">' + I.shuffle + ' Вперемешку</button></div>';
+      h += '<div class="mallh"><span class="h2 masub">Все треки</span><span class="mallc">' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span></div>' +
+        '<div class="mallb"><button class="mallbtn" data-f data-key="mu-all" data-act="muplay:0">' + I.play + 'Слушать</button>' +
+        '<button class="mallbtn" data-f data-key="mu-allshuf" data-act="muallshuf">' + I.shuffle + 'Вперемешку</button></div>';
     }
     for (var i = 0; i < list.length; i++) {
       var x = list[i];

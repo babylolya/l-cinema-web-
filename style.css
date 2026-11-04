@@ -1450,3 +1450,28 @@ html:not(.web) .mfull.out.go .mfcard { -webkit-transform: none; transform: none;
 html.web .yabtns .btn.pri:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.22) !important; }
 html.web .yabtns .btn:not(.pri):focus, html.web .yaback:focus, html.web .mfb:focus, html.web .mfclose:focus, html.web .mpround:focus, html.web .mmini .mmtx:focus, html.web .mmini .mmb:focus { box-shadow: none !important; }
 html.web .mmini .mmtx:focus { background: none; }
+
+/* artists: a glowing ring in the app's colours (pink, violet, blue) */
+.maring { display: block; width: 104px; height: 104px; margin: 0 auto 10px; padding: 3px; box-sizing: border-box; border-radius: 50%;
+  background: linear-gradient(135deg, #FF5FDB 0%, #C84BFF 55%, #5CC8FF 100%); box-shadow: 0 8px 26px rgba(200,75,255,0.35), 0 0 18px rgba(255,95,219,0.25); transition: transform .1s ease-out, box-shadow .2s; }
+.maring .macv { width: 100% !important; height: 100% !important; margin: 0 !important; box-sizing: border-box; border: 3px solid #0E0B14; box-shadow: none !important; line-height: 92px; }
+.macard:focus .maring, html.mac .macard:hover .maring { box-shadow: 0 0 0 3px #fff, 0 10px 34px rgba(255,95,219,0.6); }
+.macard:focus .macv, .macard.focus .macv { box-shadow: none !important; }
+.macard:active .maring { -webkit-transform: scale(0.95); transform: scale(0.95); }
+.macard:active { -webkit-transform: none; transform: none; }
+@media (max-width: 700px) { .maring { width: 84px; height: 84px; } .maring .macv { line-height: 72px; } }
+html.web .macard:focus .maring { box-shadow: 0 8px 26px rgba(200,75,255,0.35), 0 0 18px rgba(255,95,219,0.25); }
+html.web .macard:focus { background: none; }
+
+/* «Все треки»: title with the count, then two even buttons like Apple Music */
+.mallh { display: -webkit-flex; display: flex; -webkit-align-items: baseline; align-items: baseline; margin: 22px 0 12px; }
+.mallh .masub { margin: 0 10px 0 0; }
+.mallc { font-size: 14px; color: rgba(255,255,255,0.5); letter-spacing: 0.01em; }
+.mallb { display: -webkit-flex; display: flex; margin: 0 -6px 14px; }
+.mallbtn { -webkit-flex: 1 1 0; flex: 1 1 0; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; height: 50px; margin: 0 6px; padding: 0 12px;
+  border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; background: rgba(255,255,255,0.07); color: #FF7FE3; font: inherit; font-size: 16px; font-weight: 700; cursor: pointer; transition: transform .1s ease-out, background .15s, box-shadow .15s; }
+.mallbtn svg { width: 18px; height: 18px; margin-right: 8px; fill: currentColor; }
+.mallbtn:active { -webkit-transform: scale(0.97); transform: scale(0.97); background: rgba(255,255,255,0.12); }
+.mallbtn:focus, html.mac .mallbtn:hover { outline: none; background: rgba(255,95,219,0.16); box-shadow: 0 0 0 2px #FF7FE3; }
+html.web .mallbtn:focus { box-shadow: none; background: rgba(255,255,255,0.07); }
+html:not(.web) .mallb { max-width: 520px; }
