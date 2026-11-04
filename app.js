@@ -164,6 +164,7 @@
   // ---------- icons ----------
 
   var I = {
+    repeat: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/><text x="12" y="15.5" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-weight="700">1</text></svg>',
     note: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
     shuffle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>',
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></svg>',
@@ -1114,13 +1115,25 @@
       }).catch(function () {}).then(function () { muLiveBusy = false; });
   }
   setInterval(function () { if (view.name === 'music') muLive(); }, 60000);
+  var muRepeat = false;
+  try { muRepeat = localStorage.getItem('muRepeat') === '1'; } catch (e) {}
+  // artists: «A, B» and «A feat. B» count for each of them («Rauf & Faik» stays one duo)
+  function muArtists(t) { return String(t.artist || '').split(/\s*(?:,|;|\(?\bfeat\.?|\(?\bft\.?|\(?\bприн\.)\s*/i).map(function (a) { return a.replace(/\)\s*$/, ''); }).map(function (a) { return a.trim(); }).filter(Boolean); }
+  function muByArtist(name) { var n = name.toLowerCase(); return muTracks().filter(function (t) { return muArtists(t).some(function (a) { return a.toLowerCase() === n; }); }); }
+  function muArtistList() {
+    var map = {}, order = [];
+    muTracks().forEach(function (t) { muArtists(t).forEach(function (a) { var k = a.toLowerCase(); if (!map[k]) { map[k] = { name: a, n: 0, t: t }; order.push(k); } map[k].n++; if (!map[k].t.cover && t.cover) map[k].t = t; }); });
+    return order.map(function (k) { return map[k]; }).sort(function (a, b) { return b.n - a.n || a.name.localeCompare(b.name, 'ru'); });
+  }
+  // the list on screen: all tracks, or one artist's
+  function muView() { return view.artist ? muByArtist(view.artist) : muTracks(); }
   function muNow() { return muPos >= 0 ? muQueue[muPos] : null; }
   function muEnsure() {
     if (MU) return MU;
-    MU = document.createElement('audio');
+    MU = document.createElement('audio'); MU.loop = muRepeat;
     MU.preload = 'auto'; MU.style.display = 'none';
     document.body.appendChild(MU);
-    MU.addEventListener('ended', function () { muStep(1); });
+    MU.addEventListener('ended', function () { if (muRepeat) { try { MU.currentTime = 0; } catch (e) {} var p = MU.play(); if (p && p.catch) p.catch(function () {}); return; } muStep(1); });
     MU.addEventListener('play', muUi); MU.addEventListener('pause', muUi); MU.addEventListener('loadedmetadata', muUi);
     var muLast = 0;
     MU.addEventListener('timeupdate', function () { if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
@@ -1195,14 +1208,17 @@
   }
   function music() {
     muLive();
-    var m = muData(), list = muTracks(), ch = m.channel || {};
+    var m = muData(), all = muTracks(), list = muView(), ch = m.channel || {};
     var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
+    if (view.artist && !list.length) { view = { name: 'music' }; list = all; }
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
       ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
     var t = muNow(), playing = MU && !MU.paused;
     h += '<section class="mnow glass">' + muCoverImg(t || list[0], 'mbig') +
       '<div class="minfo"><span class="hchip">' + esc(ch.title || 'Telegram') + ' · ' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span>' +
-      '<h2>' + esc(t ? t.title : 'Вся музыка канала') + '</h2><div class="mart">' + esc(t ? (t.artist || '') : 'Новые сверху') + '</div>' +
+      '<h2>' + esc(t ? t.title : (view.artist || 'Вся музыка канала')) + '</h2>' +
+      (t && muArtists(t).length ? '<div class="mart">' + muArtists(t).map(function (a) { return '<button class="martl" data-f data-key="ma-' + esc(a) + '" data-act="muartist:' + esc(a) + '">' + esc(a) + '</button>'; }).join(', ') + '</div>'
+        : '<div class="mart">' + esc(t ? (t.artist || '') : (view.artist ? list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') : 'Новые сверху')) + '</div>') +
       '<div class="abst" id="mu-err" style="display:none"></div>' +
       (t ? '<div class="abbar"><div class="abfill" id="mu-fill"></div></div><div class="abtimes"><span id="mu-cur">0:00</span><span id="mu-dur">' + fmtT(t.dur) + '</span></div>' : '') +
       '<div class="abbtns">' +
@@ -1210,8 +1226,18 @@
         '<button class="abb abplay btn pri" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
         (t ? '<button class="abb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' : '') +
         '<button class="abb' + (muShuffle ? ' on' : '') + '" data-f data-key="mu-shuf" data-act="mushuffle" aria-label="Вперемешку">' + I.shuffle + '</button>' +
+        '<button class="abb' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
       '</div></div></section>';
     h += '<section class="mlist">';
+    if (view.artist) h += '<div class="mahead"><button class="btn small" data-f data-key="ma-back" data-act="muartist:">' + I.back + ' Все треки</button><span class="h2">' + esc(view.artist) + '</span></div>';
+    else {
+      var arts = muArtistList();
+      if (arts.length > 1) {
+        h += '<div class="h2 masub">Исполнители</div><div class="marow row" data-row="ma">';
+        arts.forEach(function (a) { h += '<button class="macard" data-f data-key="ma-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muCoverImg(a.t, 'macv') + '<span class="man">' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'трек', 'трека', 'треков') + '</span></button>'; });
+        h += '</div><div class="h2 masub">Все треки</div>';
+      }
+    }
     for (var i = 0; i < list.length; i++) {
       var x = list[i];
       h += '<button class="mrow' + (t && t.uid === x.uid ? ' cur' : '') + '" data-uid="' + esc(x.uid) + '" data-f data-key="mt-' + esc(x.uid) + '" data-act="muplay:' + i + '">' +
@@ -1617,6 +1643,12 @@
     var main = document.getElementById('main');
     // «Музыка»: the player stays put and only the track list scrolls
     var ml = el.closest ? el.closest('.mlist') : null;
+    var mrw = el.closest ? el.closest('.marow') : null;
+    if (mrw && mrw.scrollWidth > mrw.clientWidth) {
+      var mr0 = mrw.getBoundingClientRect(), me0 = el.getBoundingClientRect();
+      if (me0.left < mr0.left + 30) mrw.scrollLeft -= (mr0.left + 30 - me0.left);
+      else if (me0.right > mr0.right - 30) mrw.scrollLeft += (me0.right - (mr0.right - 30));
+    }
     if (ml && document.body.className.indexOf('inmusic') >= 0) {
       var lr = ml.getBoundingClientRect(), er0 = el.getBoundingClientRect();
       ml.scrollTop = Math.max(0, ml.scrollTop + (er0.top + er0.height / 2) - (lr.top + lr.height / 2));
@@ -1783,8 +1815,10 @@
       case 'mutoggle': muToggle(); muUi(); return;
       case 'munext': muStep(1); return;
       case 'muprev': if (MU && MU.currentTime > 5) { MU.currentTime = 0; } else muStep(-1); return;
-      case 'mushuffle': muShuffle = !muShuffle; if (muShuffle && muQueue.length) { var cur = muNow(); muQueue = shuffled(muTracks()); muPos = Math.max(0, muQueue.indexOf(cur)); } render('mu-shuf', true); return;
-      case 'muplay': { var ml = muTracks(), mi = +arg; if (muShuffle) { var q = shuffled(ml.filter(function (z, zi) { return zi !== mi; })); q.unshift(ml[mi]); muStart(q, 0); } else muStart(ml, mi); return; }
+      case 'mushuffle': muShuffle = !muShuffle; if (muShuffle && muQueue.length) { var cur = muNow(); muQueue = shuffled(muView()); muPos = Math.max(0, muQueue.indexOf(cur)); } render('mu-shuf', true); return;
+      case 'murepeat': muRepeat = !muRepeat; if (MU) MU.loop = muRepeat; try { localStorage.setItem('muRepeat', muRepeat ? '1' : '0'); } catch (e) {} render('mu-rep', true); return;
+      case 'muartist': view = arg ? { name: 'music', artist: arg } : { name: 'music' }; render(arg ? 'ma-back' : 'mu-play', false); return;
+      case 'muplay': { var ml = muView(), mi = +arg; if (muShuffle) { var q = shuffled(ml.filter(function (z, zi) { return zi !== mi; })); q.unshift(ml[mi]); muStart(q, 0); } else muStart(ml, mi); return; }
       case 'season': view = { name: 'film', id: view.id, season: parseInt(arg, 10) }; render('sn-' + arg, true); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;
       case 'genre': go({ name: 'genres', genre: arg }, 'g-' + arg); return;
@@ -1877,9 +1911,15 @@
     var r = cur.getBoundingClientRect();
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
     var best = null, bs = Infinity;
+    // up and down inside the page never jump into the side menu (it sits on the left: only ← goes there)
+    var inNav = cur.closest ? !!cur.closest('nav') : false, vert = dir === 'up' || dir === 'down';
     for (var i = 0; i < all.length; i++) {
       var el = all[i];
       if (el === cur) continue;
+      if (vert && !inNav && el.closest && el.closest('nav')) continue;
+      // artist cards scrolled out of their row are reached only from inside the row
+      var erw = el.closest ? el.closest('.marow') : null;
+      if (erw && !erw.contains(cur)) { var wr = erw.getBoundingClientRect(), b0 = el.getBoundingClientRect(); if (b0.left < wr.left - 2 || b0.right > wr.right + 2) continue; }
       var b = el.getBoundingClientRect();
       if (b.width === 0 && b.height === 0) continue;
       var ex = b.left + b.width / 2, ey = b.top + b.height / 2, dp, ds;
