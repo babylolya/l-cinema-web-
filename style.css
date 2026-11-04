@@ -1158,3 +1158,70 @@ html:not(.web) body.inmusic #main > .mnow { -webkit-flex-shrink: 0; flex-shrink:
 .macard .macv img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
 .macard .macv svg { vertical-align: middle; }
 @media (max-width: 700px) { .macard .macv { line-height: 76px; } }
+
+/* ===== Player: a square cover card over its own blurred cover (Apple-widget style) ===== */
+.mwrap { display: block; width: 100%; }
+.mstage { position: relative; overflow: hidden; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center;
+  padding: 40px 20px; margin-bottom: 24px; border-radius: 32px; background: #17131D; box-sizing: border-box; width: 100%; }
+.mstage .mbg { position: absolute; top: -60px; left: -60px; right: -60px; bottom: -60px; z-index: 0; display: block; overflow: hidden; color: transparent;
+  -webkit-filter: blur(46px) saturate(1.25) brightness(0.72); filter: blur(46px) saturate(1.25) brightness(0.72); }
+.mstage .mbg svg { display: none; }
+.mstage .mbg img, .mpc .mpcv img, .mpav img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.mpc { position: relative; z-index: 1; width: 340px; height: 340px; -webkit-flex-shrink: 0; flex-shrink: 0; border-radius: 32px; overflow: hidden;
+  box-shadow: 0 0 0 10px rgba(38,34,42,0.55), 0 34px 80px rgba(0,0,0,0.55); }
+.mpc .mpcv { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: block; overflow: hidden; color: rgba(255,255,255,0.5); }
+.mpc .mpcv svg { position: absolute; top: 50%; left: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; }
+.mpshade { position: absolute; left: 0; right: 0; bottom: 0; height: 62%; background: linear-gradient(to bottom, rgba(0,0,0,0) 0%, rgba(0,0,0,0.45) 45%, rgba(0,0,0,0.78) 100%); pointer-events: none; }
+.mpc::before { content: ''; position: absolute; z-index: 1; left: 0; right: 0; top: 0; height: 32%; background: linear-gradient(to bottom, rgba(0,0,0,0.35), rgba(0,0,0,0)); pointer-events: none; }
+.mptop { position: absolute; z-index: 2; top: 14px; left: 14px; right: 14px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+.mppill { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; height: 54px; padding: 0 18px 0 7px; border-radius: 27px; border: 0; box-sizing: border-box;
+  max-width: 64%; min-width: 0; background: rgba(66,62,72,0.62); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: #fff; font: inherit; text-align: left; cursor: pointer; }
+.mpav { position: relative; display: block; width: 40px; height: 40px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 10px; border-radius: 50%; overflow: hidden; color: rgba(255,255,255,0.6); }
+.mpav svg { position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; margin: -9px 0 0 -9px; }
+.mpwho { display: block; min-width: 0; overflow: hidden; }
+.mpwho b { display: block; font-size: 15px; font-weight: 700; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mpwho small { display: block; font-size: 12px; line-height: 1.3; opacity: 0.72; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mptr { margin-left: auto; display: -webkit-flex; display: flex; -webkit-flex-shrink: 0; flex-shrink: 0; }
+.mpround, .mpb { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; padding: 0; border: 0; border-radius: 50%;
+  background: rgba(66,62,72,0.62); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); color: #fff; cursor: pointer; transition: background .15s, transform .15s, box-shadow .15s; }
+.mpround { width: 48px; height: 48px; margin-left: 10px; }
+.mpround svg { width: 20px; height: 20px; }
+.mpround.on { background: rgba(255,255,255,0.94); color: #15121A; }
+.mpbot { position: absolute; z-index: 2; left: 20px; right: 20px; bottom: 14px; }
+.mptt { color: #fff; font-size: 17px; font-weight: 700; line-height: 1.25; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; text-shadow: 0 1px 8px rgba(0,0,0,0.5); }
+.mpbot .abst { font-size: 12px; color: #FFB4C8; margin: -4px 0 6px; }
+.mptimes { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; color: #fff; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mpbar { height: 4px; margin: 7px 0 12px; border-radius: 2px; background: rgba(255,255,255,0.3); overflow: hidden; }
+.mpfill { height: 100%; width: 0; border-radius: 2px; background: #fff; transition: width 1s linear; }
+.mpbtns { display: -webkit-flex; display: flex; -webkit-justify-content: center; justify-content: center; -webkit-align-items: center; align-items: center; }
+.mpb { width: 50px; height: 50px; margin: 0 9px; background: rgba(50,46,56,0.55); }
+.mpb svg { width: 20px; height: 20px; }
+.mpb.mpplay { width: 58px; height: 58px; }
+.mpb.mpplay svg { width: 22px; height: 22px; }
+.mppill:focus, .mpround:focus, .mpb:focus, html.mac .mppill:hover, html.mac .mpround:hover, html.mac .mpb:hover { outline: none; background: rgba(255,255,255,0.32); box-shadow: 0 0 0 3px #fff, 0 0 26px rgba(255,255,255,0.35); }
+.mpround.on:focus { background: #fff; }
+.mpb:active, .mpround:active, .mppill:active { transform: scale(0.94); }
+html.lite .mstage .mbg { display: none; }
+html.lite .mstage { background: radial-gradient(ellipse at 30% 20%, rgba(150,90,60,0.35), rgba(0,0,0,0) 60%), radial-gradient(ellipse at 80% 90%, rgba(120,70,40,0.3), rgba(0,0,0,0) 60%), #1A161C; }
+html.lite .mppill, html.lite .mpround, html.lite .mpb { background: rgba(40,36,44,0.82); }
+html.lite .mpround.on { background: rgba(255,255,255,0.94); }
+
+/* TV / projector / Mac: the player card stands on the left, the list scrolls on the right */
+html:not(.web) body.inmusic #main > .mwrap { -webkit-flex: 1 1 0; flex: 1 1 0; -webkit-flex-shrink: 1; flex-shrink: 1; min-height: 0; overflow: hidden; display: -webkit-flex; display: flex; -webkit-flex-direction: row; flex-direction: row; }
+html:not(.web) body.inmusic .mwrap > .mstage { width: 430px; height: 100%; max-height: 100%; -webkit-flex-shrink: 0; flex-shrink: 0; margin: 0 26px 12px 0; padding: 0; }
+html:not(.web) body.inmusic .mwrap > .mlist { -webkit-flex: 1 1 0; flex: 1 1 0; width: 0; min-height: 0; overflow-y: auto; overflow-x: hidden; padding: 4px 8px 40px 2px; margin-bottom: 0; }
+html:not(.web) body.inmusic .mwrap .masub:first-child { margin-top: 0; }
+
+/* phone */
+@media (max-width: 700px) {
+  html.web .mstage { padding: 34px 0 36px; border-radius: 28px; margin: 0 0 20px; }
+  html.web .mpc { width: 80vw; height: 80vw; max-width: 380px; max-height: 380px; border-radius: 30px; }
+  html.web .mppill { height: 48px; padding-right: 14px; }
+  html.web .mpav { width: 36px; height: 36px; }
+  html.web .mpround { width: 44px; height: 44px; margin-left: 8px; }
+  html.web .mpb { width: 46px; height: 46px; margin: 0 7px; }
+  html.web .mpb.mpplay { width: 54px; height: 54px; }
+}
+html:not(.web) body.inmusic .mpc { width: 360px; height: 360px; }
+@media (max-height: 600px) { html:not(.web) body.inmusic .mpc { width: 320px; height: 320px; } }
+body.inmusic .mmini { display: none !important; }

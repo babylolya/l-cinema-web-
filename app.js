@@ -1080,6 +1080,7 @@
           try { localStorage.setItem('muCov', JSON.stringify(muCov)); } catch (e) {}
           var im = document.querySelectorAll('img[data-mc="' + t.uid + '"]');
           for (var i = 0; i < im.length; i++) { im[i].src = u; im[i].style.display = ''; }
+          if (muNow() === t) muMeta(t);
         }).catch(function () {}).then(function () { muAsking--; muPump(); });
       })(t);
     }
@@ -1136,7 +1137,8 @@
     MU.addEventListener('ended', function () { if (muRepeat) { try { MU.currentTime = 0; } catch (e) {} var p = MU.play(); if (p && p.catch) p.catch(function () {}); return; } muStep(1); });
     MU.addEventListener('play', muUi); MU.addEventListener('pause', muUi); MU.addEventListener('loadedmetadata', muUi);
     var muLast = 0;
-    MU.addEventListener('timeupdate', function () { if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
+    MU.addEventListener('timeupdate', function () { muPosState(false); if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
+    MU.addEventListener('play', function () { muPosState(true); }); MU.addEventListener('pause', function () { muPosState(true); }); MU.addEventListener('loadedmetadata', function () { muPosState(true); });
     MU.addEventListener('error', function () { muErr = 'Не получилось включить трек — пробую следующий'; muUi(); setTimeout(function () { muStep(1); }, 1500); });
     return MU;
   }
@@ -1155,15 +1157,39 @@
       a.src = u;
       if (autoplay) { var p = a.play(); if (p && p.catch) p.catch(function () { muErr = 'Нажми ▶, чтобы начать'; muUi(); }); }
     }).catch(function (e) { var m = (e && e.message) || ''; muErr = /fetch|network|load/i.test(m) || !m ? 'Нет связи с Telegram — проверь интернет' : m; muUi(); });
-    if (navigator.mediaSession && window.MediaMetadata) {
-      try {
-        var cu = muCoverUrl(t);
-        navigator.mediaSession.metadata = new MediaMetadata({ title: t.title || '', artist: t.artist || '', album: (muData().channel || {}).title || 'Музыка', artwork: cu ? [{ src: cu, sizes: '320x320' }] : [] });
-        navigator.mediaSession.setActionHandler('nexttrack', function () { muStep(1); });
-        navigator.mediaSession.setActionHandler('previoustrack', function () { muStep(-1); });
-      } catch (e) {}
-    }
+    muMeta(t);
     if (view.name === 'music') render(null, true);
+  }
+  // the lock screen and Control Center of the phone: cover, names, progress bar and buttons
+  var muPosAt = 0;
+  function muMeta(t) {
+    var ms = navigator.mediaSession;
+    if (!ms || !window.MediaMetadata || !t) return;
+    try {
+      var cu = muCoverUrl(t), ic = location.href.replace(/[#?].*$/, '').replace(/[^\/]*$/, '') + 'icon-512.png';
+      var art = cu ? [{ src: cu, sizes: '320x320', type: 'image/jpeg' }, { src: cu, sizes: '512x512', type: 'image/jpeg' }] : [{ src: ic, sizes: '512x512', type: 'image/png' }];
+      ms.metadata = new MediaMetadata({ title: t.title || '', artist: t.artist || '', album: (muData().channel || {}).title || 'L-CINEMA · Музыка', artwork: art });
+      var hs = {
+        play: function () { if (MU) { var p = MU.play(); if (p && p.catch) p.catch(function () {}); } },
+        pause: function () { if (MU) MU.pause(); },
+        nexttrack: function () { muStep(1); },
+        previoustrack: function () { if (MU && MU.currentTime > 4) MU.currentTime = 0; else muStep(-1); },
+        seekto: function (d) { if (MU && d && d.seekTime != null) { MU.currentTime = d.seekTime; muPosState(true); } }
+      };
+      for (var k in hs) { try { ms.setActionHandler(k, hs[k]); } catch (e) {} }
+      // no ±10 s buttons: then the lock screen shows ⏮ ⏭ for tracks
+      try { ms.setActionHandler('seekbackward', null); ms.setActionHandler('seekforward', null); } catch (e) {}
+    } catch (e) {}
+  }
+  function muPosState(now) {
+    var ms = navigator.mediaSession;
+    if (!ms || !ms.setPositionState || !MU) return;
+    if (!now && Date.now() - muPosAt < 4000) return;
+    muPosAt = Date.now();
+    var t = muNow(), dur = isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
+    if (!dur) return;
+    try { ms.setPositionState({ duration: dur, playbackRate: MU.playbackRate || 1, position: Math.min(dur, Math.max(0, MU.currentTime || 0)) }); } catch (e) {}
+    try { ms.playbackState = MU.paused ? 'paused' : 'playing'; } catch (e) {}
   }
   function muStep(d) {
     if (!muQueue.length) return;
@@ -1184,7 +1210,7 @@
     var dur = MU && isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
     var f = document.getElementById('mu-fill'); if (f && MU) f.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
     var c = document.getElementById('mu-cur'); if (c && MU) c.textContent = fmtT(MU.currentTime);
-    var d = document.getElementById('mu-dur'); if (d && t) d.textContent = fmtT(dur);
+    var d = document.getElementById('mu-dur'); if (d && t) d.textContent = '-' + fmtT(Math.max(0, dur - (MU ? MU.currentTime : 0)));
     var e = document.getElementById('mu-err'); if (e) { e.textContent = muErr; e.style.display = muErr ? '' : 'none'; }
     var rows = document.querySelectorAll('.mrow');
     for (var i = 0; i < rows.length; i++) { var on = !!t && rows[i].getAttribute('data-uid') === t.uid; if (on) rows[i].classList.add('cur'); else rows[i].classList.remove('cur'); }
@@ -1214,20 +1240,25 @@
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
       ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
     var t = muNow(), playing = MU && !MU.paused;
-    h += '<section class="mnow glass">' + muCoverImg(t || list[0], 'mbig') +
-      '<div class="minfo"><span class="hchip">' + esc(ch.title || 'Telegram') + ' · ' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span>' +
-      '<h2>' + esc(t ? t.title : (view.artist || 'Вся музыка канала')) + '</h2>' +
-      (t && muArtists(t).length ? '<div class="mart">' + muArtists(t).map(function (a) { return '<button class="martl" data-f data-key="ma-' + esc(a) + '" data-act="muartist:' + esc(a) + '">' + esc(a) + '</button>'; }).join(', ') + '</div>'
-        : '<div class="mart">' + esc(t ? (t.artist || '') : (view.artist ? list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') : 'Новые сверху')) + '</div>') +
-      '<div class="abst" id="mu-err" style="display:none"></div>' +
-      (t ? '<div class="abbar"><div class="abfill" id="mu-fill"></div></div><div class="abtimes"><span id="mu-cur">0:00</span><span id="mu-dur">' + fmtT(t.dur) + '</span></div>' : '') +
-      '<div class="abbtns">' +
-        (t ? '<button class="abb" data-f data-key="mu-prev" data-act="muprev" aria-label="Предыдущий трек">' + I.prev + '</button>' : '') +
-        '<button class="abb abplay btn pri" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
-        (t ? '<button class="abb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' : '') +
-        '<button class="abb' + (muShuffle ? ' on' : '') + '" data-f data-key="mu-shuf" data-act="mushuffle" aria-label="Вперемешку">' + I.shuffle + '</button>' +
-        '<button class="abb' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
-      '</div></div></section>';
+    var who = t ? muArtists(t) : [], cc = t || list[0];
+    var pill = t ? (who.length ? '<button class="mppill" data-f data-key="ma-' + esc(who[0]) + '" data-act="muartist:' + esc(who[0]) + '">' : '<div class="mppill">') +
+        muCoverImg(cc, 'mpav') + '<span class="mpwho"><b>' + esc(t.artist || 'Неизвестный исполнитель') + '</b><small>' + esc(ch.username ? '@' + ch.username : (ch.title || 'Telegram')) + '</small></span>' + (who.length ? '</button>' : '</div>')
+      : '<div class="mppill">' + muCoverImg(cc, 'mpav') + '<span class="mpwho"><b>' + esc(view.artist || ch.title || 'Музыка') + '</b><small>' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</small></span></div>';
+    h += '<div class="mwrap"><section class="mstage">' + muCoverImg(cc, 'mbg') +
+      '<div class="mpc">' + muCoverImg(cc, 'mpcv') + '<span class="mpshade"></span>' +
+        '<div class="mptop">' + pill + '<span class="mptr">' +
+          '<button class="mpround' + (muShuffle ? ' on' : '') + '" data-f data-key="mu-shuf" data-act="mushuffle" aria-label="Вперемешку">' + I.shuffle + '</button>' +
+          '<button class="mpround' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
+        '</span></div>' +
+        '<div class="mpbot">' +
+          '<div class="mptt">' + esc(t ? t.title : (view.artist ? 'Все треки исполнителя' : 'Новые сверху')) + '</div>' +
+          '<div class="abst" id="mu-err" style="display:none"></div>' +
+          (t ? '<div class="mptimes"><span id="mu-cur">0:00</span><span id="mu-dur">-' + fmtT(t.dur) + '</span></div><div class="mpbar"><div class="mpfill" id="mu-fill"></div></div>' : '') +
+          '<div class="mpbtns">' +
+            (t ? '<button class="mpb" data-f data-key="mu-prev" data-act="muprev" aria-label="Предыдущий трек">' + I.prev + '</button>' : '') +
+            '<button class="mpb mpplay" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
+            (t ? '<button class="mpb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' : '') +
+          '</div></div></div></section>';
     h += '<section class="mlist">';
     if (view.artist) h += '<div class="mahead"><button class="btn small" data-f data-key="ma-back" data-act="muartist:">' + I.back + ' Все треки</button><span class="h2">' + esc(view.artist) + '</span></div>';
     else {
@@ -1244,7 +1275,7 @@
         muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + '</span></span>' +
         '<span class="mdur">' + (t && t.uid === x.uid && playing ? '<i class="eq"><b></b><b></b><b></b></i>' : fmtT(x.dur)) + '</span></button>';
     }
-    return h + '</section>';
+    return h + '</section></div>';
   }
 
   function abDrivePlayer(fid) {
@@ -1654,7 +1685,7 @@
       ml.scrollTop = Math.max(0, ml.scrollTop + (er0.top + er0.height / 2) - (lr.top + lr.height / 2));
       return;
     }
-    if (document.body.className.indexOf('inmusic') >= 0 && main && el.closest && el.closest('.mnow, .ltabs')) return;
+    if (document.body.className.indexOf('inmusic') >= 0 && main && el.closest && el.closest('.mstage, .ltabs')) return;
     var row = el.closest ? el.closest('.row') : null;
     if (row && row.scrollWidth > row.clientWidth) {
       var rr = row.getBoundingClientRect(), er = el.getBoundingClientRect(), pad = 30;
