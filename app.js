@@ -1049,11 +1049,19 @@
   var muCov = {};
   try { muCov = JSON.parse(localStorage.getItem('muCov') || '{}') || {}; } catch (e) { muCov = {}; }
   function muData() { return S.music || {}; }
+  // names from Telegram often carry the bot that made the file («рехаб @Snoopmusicbot»): that tail is dropped
+  function muClean(t) {
+    if (t._c) return t; t._c = 1;
+    var c = function (x) { return String(x || '').replace(/\s*[\(\[]?@\w+bot[\)\]]?/gi, '').replace(/\s*[\(\[]?(?:t\.me\/\w+|vk\.com\/\w+)[\)\]]?/gi, '').replace(/\s{2,}/g, ' ').trim(); };
+    var a = c(t.title), b = c(t.artist);
+    if (a) t.title = a; t.artist = b;
+    return t;
+  }
   function muTracks() {
     var base = muData().tracks || [], seen = {}, out = [];
-    base.forEach(function (t) { seen[t.uid] = 1; });
+    base.forEach(function (t) { seen[t.uid] = 1; muClean(t); });
     // tracks the app already saw itself, until the GitHub job has them too; newest first
-    (typeof muExtra !== 'undefined' ? muExtra : []).forEach(function (t) { if (!seen[t.uid]) { seen[t.uid] = 1; out.push(t); } });
+    (typeof muExtra !== 'undefined' ? muExtra : []).forEach(function (t) { muClean(t); if (!seen[t.uid]) { seen[t.uid] = 1; out.push(t); } });
     out.sort(function (a, b) { return (b.at || 0) - (a.at || 0); });
     return out.concat(base);
   }
@@ -1281,6 +1289,12 @@
       '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button>' +
       (cur === 'music' ? '<button class="chip wrchip' + (view.wrap ? ' on' : '') + '" data-f data-key="lt-wrap" data-act="muwrap">✦ Мой ' + muWrapYear() + '</button>' : '') + '</div>';
   }
+  // an artist without a photo colour still gets one of its own, from the name
+  function muNameColor(n) {
+    var h = (hash(String(n || '').toLowerCase()) % 360) / 60, s = 0.42, v = 0.5, i = Math.floor(h), f = h - i;
+    var p = v * (1 - s), q = v * (1 - s * f), t = v * (1 - s * (1 - f)), rgb = [[v, t, p], [q, v, p], [p, v, t], [p, q, v], [t, p, v], [v, p, q]][i % 6];
+    return '#' + rgb.map(function (x) { return ('0' + Math.round(x * 255).toString(16)).slice(-2); }).join('');
+  }
   function hexA(hex, al) {
     var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 'rgba(22,18,28,' + al + ')';
     var n = parseInt(m[1], 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + al + ')';
@@ -1322,6 +1336,43 @@
             '<button class="mpround' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
           '</div></div></div></div>';
   }
+  // the sheet leaves the way it came: down into the bar
+  function muCloseFull(fromY) {
+    var f = document.querySelector('.mfull'), c = f && f.querySelector('.mfcard');
+    if (!f || !c || f.classList.contains('out')) { muFull = false; render('mm-open', true); return; }
+    f.classList.add('out');
+    if (fromY != null) c.style.transform = 'translateY(' + fromY + 'px)';
+    // next frame: let the sheet travel from where it is now to below the screen
+    requestAnimationFrame(function () { c.style.transition = ''; c.style.transform = ''; f.classList.add('go'); });
+    setTimeout(function () { muFull = false; render('mm-open', true); }, 300);
+  }
+  // phone: pull the sheet down with the finger; let go far or fast enough and it closes, otherwise it springs back
+  (function () {
+    var st = null;
+    document.addEventListener('touchstart', function (e) {
+      var c = e.target && e.target.closest ? e.target.closest('.mfcard') : null;
+      if (!c || e.target.closest('.mftl') || document.documentElement.className.indexOf('web') < 0) return;
+      var y = e.touches[0].clientY;
+      st = { c: c, y0: y, x0: e.touches[0].clientX, dy: 0, h: [[y, Date.now()]], on: false };
+    }, { passive: true });
+    document.addEventListener('touchmove', function (e) {
+      if (!st) return;
+      var y = e.touches[0].clientY, dy = y - st.y0, dx = e.touches[0].clientX - st.x0;
+      if (!st.on) { if (Math.abs(dy) < 10 && Math.abs(dx) < 10) return; if (dy < 0 || Math.abs(dx) > Math.abs(dy)) { st = null; return; } st.on = true; st.c.style.transition = 'none'; }
+      st.dy = dy > 0 ? dy : -Math.pow(-dy, 0.6); // a little give upwards, then it resists
+      st.c.style.transform = 'translateY(' + st.dy + 'px)';
+      st.h.push([y, Date.now()]); if (st.h.length > 5) st.h.shift();
+      if (e.cancelable) e.preventDefault();
+    }, { passive: false });
+    document.addEventListener('touchend', function () {
+      if (!st || !st.on) { st = null; return; }
+      var a = st.h[0], b = st.h[st.h.length - 1], v = (b[0] - a[0]) / Math.max(1, b[1] - a[1]); // px per ms
+      var c = st.c, dy = st.dy; st = null;
+      var land = dy + v * 1000 * 0.998 / (1 - 0.998) / 1000; // where the flick would carry it
+      if (land > 160 || v > 0.6) muCloseFull(dy);
+      else { c.style.transition = 'transform .45s cubic-bezier(.2,.9,.25,1)'; c.style.transform = ''; setTimeout(function () { c.style.transition = ''; }, 460); }
+    });
+  })();
   function muSeekTo(frac) {
     if (!MU) return; var t = muNow(), dur = isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
     if (!dur) return; try { MU.currentTime = Math.max(0, Math.min(dur - 0.5, frac * dur)); } catch (e) {} muUi(); muPosState(true);
@@ -1410,7 +1461,7 @@
     h += '<section class="mlist">';
     if (view.artist) {
       var ap = 0; list.forEach(function (x) { ap += muCount(x.uid); });
-      var ai = muArtInfo(view.artist) || {}, col = ai.color || '#16121C';
+      var ai = muArtInfo(view.artist) || {}, col = ai.color || muNameColor(view.artist);
       h += '<div class="yahero">' + muArtImg(view.artist, list[0], 'yaimg', true) +
         '<span class="yagrad" style="background:linear-gradient(to bottom,' + hexA(col, 0) + ' 30%,' + hexA(col, 0.55) + ' 62%,' + col + ' 100%)"></span>' +
         '<button class="yaback" data-f data-key="ma-back" data-act="back" aria-label="Назад">' + I.back + '</button>' +
@@ -1419,7 +1470,7 @@
           '<div class="yabtns"><button class="btn pri" data-f data-key="ma-play" data-act="muartplay">' + I.play + ' Слушать</button>' +
           '<button class="btn" data-f data-key="ma-shuf" data-act="muartshuf">' + I.shuffle + ' Вперемешку</button></div>' +
         '</div></div>' +
-        '<div class="yatail" style="background:linear-gradient(to bottom,' + col + ',' + hexA(col, 0) + ')"></div><div class="h2 masub">Популярные треки</div>';
+        '<div class="h2 masub">Популярные треки</div>';
     }
     else {
       var arts = muArtistList();
@@ -2013,7 +2064,7 @@
       case 'murepeat': muRepeat = !muRepeat; if (MU) MU.loop = muRepeat; try { localStorage.setItem('muRepeat', muRepeat ? '1' : '0'); } catch (e) {} render('mu-rep', true); return;
       case 'muartist': muFull = false; if (arg) go({ name: 'music', artist: arg }, 'ma-play'); else { view = { name: 'music' }; render('mu-play', false); } return;
       case 'muopen': muFull = true; render('mu-play', true); return;
-      case 'muclose': muFull = false; render('mm-open', true); return;
+      case 'muclose': muCloseFull(); return;
       case 'muallshuf': muShuffle = true; muStart(shuffled(muTracks()), 0); return;
       case 'muartplay': muShuffle = false; muStart(muView(), 0); return;
       case 'muartshuf': muShuffle = true; muStart(shuffled(muView()), 0); return;
@@ -2206,7 +2257,7 @@
     },
     back: function () {
       if (rateFor) { rateFor = ''; render('f-play', false); return true; }
-      if (muFull) { muFull = false; render('mm-open', true); return true; }
+      if (muFull) { muCloseFull(); return true; }
       if (full >= 0) { full = -1; render(null, true); return true; }
       if (confirmKey) { confirmKey = null; render(null, true); return true; }
       if (!stack.length) {

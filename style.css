@@ -1398,3 +1398,55 @@ html.lite .mfcard { background: rgba(30,26,38,0.92); }
 html:not(.web) .yahero { height: 340px; }
 .mallh .masub { white-space: nowrap; }
 @media (max-width: 700px) { .mallh .btn { padding-left: 14px; padding-right: 14px; } }
+
+/* ===== Apple-style pass over «Музыка» ===== */
+/* artist page: one calm white primary button and a glass secondary, no coloured glow; the photo card is whole */
+.yahero { border-radius: 30px; }
+.yatail { display: none; }
+.yabtns .btn.pri, .yabtns .btn.pri:not(:focus) { background: #fff; color: #121016; border: 0; box-shadow: 0 6px 18px rgba(0,0,0,0.22); }
+.yabtns .btn.pri svg { fill: #121016; }
+.yabtns .btn:not(.pri) { background: rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(16px) saturate(1.5); backdrop-filter: blur(16px) saturate(1.5); border: 1px solid rgba(255,255,255,0.24); color: #fff; box-shadow: none; }
+.yabtns .btn:focus, html.mac .yabtns .btn:hover { outline: none; box-shadow: 0 0 0 3px rgba(255,255,255,0.9) !important; }
+.yahero + .masub, .yatail + .masub { margin-top: 22px; }
+.mallh .btn.pri { box-shadow: 0 4px 14px rgba(255,79,216,0.28); }
+/* type: large text tracks tighter, small text a touch looser */
+.yaname, .wrhi, .wrsn, .wrnum { letter-spacing: -0.025em; }
+.mftt, .mahname { letter-spacing: -0.015em; }
+.mta, .mac, .mmini .mta, .mftimes, .yacap { letter-spacing: 0.01em; }
+/* press: the answer comes on touch-down, instantly */
+.mrow, .macard, .mmini .mmtx, .mmini .mmb, .mpround, .mfb, .yaback, .yabtns .btn, .mallh .btn, .wrstar { transition: transform .1s ease-out, background .15s, box-shadow .15s; }
+.mrow:active, .macard:active, .wrstar:active { -webkit-transform: scale(0.98); transform: scale(0.98); }
+.mmini .mmtx:active, .mmini .mmb:active, .mpround:active, .yaback:active, .yabtns .btn:active, .mallh .btn:active { -webkit-transform: scale(0.94); transform: scale(0.94); }
+/* the bar: glass with light catching its top edge */
+.mmini { border-top-color: rgba(255,255,255,0.22); }
+/* the wide player rises out of the bar and goes back down into it */
+@keyframes mfFadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes mfRise { from { -webkit-transform: translateY(100%); transform: translateY(100%); } to { -webkit-transform: none; transform: none; } }
+.mfull { -webkit-animation: mfFadeIn .35s ease-out; animation: mfFadeIn .35s ease-out; transition: opacity .3s ease-in; }
+.mfull .mfcard { -webkit-animation: mfRise .5s cubic-bezier(.32,.72,0,1); animation: mfRise .5s cubic-bezier(.32,.72,0,1); will-change: transform; transition: transform .3s cubic-bezier(.32,.72,0,1); }
+html:not(.web) .mfull .mfcard { -webkit-animation-name: mfFadeIn; animation-name: mfFadeIn; }
+.mfull.out .mfcard { -webkit-animation: none; animation: none; }
+.mfull.out.go { opacity: 0; }
+.mfull.out.go .mfcard { -webkit-transform: translateY(105%); transform: translateY(105%); }
+html:not(.web) .mfull.out.go .mfcard { -webkit-transform: none; transform: none; }
+/* a grab handle on the phone sheet, so it reads as something you pull down */
+@media (max-width: 700px) {
+  .mfclose { width: 56px; height: 30px; border-radius: 15px; background: rgba(255,255,255,0.14); }
+  .mfclose svg { width: 20px; height: 20px; }
+}
+/* less motion / less transparency when the phone asks for it */
+@media (prefers-reduced-motion: reduce) {
+  .mfull .mfcard { -webkit-animation-name: mfFadeIn; animation-name: mfFadeIn; -webkit-animation-duration: .2s; animation-duration: .2s; }
+  .mfull.out.go .mfcard { -webkit-transform: none; transform: none; }
+  .mrow:active, .macard:active, .wrstar:active, .mmini .mmtx:active, .mmini .mmb:active, .mpround:active, .yaback:active, .yabtns .btn:active, .mallh .btn:active { -webkit-transform: none; transform: none; }
+  .mffill, .mmline i { transition: none; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .mmini { background: rgba(30,26,40,0.97); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .mfcard { background: rgba(24,20,30,0.96); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .yacap, .yabtns .btn:not(.pri), .yaback, .mppill, .mpround, .mfb:not(.mfplay) { background: rgba(20,16,26,0.85); -webkit-backdrop-filter: none; backdrop-filter: none; }
+}
+/* on the phone the focus ring is for the TV remote only: a tap shows the press, not a ring */
+html.web .yabtns .btn.pri:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.22) !important; }
+html.web .yabtns .btn:not(.pri):focus, html.web .yaback:focus, html.web .mfb:focus, html.web .mfclose:focus, html.web .mpround:focus, html.web .mmini .mmtx:focus, html.web .mmini .mmb:focus { box-shadow: none !important; }
+html.web .mmini .mmtx:focus { background: none; }
