@@ -1224,7 +1224,6 @@ html:not(.web) body.inmusic .mwrap .masub:first-child { margin-top: 0; }
 }
 html:not(.web) body.inmusic .mpc { width: 360px; height: 360px; }
 @media (max-height: 600px) { html:not(.web) body.inmusic .mpc { width: 320px; height: 320px; } }
-body.inmusic .mmini { display: none !important; }
 
 /* ===== Artist page (Yandex Music style): a wide photo banner, big name, «Слушать» ===== */
 .mahero { position: relative; overflow: hidden; border-radius: 28px; min-height: 260px; margin: 0 0 8px; background: #1B1622; }
@@ -1295,3 +1294,107 @@ body.inmusic .mmini { display: none !important; }
   .wrsimg { width: 90px; height: 90px; margin-right: 16px; }
   .wrsn { font-size: 22px; }
 }
+
+/* ===== Glass bar at the bottom while music plays ===== */
+.mmini { position: fixed; z-index: 60; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; height: 64px; padding: 0 10px 0 8px; box-sizing: border-box; border-radius: 20px; overflow: hidden;
+  background: rgba(30,26,40,0.55); -webkit-backdrop-filter: blur(26px) saturate(1.6); backdrop-filter: blur(26px) saturate(1.6); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 14px 40px rgba(0,0,0,0.45); }
+html:not(.web) .mmini { left: 150px; right: 40px; bottom: 18px; height: 78px; }
+html:not(.web) body.inmusic .mwrap > .mlist, html:not(.web) body.inmusic #main > .mwrap > .mlist { padding-bottom: 120px; }
+.mmini .mmtx { -webkit-flex: 1 1 0; flex: 1 1 0; width: 0; min-width: 0; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; background: none; border: 0; color: #fff; padding: 4px; border-radius: 14px; text-align: left; font: inherit; cursor: pointer; }
+.mmini .mmcv { position: relative; display: block; width: 46px; height: 46px; -webkit-flex-shrink: 0; flex-shrink: 0; border-radius: 11px; overflow: hidden; color: rgba(255,255,255,0.6); }
+html:not(.web) .mmini .mmcv { width: 58px; height: 58px; }
+.mmini .mmcv img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.mmini .mmcv svg { position: absolute; top: 50%; left: 50%; width: 20px; height: 20px; margin: -10px 0 0 -10px; }
+.mmini .mmt { display: block; min-width: 0; margin-left: 12px; overflow: hidden; }
+.mmini .mtt, .mmini .mta { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mmini .mtt { font-size: 15px; font-weight: 700; }
+.mmini .mta { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+.mmini .mmb { width: 44px; height: 44px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-left: 6px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; border: 0; border-radius: 50%; background: rgba(255,255,255,0.1); color: #fff; padding: 0; cursor: pointer; }
+html:not(.web) .mmini .mmb { width: 52px; height: 52px; margin-left: 10px; }
+.mmini .mmb svg { width: 20px; height: 20px; fill: currentColor; }
+.mmini .mmpp { background: #fff; color: #15121A; }
+.mmini .mmline { position: absolute; left: 16px; right: 16px; bottom: 4px; height: 3px; border-radius: 2px; background: rgba(255,255,255,0.15); overflow: hidden; }
+.mmini .mmline i { display: block; height: 100%; width: 0; background: #fff; border-radius: 2px; transition: width 1s linear; }
+.mmini .mmtx:focus, html.mac .mmini .mmtx:hover { outline: none; background: rgba(255,255,255,0.12); box-shadow: 0 0 0 2px rgba(255,255,255,0.8); }
+.mmini .mmb:focus, html.mac .mmini .mmb:hover { outline: none; box-shadow: 0 0 0 3px #fff, 0 0 22px rgba(255,255,255,0.4); }
+html.lite .mmini { background: rgba(30,26,40,0.95); }
+
+/* ===== Wide player (opens from the bar) ===== */
+.mfull { position: fixed; z-index: 80; top: 0; left: 0; right: 0; bottom: 0; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; background: #0B0910; overflow: hidden; }
+.mfull .mfbg { position: absolute; top: -80px; left: -80px; right: -80px; bottom: -80px; display: block; overflow: hidden; color: transparent; -webkit-filter: blur(60px) saturate(1.4) brightness(0.7); filter: blur(60px) saturate(1.4) brightness(0.7); }
+.mfull .mfbg svg { display: none; }
+.mfull .mfbg img, .mfcv img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.mfsh { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(8,6,12,0.3); }
+.mfcard { position: relative; z-index: 1; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; width: 1000px; max-width: 90%; box-sizing: border-box; padding: 40px; border-radius: 36px;
+  background: rgba(30,26,38,0.42); -webkit-backdrop-filter: blur(30px) saturate(1.4); backdrop-filter: blur(30px) saturate(1.4); border: 1px solid rgba(255,255,255,0.12); box-shadow: 0 40px 100px rgba(0,0,0,0.5); }
+.mfcv { position: relative; display: block; width: 320px; height: 320px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 44px; border-radius: 26px; overflow: hidden; color: rgba(255,255,255,0.5); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+.mfcv svg { position: absolute; top: 50%; left: 50%; width: 80px; height: 80px; margin: -40px 0 0 -40px; }
+.mfinfo { -webkit-flex: 1 1 0; flex: 1 1 0; width: 0; min-width: 0; }
+.mfpill { margin-bottom: 18px; max-width: 100%; }
+.mftt { font-family: Unbounded, sans-serif; font-size: 32px; font-weight: 800; line-height: 1.15; color: #fff; margin-bottom: 20px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.mfinfo .abst { color: #FFB4C8; font-size: 13px; margin: -10px 0 10px; }
+.mftl { padding: 14px 0; border-radius: 10px; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent; touch-action: none; }
+.mfbar { position: relative; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.25); transition: height .15s; }
+.mffill { position: relative; display: block; height: 100%; width: 0; border-radius: 3px; background: #fff; transition: width 1s linear; }
+.mftl.drag .mffill { transition: none; }
+.mffill b { position: absolute; right: -8px; top: 50%; width: 16px; height: 16px; margin-top: -8px; border-radius: 50%; background: #fff; box-shadow: 0 2px 10px rgba(0,0,0,0.4); -webkit-transform: scale(0.75); transform: scale(0.75); transition: transform .15s; }
+.mftl:focus .mfbar, .mftl.drag .mfbar { height: 9px; box-shadow: 0 0 0 3px rgba(255,255,255,0.3); }
+.mftl:focus .mffill b, .mftl.drag .mffill b { -webkit-transform: scale(1.25); transform: scale(1.25); }
+.mftimes { display: -webkit-flex; display: flex; -webkit-justify-content: space-between; justify-content: space-between; color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.mfbtns { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: space-between; justify-content: space-between; max-width: 440px; margin-top: 22px; }
+.mfbtns .mpround { margin-left: 0; }
+.mfb, .mfclose { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; padding: 0; border: 0; border-radius: 50%; color: #fff; cursor: pointer;
+  background: rgba(255,255,255,0.12); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); transition: transform .15s, box-shadow .15s, background .15s; }
+.mfb { width: 64px; height: 64px; }
+.mfb svg { width: 24px; height: 24px; }
+.mfb.mfplay { width: 82px; height: 82px; background: #fff; color: #15121A; }
+.mfb.mfplay svg { width: 30px; height: 30px; }
+.mfclose { position: absolute; top: 16px; right: 16px; width: 46px; height: 46px; }
+.mfb:focus, .mfclose:focus, html.mac .mfb:hover, html.mac .mfclose:hover { outline: none; box-shadow: 0 0 0 3px #fff, 0 0 28px rgba(255,255,255,0.4); }
+.mfb:active, .mfclose:active { -webkit-transform: scale(0.93); transform: scale(0.93); }
+html.lite .mfull .mfbg { display: none; }
+html.lite .mfcard { background: rgba(30,26,38,0.92); }
+@media (max-width: 700px) {
+  .mfcard { -webkit-flex-direction: column; flex-direction: column; -webkit-align-items: stretch; align-items: stretch; -webkit-justify-content: center; justify-content: center; width: 100%; max-width: 100%; height: 100%; border-radius: 0; border: 0;
+    padding: calc(env(safe-area-inset-top) + 64px) 26px calc(env(safe-area-inset-bottom) + 28px); background: rgba(16,12,22,0.25); box-shadow: none; }
+  .mfcv { width: 100%; height: auto; aspect-ratio: 1 / 1; max-width: min(420px, 42vh); margin: 0 auto 24px; }
+  .mfinfo { -webkit-flex: none; flex: none; width: auto; }
+  .mftt { font-size: 24px; margin-bottom: 14px; }
+  .mfbtns { max-width: none; }
+  .mfb { width: 58px; height: 58px; }
+  .mfb.mfplay { width: 76px; height: 76px; }
+  .mfclose { top: calc(env(safe-area-inset-top) + 12px); left: 50%; right: auto; margin-left: -23px; }
+}
+
+/* ===== Artist page like Yandex Music: big photo melting into its colour, name, my plays in a glass capsule ===== */
+.yahero { position: relative; overflow: hidden; height: 440px; border-radius: 30px 30px 0 0; background: #16121C; }
+.yahero .yaimg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: block; overflow: hidden; color: transparent; }
+.yahero .yaimg svg { display: none; }
+.yahero .yaimg img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 20%; }
+.yagrad { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+.yaback { position: absolute; z-index: 2; top: 16px; left: 16px; width: 46px; height: 46px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; padding: 0; border: 0; border-radius: 50%; color: #fff; cursor: pointer;
+  background: rgba(0,0,0,0.28); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+.yaback:focus, html.mac .yaback:hover { outline: none; box-shadow: 0 0 0 3px #fff; }
+.yain { position: absolute; z-index: 2; left: 0; right: 0; bottom: 22px; padding: 0 20px; text-align: center; }
+.yaname { font-family: Unbounded, sans-serif; font-size: 58px; font-weight: 800; line-height: 1.05; color: #fff; text-shadow: 0 4px 30px rgba(0,0,0,0.35); margin-bottom: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.yacap { display: inline-flex; -webkit-align-items: center; align-items: center; padding: 9px 18px; border-radius: 999px; color: #fff; font-size: 15px; font-weight: 600;
+  background: rgba(255,255,255,0.18); -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); border: 1px solid rgba(255,255,255,0.3); box-shadow: inset 0 1px 0 rgba(255,255,255,0.25); }
+.yacap svg { margin-right: 8px; }
+.yabtns { margin-top: 16px; }
+.yabtns .btn { margin: 0 6px 6px; display: inline-flex; vertical-align: middle; }
+.yabtns .btn svg { margin-right: 6px; }
+.yabtns .btn.pri { background: #FFDB4D; color: #17131D; border-color: transparent; }
+.yabtns .btn:not(.pri) { background: rgba(255,255,255,0.16); border-color: rgba(255,255,255,0.22); color: #fff; }
+.yatail { height: 34px; border-radius: 0 0 30px 30px; margin-bottom: 6px; }
+.mallh { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; margin: 18px 0 10px; }
+.mallh .masub { margin: 0 auto 0 0; }
+.mallh .btn { margin-left: 10px; display: inline-flex; }
+.mallh .btn svg { margin-right: 6px; }
+@media (max-width: 700px) {
+  .yahero { height: 118vw; max-height: 540px; border-radius: 26px 26px 0 0; }
+  .yaname { font-size: 38px; white-space: normal; }
+  .yacap { font-size: 14px; padding: 8px 14px; }
+}
+html:not(.web) .yahero { height: 340px; }
+.mallh .masub { white-space: nowrap; }
+@media (max-width: 700px) { .mallh .btn { padding-left: 14px; padding-right: 14px; } }

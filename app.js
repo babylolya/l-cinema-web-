@@ -164,6 +164,8 @@
   // ---------- icons ----------
 
   var I = {
+    chev: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+    phones: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
     repeat: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/><text x="12" y="15.5" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-weight="700">1</text></svg>',
     note: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
     shuffle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>',
@@ -1255,10 +1257,14 @@
     var t = muNow();
     var bt = document.getElementById('mu-pp'); if (bt) bt.innerHTML = MU && !MU.paused ? I.pause : I.play;
     var mb = document.getElementById('mm-pp'); if (mb) mb.innerHTML = MU && !MU.paused ? I.pause : I.play;
-    if (t && !document.querySelector('.mmini') && document.documentElement.className.indexOf('web') >= 0) { var d0 = document.createElement('div'); d0.innerHTML = muMini(); if (d0.firstChild) root.appendChild(d0.firstChild); }
+    var mm = document.querySelector('.mmini');
+    if (mm && (!muMiniOn() || mm.getAttribute('data-uid') !== (t && t.uid))) { if (mm.contains(document.activeElement)) mm = null; else { mm.parentNode.removeChild(mm); mm = null; } }
+    if (!mm && muMiniOn()) { var d0 = document.createElement('div'); d0.innerHTML = muMini(); if (d0.firstChild) root.appendChild(d0.firstChild); }
     // a stream from Telegram may not tell its length to old browsers (Infinity): the length from the post is used then
     var dur = MU && isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
-    var f = document.getElementById('mu-fill'); if (f && MU) f.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
+    var mf = document.getElementById('mm-fill'); if (mf && MU) mf.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
+    var tl = document.querySelector('.mftl.drag');
+    var f = tl ? null : document.getElementById('mu-fill'); if (f && MU) f.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
     var c = document.getElementById('mu-cur'); if (c && MU) c.textContent = fmtT(MU.currentTime);
     var d = document.getElementById('mu-dur'); if (d && t) d.textContent = '-' + fmtT(Math.max(0, dur - (MU ? MU.currentTime : 0)));
     var e = document.getElementById('mu-err'); if (e) { e.textContent = muErr; e.style.display = muErr ? '' : 'none'; }
@@ -1266,7 +1272,7 @@
     for (var i = 0; i < rows.length; i++) { var on = !!t && rows[i].getAttribute('data-uid') === t.uid; if (on) rows[i].classList.add('cur'); else rows[i].classList.remove('cur'); }
     var nv = document.querySelector('[data-key="nav-music"]'); if (nv) nv.classList.toggle('live', (!!MU && !MU.paused) || (!!AU && !AU.paused));
   }
-  setInterval(function () { if (MU && !MU.paused && view.name === 'music') muUi(); }, 1000);
+  setInterval(function () { if (MU && !MU.paused) muUi(); }, 1000);
 
   // «Музыка» has two tabs: the channel's tracks and the audiobooks (with meditations inside)
   function listenTabs(cur) {
@@ -1275,14 +1281,62 @@
       '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button>' +
       (cur === 'music' ? '<button class="chip wrchip' + (view.wrap ? ' on' : '') + '" data-f data-key="lt-wrap" data-act="muwrap">✦ Мой ' + muWrapYear() + '</button>' : '') + '</div>';
   }
-  // phone: a small player above the bottom bar while a track is on, on every screen (pause, next, open the music)
+  function hexA(hex, al) {
+    var m = /^#?([0-9a-f]{6})$/i.exec(hex || ''); if (!m) return 'rgba(22,18,28,' + al + ')';
+    var n = parseInt(m[1], 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + al + ')';
+  }
+  // the glass bar at the bottom while a track is on (phone: every screen; TV and Mac: in «Музыка»)
+  var muFull = false;
+  function muMiniOn() { return !!(muNow() && MU) && !muFull && (document.documentElement.className.indexOf('web') >= 0 || view.name === 'music'); }
   function muMini() {
     var t = muNow();
-    if (!t || !MU || document.documentElement.className.indexOf('web') < 0) return '';
-    return '<div class="mmini">' + muCoverImg(t, 'mmcv') + '<button class="mmtx" data-f data-key="mm-open" data-act="go:music"><span class="mtt">' + esc(t.title) + '</span><span class="mta">' + esc(t.artist || '') + '</span></button>' +
-      '<button class="mmb" id="mm-pp" data-f data-key="mm-pp" data-act="mutoggle" aria-label="Пауза">' + (MU.paused ? I.play : I.pause) + '</button>' +
-      '<button class="mmb" data-f data-key="mm-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button></div>';
+    if (!muMiniOn()) return '';
+    var web = document.documentElement.className.indexOf('web') >= 0;
+    return '<div class="mmini" data-uid="' + esc(t.uid) + '"><button class="mmtx" data-f data-key="mm-open" data-act="muopen">' + muCoverImg(t, 'mmcv') +
+      '<span class="mmt"><span class="mtt">' + esc(t.title) + '</span><span class="mta">' + esc(t.artist || '') + '</span></span></button>' +
+      (web ? '' : '<button class="mmb" data-f data-key="mm-prev" data-act="muprev" aria-label="Предыдущий трек">' + I.prev + '</button>') +
+      '<button class="mmb mmpp" id="mm-pp" data-f data-key="mm-pp" data-act="mutoggle" aria-label="Пауза">' + (MU.paused ? I.play : I.pause) + '</button>' +
+      '<button class="mmb" data-f data-key="mm-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' +
+      '<span class="mmline"><i id="mm-fill"></i></span></div>';
   }
+  // tap the bar: the wide player opens (cover, artist, timeline you can drag, all the buttons)
+  function muFullHtml() {
+    var t = muNow();
+    if (!muFull || !t) return '';
+    var who = muArtists(t), playing = MU && !MU.paused;
+    return '<div class="mfull">' + muCoverImg(t, 'mfbg') + '<span class="mfsh"></span>' +
+      '<div class="mfcard">' +
+        '<button class="mfclose" data-f data-key="mf-close" data-act="muclose" aria-label="Свернуть">' + I.chev + '</button>' +
+        muCoverImg(t, 'mfcv') +
+        '<div class="mfinfo">' +
+          (who.length ? '<button class="mppill mfpill" data-f data-key="mf-art" data-act="muartist:' + esc(who[0]) + '">' + muArtImg(who[0], t, 'mpav') + '<span class="mpwho"><b>' + esc(t.artist) + '</b><small>Исполнитель</small></span></button>' : '') +
+          '<div class="mftt">' + esc(t.title) + '</div>' +
+          '<div class="abst" id="mu-err" style="display:none"></div>' +
+          '<div class="mftl" tabindex="0" data-f data-key="mf-tl" aria-label="Перемотка"><div class="mfbar"><i class="mffill" id="mu-fill"><b></b></i></div></div>' +
+          '<div class="mftimes"><span id="mu-cur">0:00</span><span id="mu-dur">-' + fmtT(t.dur) + '</span></div>' +
+          '<div class="mfbtns">' +
+            '<button class="mpround' + (muShuffle ? ' on' : '') + '" data-f data-key="mu-shuf" data-act="mushuffle" aria-label="Вперемешку">' + I.shuffle + '</button>' +
+            '<button class="mfb" data-f data-key="mu-prev" data-act="muprev" aria-label="Предыдущий трек">' + I.prev + '</button>' +
+            '<button class="mfb mfplay" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
+            '<button class="mfb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' +
+            '<button class="mpround' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
+          '</div></div></div></div>';
+  }
+  function muSeekTo(frac) {
+    if (!MU) return; var t = muNow(), dur = isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
+    if (!dur) return; try { MU.currentTime = Math.max(0, Math.min(dur - 0.5, frac * dur)); } catch (e) {} muUi(); muPosState(true);
+  }
+  function muSeekBy(sec) { if (!MU) return; try { MU.currentTime = Math.max(0, (MU.currentTime || 0) + sec); } catch (e) {} muUi(); muPosState(true); }
+  (function () {
+    var drag = null;
+    function frac(e, el) { var r = el.getBoundingClientRect(), x = e.touches && e.touches.length ? e.touches[0].clientX : (e.changedTouches && e.changedTouches.length ? e.changedTouches[0].clientX : e.clientX); return Math.max(0, Math.min(1, (x - r.left) / (r.width || 1))); }
+    function show(f) { var el = document.getElementById('mu-fill'); if (el) el.style.width = (f * 100).toFixed(2) + '%'; }
+    function start(e) { var el = e.target && e.target.closest ? e.target.closest('.mftl') : null; if (!el) return; drag = el; el.classList.add('drag'); show(frac(e, el)); if (e.cancelable) e.preventDefault(); }
+    function moveD(e) { if (!drag) return; show(frac(e, drag)); if (e.cancelable) e.preventDefault(); }
+    function end(e) { if (!drag) return; var f = frac(e, drag); drag.classList.remove('drag'); drag = null; muSeekTo(f); }
+    document.addEventListener('touchstart', start, { passive: false }); document.addEventListener('touchmove', moveD, { passive: false }); document.addEventListener('touchend', end);
+    document.addEventListener('mousedown', start); document.addEventListener('mousemove', moveD); document.addEventListener('mouseup', end);
+  })();
   // ---------- the year in music («Хей, Лоля! В этом году ты послушала…») ----------
   var MONTHS_N = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   function fmtNum(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
@@ -1352,46 +1406,30 @@
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
       ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
     var t = muNow(), playing = MU && !MU.paused;
-    var who = t ? muArtists(t) : [], cc = t || list[0];
-    var pill = t ? (who.length ? '<button class="mppill" data-f data-key="ma-' + esc(who[0]) + '" data-act="muartist:' + esc(who[0]) + '">' : '<div class="mppill">') +
-        (who.length ? muArtImg(who[0], cc, 'mpav') : muCoverImg(cc, 'mpav')) + '<span class="mpwho"><b>' + esc(t.artist || 'Неизвестный исполнитель') + '</b><small>' + esc(ch.username ? '@' + ch.username : (ch.title || 'Telegram')) + '</small></span>' + (who.length ? '</button>' : '</div>')
-      : '<div class="mppill">' + (view.artist ? muArtImg(view.artist, cc, 'mpav') : muCoverImg(cc, 'mpav')) + '<span class="mpwho"><b>' + esc(view.artist || ch.title || 'Музыка') + '</b><small>' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</small></span></div>';
-    h += '<div class="mwrap"><section class="mstage">' + muCoverImg(cc, 'mbg') +
-      '<div class="mpc">' + muCoverImg(cc, 'mpcv') + '<span class="mpshade"></span>' +
-        '<div class="mptop">' + pill + '<span class="mptr">' +
-          '<button class="mpround' + (muShuffle ? ' on' : '') + '" data-f data-key="mu-shuf" data-act="mushuffle" aria-label="Вперемешку">' + I.shuffle + '</button>' +
-          '<button class="mpround' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
-        '</span></div>' +
-        '<div class="mpbot">' +
-          '<div class="mptt">' + esc(t ? t.title : (view.artist ? 'Все треки исполнителя' : 'Новые сверху')) + '</div>' +
-          '<div class="abst" id="mu-err" style="display:none"></div>' +
-          (t ? '<div class="mptimes"><span id="mu-cur">0:00</span><span id="mu-dur">-' + fmtT(t.dur) + '</span></div><div class="mpbar"><div class="mpfill" id="mu-fill"></div></div>' : '') +
-          '<div class="mpbtns">' +
-            (t ? '<button class="mpb" data-f data-key="mu-prev" data-act="muprev" aria-label="Предыдущий трек">' + I.prev + '</button>' : '') +
-            '<button class="mpb mpplay" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
-            (t ? '<button class="mpb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' : '') +
-          '</div></div></div></section>';
+    h += '<div class="mwrap">';
     h += '<section class="mlist">';
     if (view.artist) {
       var ap = 0; list.forEach(function (x) { ap += muCount(x.uid); });
-      var ai = muArtInfo(view.artist);
-      h += '<div class="mahero">' + muArtImg(view.artist, list[0], 'mahbg', true) + '<span class="mahsh"></span>' +
-        '<div class="mahin">' + muArtImg(view.artist, list[0], 'mahav', true) +
-        '<div class="mahtx"><div class="mahk">Исполнитель</div><div class="mahname">' + esc(view.artist) + '</div>' +
-        '<div class="mahsub">' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + (ap ? ' · ' + ap + ' ' + plural(ap, 'прослушивание', 'прослушивания', 'прослушиваний') : '') +
-          (ai && ai.fans ? ' · ' + fmtNum(ai.fans) + ' ' + plural(ai.fans, 'фанат', 'фаната', 'фанатов') + ' на Deezer' : '') + '</div>' +
-        '<div class="mahbtns"><button class="btn pri" data-f data-key="ma-play" data-act="muartplay">' + I.play + ' Слушать</button>' +
-          '<button class="btn" data-f data-key="ma-shuf" data-act="muartshuf">' + I.shuffle + ' Вперемешку</button>' +
-          '<button class="btn" data-f data-key="ma-back" data-act="back">' + I.back + ' Все треки</button></div>' +
-        '</div></div></div><div class="h2 masub">Популярные треки</div>';
+      var ai = muArtInfo(view.artist) || {}, col = ai.color || '#16121C';
+      h += '<div class="yahero">' + muArtImg(view.artist, list[0], 'yaimg', true) +
+        '<span class="yagrad" style="background:linear-gradient(to bottom,' + hexA(col, 0) + ' 30%,' + hexA(col, 0.55) + ' 62%,' + col + ' 100%)"></span>' +
+        '<button class="yaback" data-f data-key="ma-back" data-act="back" aria-label="Назад">' + I.back + '</button>' +
+        '<div class="yain"><div class="yaname">' + esc(view.artist) + '</div>' +
+          '<span class="yacap">' + I.phones + (ap ? fmtNum(ap) + ' ' + plural(ap, 'прослушивание', 'прослушивания', 'прослушиваний') : 'ещё не слушала') + ' · ' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span>' +
+          '<div class="yabtns"><button class="btn pri" data-f data-key="ma-play" data-act="muartplay">' + I.play + ' Слушать</button>' +
+          '<button class="btn" data-f data-key="ma-shuf" data-act="muartshuf">' + I.shuffle + ' Вперемешку</button></div>' +
+        '</div></div>' +
+        '<div class="yatail" style="background:linear-gradient(to bottom,' + col + ',' + hexA(col, 0) + ')"></div><div class="h2 masub">Популярные треки</div>';
     }
     else {
       var arts = muArtistList();
       if (arts.length > 1) {
         h += '<div class="h2 masub">Исполнители</div><div class="marow row" data-row="ma">';
         arts.forEach(function (a) { h += '<button class="macard" data-f data-key="ma-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muArtImg(a.name, a.t, 'macv') + '<span class="man">' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'трек', 'трека', 'треков') + '</span></button>'; });
-        h += '</div><div class="h2 masub">Все треки</div>';
+        h += '</div>';
       }
+      h += '<div class="mallh"><span class="h2 masub">Все треки</span><button class="btn small pri" data-f data-key="mu-all" data-act="muplay:0">' + I.play + ' Слушать</button>' +
+        '<button class="btn small" data-f data-key="mu-allshuf" data-act="muallshuf">' + I.shuffle + ' Вперемешку</button></div>';
     }
     for (var i = 0; i < list.length; i++) {
       var x = list[i];
@@ -1865,7 +1903,7 @@
     var scr = screen();
     var rp = rateFor && view.name === 'film' ? ratePrompt() : '';
     if (rp) scr = '<div class="under">' + scr.replace(/ data-f/g, '') + '</div>';
-    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '') + muMini() +
+    root.innerHTML = (rp ? nav().replace(/ data-f/g, '') : nav()) + '<main id="main">' + updateBanner() + scr + '</main>' + rp + (full >= 0 ? fullScreen() : '') + muMini() + muFullHtml() +
       (hintNow ? '<div class="backhint">◀ «Назад» на пульте — выйти</div>' : '') + (sparkle ? glitterHtml() : '');
     var newVid = document.querySelector('.svvid');
     if (oldVid && newVid && oldVid.getAttribute('data-src') === newVid.getAttribute('data-src')) newVid.parentNode.replaceChild(oldVid, newVid);
@@ -1973,7 +2011,10 @@
       case 'muprev': if (MU && MU.currentTime > 5) { MU.currentTime = 0; } else muStep(-1); return;
       case 'mushuffle': muShuffle = !muShuffle; if (muShuffle && muQueue.length) { var cur = muNow(); muQueue = shuffled(muView()); muPos = Math.max(0, muQueue.indexOf(cur)); } render('mu-shuf', true); return;
       case 'murepeat': muRepeat = !muRepeat; if (MU) MU.loop = muRepeat; try { localStorage.setItem('muRepeat', muRepeat ? '1' : '0'); } catch (e) {} render('mu-rep', true); return;
-      case 'muartist': if (arg) go({ name: 'music', artist: arg }, 'ma-play'); else { view = { name: 'music' }; render('mu-play', false); } return;
+      case 'muartist': muFull = false; if (arg) go({ name: 'music', artist: arg }, 'ma-play'); else { view = { name: 'music' }; render('mu-play', false); } return;
+      case 'muopen': muFull = true; render('mu-play', true); return;
+      case 'muclose': muFull = false; render('mm-open', true); return;
+      case 'muallshuf': muShuffle = true; muStart(shuffled(muTracks()), 0); return;
       case 'muartplay': muShuffle = false; muStart(muView(), 0); return;
       case 'muartshuf': muShuffle = true; muStart(shuffled(muView()), 0); return;
       case 'muwrap': if (view.wrap) app.back(); else go({ name: 'music', wrap: muWrapYear() }, 'lt-wrap'); return;
@@ -2066,7 +2107,7 @@
 
   function move(dir) {
     var cur = document.activeElement;
-    var all = Array.prototype.slice.call(document.querySelectorAll('[data-f]'));
+    var all = Array.prototype.slice.call(document.querySelectorAll(muFull && document.querySelector('.mfull') ? '.mfull [data-f]' : '[data-f]'));
     if (!cur || all.indexOf(cur) < 0) { focusEl(document.querySelector('#main [data-f]') || all[0]); return; }
     var r = cur.getBoundingClientRect();
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -2124,6 +2165,7 @@
     else if (k === 'ArrowDown' || code === 40) dir = 'down';
     if (dir) {
       e.preventDefault();
+      if (el && el.classList && el.classList.contains('mftl') && (dir === 'left' || dir === 'right')) { muSeekBy(dir === 'left' ? -10 : 10); return; }
       move(dir);
       return;
     }
@@ -2164,6 +2206,7 @@
     },
     back: function () {
       if (rateFor) { rateFor = ''; render('f-play', false); return true; }
+      if (muFull) { muFull = false; render('mm-open', true); return true; }
       if (full >= 0) { full = -1; render(null, true); return true; }
       if (confirmKey) { confirmKey = null; render(null, true); return true; }
       if (!stack.length) {
