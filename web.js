@@ -135,7 +135,7 @@
     });
     return {
       films: out, platform: 'web', noDownloads: true, syncedAt: P.syncedAt || '', syncing: syncing, error: lastError,
-      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), music: MUSIC, ytChannels: YTCH, collections: LIB.collections || [],
+      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), music: MUSIC, ytChannels: YTCH, plays: P.plays || {}, collections: LIB.collections || [],
       scanReport: 'список файлов приходит с проектора и Mac' + (syncNote ? ' · ' + syncNote : ''), update: ''
     };
   }
@@ -143,7 +143,7 @@
   // ---------- sync ----------
   function mergeUser(local, remote) {
     var out = { v: 1 }, lc = false, rc = false;
-    ['films', 'progress', 'last'].forEach(function (sec) {
+    ['films', 'progress', 'last', 'plays'].forEach(function (sec) {
       var l = local[sec] || {}, r = remote[sec] || {}, m = {}, keys = {};
       Object.keys(l).forEach(function (k) { keys[k] = 1; }); Object.keys(r).forEach(function (k) { keys[k] = 1; });
       Object.keys(keys).forEach(function (k) {
@@ -160,8 +160,8 @@
     var sha = null, remote = {};
     if (g.status === 200) { var j = await g.json(); sha = j.sha; try { remote = JSON.parse(unb64(j.content)); } catch (e) { remote = {}; } }
     else if (g.status !== 404) { syncNote = 'синхронизация: код ' + g.status; return; }
-    var m = mergeUser({ films: P.local, progress: P.progress, last: P.last }, remote);
-    if (m.localChanged) { P.local = m.out.films; P.progress = m.out.progress; P.last = m.out.last; saveP(); }
+    var m = mergeUser({ films: P.local, progress: P.progress, last: P.last, plays: P.plays || {} }, remote);
+    if (m.localChanged) { P.local = m.out.films; P.progress = m.out.progress; P.last = m.out.last; P.plays = m.out.plays; saveP(); }
     if (m.remoteChanged) {
       var body = { message: 'Синхронизация с iPhone', content: b64(JSON.stringify(m.out)) };
       if (sha) body.sha = sha;
@@ -190,7 +190,7 @@
       lastError = 'Нет интернета — показываю сохранённое';
     } finally { syncing = false; refreshUi(); }
   }
-  var pushTimer = null;
+  var pushTimer = null, playsTimer = null;
   function pushSoon() { clearTimeout(pushTimer); pushTimer = setTimeout(function () { syncUser().then(refreshUi).catch(function () { }); }, 1500); }
 
   function setLocal(id, key, value) {
@@ -321,11 +321,23 @@
       });
     },
     openUrl: function (u) { window.open(u, '_blank'); },
+    addPlay: function (uid, n, sec, ym) {
+      if (!uid || !ym || (n <= 0 && sec <= 0)) return;
+      P.plays = P.plays || {};
+      if (!P.devId) P.devId = 'iphone-' + Math.random().toString(36).slice(2, 8);
+      var me = P.plays[P.devId] || (P.plays[P.devId] = {}), yr = ym.slice(0, 4);
+      me.y = me.y || {}; var y = me.y[yr] || (me.y[yr] = {});
+      var c = y[uid] || [0, 0]; y[uid] = [c[0] + n, c[1] + sec];
+      me.m = me.m || {}; me.m[ym] = (me.m[ym] || 0) + sec;
+      me.t = Date.now(); saveP();
+      // shared at most every 5 minutes
+      if (!playsTimer) playsTimer = setTimeout(function () { playsTimer = null; syncUser().catch(function () { }); }, 5 * 60 * 1000);
+    },
     setRating: function (id, r) { setLocal(id, 'rating', r); },
     setLiked: function (id, v) { setLocal(id, 'liked', v); },
     setStatus: function (id, s) { if (s === 'watched') markWatched(id); else setLocal(id, 'status', s); }
   };
   setTimeout(sync, 50);
   setInterval(sync, 5 * 60 * 1000);
-  document.addEventListener('visibilitychange', function () { if (!document.hidden) sync(); });
+  document.addEventListener('visibilitychange', function () { if (!document.hidden) sync(); else if (playsTimer) { clearTimeout(playsTimer); playsTimer = null; syncUser().catch(function () { }); } });
 })();

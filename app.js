@@ -1124,10 +1124,60 @@
   function muArtistList() {
     var map = {}, order = [];
     muTracks().forEach(function (t) { muArtists(t).forEach(function (a) { var k = a.toLowerCase(); if (!map[k]) { map[k] = { name: a, n: 0, t: t }; order.push(k); } map[k].n++; if (!map[k].t.cover && t.cover) map[k].t = t; }); });
-    return order.map(function (k) { return map[k]; }).sort(function (a, b) { return b.n - a.n || a.name.localeCompare(b.name, 'ru'); });
+    var pc = muPlays(null);
+    muTracks().forEach(function (t) { var c = pc[t.uid]; if (c) muArtists(t).forEach(function (a) { map[a.toLowerCase()].p = (map[a.toLowerCase()].p || 0) + c[0]; }); });
+    return order.map(function (k) { return map[k]; }).sort(function (a, b) { return (b.p || 0) - (a.p || 0) || b.n - a.n || a.name.localeCompare(b.name, 'ru'); });
   }
   // the list on screen: all tracks, or one artist's
-  function muView() { return view.artist ? muByArtist(view.artist) : muTracks(); }
+  function muView() { return view.artist ? muByPlays(muByArtist(view.artist)) : muTracks(); }
+  // ---------- plays: counted on every device, summed from sync/state.json ----------
+  var muPC = { s: null, all: null };
+  function muPlays(year) {
+    if (!year && muPC.s === S.plays && muPC.all) return muPC.all;
+    var out = {}, pl = S.plays || {};
+    for (var d in pl) {
+      var ys = (pl[d] || {}).y || {};
+      for (var y in ys) {
+        if (year && y !== String(year)) continue;
+        var u = ys[y];
+        for (var k in u) { var c = out[k] || (out[k] = [0, 0]); c[0] += +(u[k] || [])[0] || 0; c[1] += +(u[k] || [])[1] || 0; }
+      }
+    }
+    if (!year) { muPC.s = S.plays; muPC.all = out; }
+    return out;
+  }
+  function muCount(uid) { var c = muPlays(null)[uid]; return c ? c[0] : 0; }
+  function muByPlays(l) { return l.map(function (t, i) { return [t, i]; }).sort(function (a, b) { return muCount(b[0].uid) - muCount(a[0].uid) || a[1] - b[1]; }).map(function (x) { return x[0]; }); }
+  function muYm() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2); }
+  var muL = null; // the listening going on now: seconds heard, counted as a play after 30 s
+  function muFlush() {
+    if (!muL) return;
+    var n = muL.counted && !muL.cSent ? 1 : 0, sec = Math.floor(muL.sec - muL.sent);
+    if (!n && sec < 1) return;
+    if (n) muL.cSent = true;
+    muL.sent += sec;
+    try { if (A && A.addPlay) A.addPlay(muL.uid, n, sec, muYm()); } catch (e) {}
+  }
+  function muTrack() {
+    var t = muNow(); if (!t || !MU) return;
+    var c = MU.currentTime || 0;
+    if (!muL || muL.uid !== t.uid) { muFlush(); muL = { uid: t.uid, sec: 0, sent: 0, counted: false, cSent: false, last: c }; return; }
+    var d = c - muL.last; muL.last = c;
+    if (d < -5) { muFlush(); muL = { uid: t.uid, sec: 0, sent: 0, counted: false, cSent: false, last: c }; return; } // started over (repeat)
+    if (d > 0 && d < 3 && !MU.paused) muL.sec += d;
+    if (!muL.counted && muL.sec >= Math.min(30, (t.dur || 60) * 0.5)) { muL.counted = true; muFlush(); }
+    else if (muL.sec - muL.sent >= 120) muFlush();
+  }
+  document.addEventListener('visibilitychange', function () { if (document.hidden) muFlush(); });
+  // artist photos come from Deezer (collected on GitHub with the tracks)
+  function muArtInfo(name) { return ((muData().artists || {})[String(name || '').toLowerCase()]) || null; }
+  function muArtImg(name, t, cls, big) {
+    var a = muArtInfo(name), u = a && (big ? (a.big || a.img) : a.img);
+    if (!u) return muCoverImg(t, cls);
+    var hue = hash(name) % 360;
+    return '<span class="' + cls + '" style="background:linear-gradient(150deg,hsl(' + hue + ',55%,34%),hsl(' + ((hue + 70) % 360) + ',60%,14%))">' + I.note +
+      '<img alt="" src="' + esc(u) + '" onerror="this.style.display=\'none\'"></span>';
+  }
   function muNow() { return muPos >= 0 ? muQueue[muPos] : null; }
   function muEnsure() {
     if (MU) return MU;
@@ -1137,8 +1187,8 @@
     MU.addEventListener('ended', function () { if (muRepeat) { try { MU.currentTime = 0; } catch (e) {} var p = MU.play(); if (p && p.catch) p.catch(function () {}); return; } muStep(1); });
     MU.addEventListener('play', muUi); MU.addEventListener('pause', muUi); MU.addEventListener('loadedmetadata', muUi);
     var muLast = 0;
-    MU.addEventListener('timeupdate', function () { muPosState(false); if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
-    MU.addEventListener('play', function () { muPosState(true); }); MU.addEventListener('pause', function () { muPosState(true); }); MU.addEventListener('loadedmetadata', function () { muPosState(true); });
+    MU.addEventListener('timeupdate', function () { muTrack(); muPosState(false); if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
+    MU.addEventListener('play', function () { muPosState(true); }); MU.addEventListener('pause', function () { muFlush(); muPosState(true); }); MU.addEventListener('loadedmetadata', function () { muPosState(true); });
     MU.addEventListener('error', function () { muErr = 'Не получилось включить трек — пробую следующий'; muUi(); setTimeout(function () { muStep(1); }, 1500); });
     return MU;
   }
@@ -1222,7 +1272,8 @@
   function listenTabs(cur) {
     return '<div class="chips ltabs">' +
       '<button class="chip' + (cur === 'music' ? ' on' : '') + '" data-f data-key="lt-music" data-act="ltab:music">♪ Треки</button>' +
-      '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button></div>';
+      '<button class="chip' + (cur === 'books' ? ' on' : '') + '" data-f data-key="lt-books" data-act="ltab:books">Аудиокниги</button>' +
+      (cur === 'music' ? '<button class="chip wrchip' + (view.wrap ? ' on' : '') + '" data-f data-key="lt-wrap" data-act="muwrap">✦ Мой ' + muWrapYear() + '</button>' : '') + '</div>';
   }
   // phone: a small player above the bottom bar while a track is on, on every screen (pause, next, open the music)
   function muMini() {
@@ -1232,18 +1283,79 @@
       '<button class="mmb" id="mm-pp" data-f data-key="mm-pp" data-act="mutoggle" aria-label="Пауза">' + (MU.paused ? I.play : I.pause) + '</button>' +
       '<button class="mmb" data-f data-key="mm-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button></div>';
   }
+  // ---------- the year in music («Хей, Лоля! В этом году ты послушала…») ----------
+  var MONTHS_N = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
+  function fmtNum(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function muWrapYear() { var d = new Date(); return d.getMonth() === 0 ? d.getFullYear() - 1 : d.getFullYear(); }
+  function muYearStats(year) {
+    var pc = muPlays(year), byUid = {}, tr = [], arts = {}, sec = 0, n = 0, months = {};
+    muTracks().forEach(function (t) { byUid[t.uid] = t; });
+    for (var u in pc) {
+      sec += pc[u][1]; n += pc[u][0];
+      var t = byUid[u]; if (!t) continue;
+      tr.push({ t: t, n: pc[u][0], sec: pc[u][1] });
+      muArtists(t).forEach(function (a) { var k = a.toLowerCase(), o = arts[k] || (arts[k] = { name: a, n: 0, sec: 0, t: t }); o.n += pc[u][0]; o.sec += pc[u][1]; });
+    }
+    var pl = S.plays || {};
+    for (var d in pl) { var m = (pl[d] || {}).m || {}; for (var ym in m) if (ym.slice(0, 4) === String(year)) months[ym] = (months[ym] || 0) + (+m[ym] || 0); }
+    var best = null; for (var k in months) if (!best || months[k] > months[best]) best = k;
+    tr.sort(function (a, b) { return b.n - a.n || b.sec - a.sec; });
+    var al = Object.keys(arts).map(function (k) { return arts[k]; }).sort(function (a, b) { return b.sec - a.sec || b.n - a.n; });
+    return { sec: sec, n: n, tracks: tr, artists: al, month: best, monthSec: best ? months[best] : 0 };
+  }
+  function muWrapped(year) {
+    var st = muYearStats(year), d = new Date(), final = d.getFullYear() > year || (d.getMonth() === 11 && d.getDate() === 31);
+    var min = Math.round(st.sec / 60), hrs = Math.round(st.sec / 3600);
+    var h = '<div class="wrhero"><div class="wrk">Итоги ' + year + '</div><div class="wrhi">Хей, Лоля!</div><p>' +
+      (final ? 'Вот каким был твой ' + year + ' в музыке.' : 'Вот твой ' + year + ' в музыке на сегодня. Полные итоги соберутся 31 декабря, я покажу их сама.') + '</p></div>';
+    if (!st.n && st.sec < 60) return h + '<div class="empty glass"><h1>Пока нечего считать</h1><p>Включи пару треков, и здесь появятся твои цифры. Считаются прослушивания со всех устройств: проектор, телевизор, Mac и айфон.</p></div>';
+    h += '<div class="wrbig"><div class="wrnum">' + fmtNum(min) + '</div><div class="wrlbl">' + plural(min, 'минута', 'минуты', 'минут') + ' музыки' + (hrs >= 2 ? ', это ' + hrs + ' ' + plural(hrs, 'час', 'часа', 'часов') : '') + '</div></div>';
+    h += '<div class="wrtiles">' +
+      '<div class="wrtile"><b>' + fmtNum(st.n) + '</b><span>' + plural(st.n, 'прослушивание', 'прослушивания', 'прослушиваний') + '</span></div>' +
+      '<div class="wrtile"><b>' + st.tracks.length + '</b><span>' + plural(st.tracks.length, 'трек', 'трека', 'треков') + '</span></div>' +
+      '<div class="wrtile"><b>' + st.artists.length + '</b><span>' + plural(st.artists.length, 'исполнитель', 'исполнителя', 'исполнителей') + '</span></div></div>';
+    var top = st.artists[0];
+    if (top) h += '<button class="wrstar" data-f data-key="wr-star" data-act="muartist:' + esc(top.name) + '">' + muArtImg(top.name, top.t, 'wrsimg', true) +
+      '<span class="wrstx"><span class="wrk">Исполнитель года</span><span class="wrsn">' + esc(top.name) + '</span><span class="wrss">' + fmtNum(Math.round(top.sec / 60)) + ' ' + plural(Math.round(top.sec / 60), 'минута', 'минуты', 'минут') + ' · ' + top.n + ' ' + plural(top.n, 'прослушивание', 'прослушивания', 'прослушиваний') + '</span></span></button>';
+    if (st.artists.length > 1) {
+      h += '<div class="h2 masub">Топ исполнителей</div><div class="marow row" data-row="wra">';
+      st.artists.slice(0, 10).forEach(function (a, i) { h += '<button class="macard" data-f data-key="wa-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muArtImg(a.name, a.t, 'macv') + '<span class="man">' + (i + 1) + '. ' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'раз', 'раза', 'раз') + '</span></button>'; });
+      h += '</div>';
+    }
+    h += '<div class="h2 masub">Топ треков</div>';
+    st.tracks.slice(0, 10).forEach(function (x, i) {
+      h += '<button class="mrow" data-f data-key="wt-' + esc(x.t.uid) + '" data-act="muwtop:' + i + '"><span class="mrank">' + (i + 1) + '</span>' + muCoverImg(x.t, 'mcv') +
+        '<span class="mtx"><span class="mtt">' + esc(x.t.title) + '</span><span class="mta">' + esc(x.t.artist || '') + '</span></span><span class="mdur">' + x.n + ' ' + plural(x.n, 'раз', 'раза', 'раз') + '</span></button>';
+    });
+    if (st.month) h += '<div class="wrmonth"><span class="wrk">Самый музыкальный месяц</span><b>' + MONTHS_N[+st.month.slice(5, 7) - 1] + '</b><span>' + fmtNum(Math.round(st.monthSec / 60)) + ' ' + plural(Math.round(st.monthSec / 60), 'минута', 'минуты', 'минут') + '</span></div>';
+    h += '<div class="wrend"><button class="btn pri" data-f data-key="wr-play" data-act="muwtop:0">' + I.play + ' Слушать мой топ</button></div>';
+    return h;
+  }
+  // on 31 December (and through January) the year's summary opens by itself, once
+  var muWrapChecked = false;
+  function muWrapAuto() {
+    if (muWrapChecked || !S.music) return; muWrapChecked = true;
+    var d = new Date(), y = d.getMonth() === 0 ? d.getFullYear() - 1 : d.getFullYear();
+    if (!((d.getMonth() === 11 && d.getDate() === 31) || d.getMonth() === 0)) return;
+    var seen = ''; try { seen = localStorage.getItem('wrapShown') || ''; } catch (e) {}
+    if (seen === String(y)) return;
+    var st = muYearStats(y); if (st.sec < 600) return;
+    try { localStorage.setItem('wrapShown', String(y)); } catch (e) {}
+    go({ name: 'music', wrap: y }, 'lt-wrap');
+  }
   function music() {
     muLive();
     var m = muData(), all = muTracks(), list = muView(), ch = m.channel || {};
     var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
     if (view.artist && !list.length) { view = { name: 'music' }; list = all; }
+    if (view.wrap) return h + '<div class="mwrap"><section class="mlist mwr">' + muWrapped(view.wrap) + '</section></div>';
     if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
       ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
     var t = muNow(), playing = MU && !MU.paused;
     var who = t ? muArtists(t) : [], cc = t || list[0];
     var pill = t ? (who.length ? '<button class="mppill" data-f data-key="ma-' + esc(who[0]) + '" data-act="muartist:' + esc(who[0]) + '">' : '<div class="mppill">') +
-        muCoverImg(cc, 'mpav') + '<span class="mpwho"><b>' + esc(t.artist || 'Неизвестный исполнитель') + '</b><small>' + esc(ch.username ? '@' + ch.username : (ch.title || 'Telegram')) + '</small></span>' + (who.length ? '</button>' : '</div>')
-      : '<div class="mppill">' + muCoverImg(cc, 'mpav') + '<span class="mpwho"><b>' + esc(view.artist || ch.title || 'Музыка') + '</b><small>' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</small></span></div>';
+        (who.length ? muArtImg(who[0], cc, 'mpav') : muCoverImg(cc, 'mpav')) + '<span class="mpwho"><b>' + esc(t.artist || 'Неизвестный исполнитель') + '</b><small>' + esc(ch.username ? '@' + ch.username : (ch.title || 'Telegram')) + '</small></span>' + (who.length ? '</button>' : '</div>')
+      : '<div class="mppill">' + (view.artist ? muArtImg(view.artist, cc, 'mpav') : muCoverImg(cc, 'mpav')) + '<span class="mpwho"><b>' + esc(view.artist || ch.title || 'Музыка') + '</b><small>' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</small></span></div>';
     h += '<div class="mwrap"><section class="mstage">' + muCoverImg(cc, 'mbg') +
       '<div class="mpc">' + muCoverImg(cc, 'mpcv') + '<span class="mpshade"></span>' +
         '<div class="mptop">' + pill + '<span class="mptr">' +
@@ -1260,19 +1372,31 @@
             (t ? '<button class="mpb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' : '') +
           '</div></div></div></section>';
     h += '<section class="mlist">';
-    if (view.artist) h += '<div class="mahead"><button class="btn small" data-f data-key="ma-back" data-act="muartist:">' + I.back + ' Все треки</button><span class="h2">' + esc(view.artist) + '</span></div>';
+    if (view.artist) {
+      var ap = 0; list.forEach(function (x) { ap += muCount(x.uid); });
+      var ai = muArtInfo(view.artist);
+      h += '<div class="mahero">' + muArtImg(view.artist, list[0], 'mahbg', true) + '<span class="mahsh"></span>' +
+        '<div class="mahin">' + muArtImg(view.artist, list[0], 'mahav', true) +
+        '<div class="mahtx"><div class="mahk">Исполнитель</div><div class="mahname">' + esc(view.artist) + '</div>' +
+        '<div class="mahsub">' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + (ap ? ' · ' + ap + ' ' + plural(ap, 'прослушивание', 'прослушивания', 'прослушиваний') : '') +
+          (ai && ai.fans ? ' · ' + fmtNum(ai.fans) + ' ' + plural(ai.fans, 'фанат', 'фаната', 'фанатов') + ' на Deezer' : '') + '</div>' +
+        '<div class="mahbtns"><button class="btn pri" data-f data-key="ma-play" data-act="muartplay">' + I.play + ' Слушать</button>' +
+          '<button class="btn" data-f data-key="ma-shuf" data-act="muartshuf">' + I.shuffle + ' Вперемешку</button>' +
+          '<button class="btn" data-f data-key="ma-back" data-act="back">' + I.back + ' Все треки</button></div>' +
+        '</div></div></div><div class="h2 masub">Популярные треки</div>';
+    }
     else {
       var arts = muArtistList();
       if (arts.length > 1) {
         h += '<div class="h2 masub">Исполнители</div><div class="marow row" data-row="ma">';
-        arts.forEach(function (a) { h += '<button class="macard" data-f data-key="ma-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muCoverImg(a.t, 'macv') + '<span class="man">' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'трек', 'трека', 'треков') + '</span></button>'; });
+        arts.forEach(function (a) { h += '<button class="macard" data-f data-key="ma-' + esc(a.name) + '" data-act="muartist:' + esc(a.name) + '">' + muArtImg(a.name, a.t, 'macv') + '<span class="man">' + esc(a.name) + '</span><span class="mac">' + a.n + ' ' + plural(a.n, 'трек', 'трека', 'треков') + '</span></button>'; });
         h += '</div><div class="h2 masub">Все треки</div>';
       }
     }
     for (var i = 0; i < list.length; i++) {
       var x = list[i];
       h += '<button class="mrow' + (t && t.uid === x.uid ? ' cur' : '') + '" data-uid="' + esc(x.uid) + '" data-f data-key="mt-' + esc(x.uid) + '" data-act="muplay:' + i + '">' +
-        muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + '</span></span>' +
+        (view.artist ? '<span class="mrank">' + (i + 1) + '</span>' : '') + muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + (muCount(x.uid) ? '<i class="mplc">' + I.play + muCount(x.uid) + '</i>' : '') + '</span></span>' +
         '<span class="mdur">' + (t && t.uid === x.uid && playing ? '<i class="eq"><b></b><b></b><b></b></i>' : fmtT(x.dur)) + '</span></button>';
     }
     return h + '</section></div>';
@@ -1715,6 +1839,7 @@
   }
 
   function render(focusKey, keepScroll) {
+    if (!muWrapChecked && S.music && view.name === 'home') setTimeout(muWrapAuto, 400);
     var tr0 = Date.now();
     try { renderNow(focusKey, keepScroll); if (lazyOn()) lazyPass(); } finally { if (DIAG.tRender.length < 12) DIAG.tRender.push(view.name + ' ' + (Date.now() - tr0) + 'ms'); }
   }
@@ -1848,7 +1973,11 @@
       case 'muprev': if (MU && MU.currentTime > 5) { MU.currentTime = 0; } else muStep(-1); return;
       case 'mushuffle': muShuffle = !muShuffle; if (muShuffle && muQueue.length) { var cur = muNow(); muQueue = shuffled(muView()); muPos = Math.max(0, muQueue.indexOf(cur)); } render('mu-shuf', true); return;
       case 'murepeat': muRepeat = !muRepeat; if (MU) MU.loop = muRepeat; try { localStorage.setItem('muRepeat', muRepeat ? '1' : '0'); } catch (e) {} render('mu-rep', true); return;
-      case 'muartist': view = arg ? { name: 'music', artist: arg } : { name: 'music' }; render(arg ? 'ma-back' : 'mu-play', false); return;
+      case 'muartist': if (arg) go({ name: 'music', artist: arg }, 'ma-play'); else { view = { name: 'music' }; render('mu-play', false); } return;
+      case 'muartplay': muShuffle = false; muStart(muView(), 0); return;
+      case 'muartshuf': muShuffle = true; muStart(shuffled(muView()), 0); return;
+      case 'muwrap': if (view.wrap) app.back(); else go({ name: 'music', wrap: muWrapYear() }, 'lt-wrap'); return;
+      case 'muwtop': { var wt = muYearStats(view.wrap || muWrapYear()).tracks.slice(0, 30).map(function (x) { return x.t; }); if (wt.length) { muShuffle = false; muStart(wt, +arg); } return; }
       case 'muplay': { var ml = muView(), mi = +arg; if (muShuffle) { var q = shuffled(ml.filter(function (z, zi) { return zi !== mi; })); q.unshift(ml[mi]); muStart(q, 0); } else muStart(ml, mi); return; }
       case 'season': view = { name: 'film', id: view.id, season: parseInt(arg, 10) }; render('sn-' + arg, true); return;
       case 'tvplay': playTv(parts[1], parseInt(parts[2], 10)); return;

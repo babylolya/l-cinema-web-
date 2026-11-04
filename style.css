@@ -1225,3 +1225,73 @@ html:not(.web) body.inmusic .mwrap .masub:first-child { margin-top: 0; }
 html:not(.web) body.inmusic .mpc { width: 360px; height: 360px; }
 @media (max-height: 600px) { html:not(.web) body.inmusic .mpc { width: 320px; height: 320px; } }
 body.inmusic .mmini { display: none !important; }
+
+/* ===== Artist page (Yandex Music style): a wide photo banner, big name, «Слушать» ===== */
+.mahero { position: relative; overflow: hidden; border-radius: 28px; min-height: 260px; margin: 0 0 8px; background: #1B1622; }
+.mahero .mahbg { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: block; overflow: hidden; color: transparent; }
+.mahero .mahbg svg { display: none; }
+.mahero .mahbg img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.mahsh { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(10,8,14,0.92) 0%, rgba(10,8,14,0.7) 45%, rgba(10,8,14,0.25) 100%), linear-gradient(0deg, rgba(10,8,14,0.7), rgba(10,8,14,0) 60%); }
+.mahin { position: relative; z-index: 1; display: -webkit-flex; display: flex; -webkit-align-items: flex-end; align-items: flex-end; padding: 34px 30px 28px; min-height: 260px; box-sizing: border-box; }
+.mahav { position: relative; display: block; width: 150px; height: 150px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 26px; border-radius: 50%; overflow: hidden; color: rgba(255,255,255,0.5); box-shadow: 0 20px 50px rgba(0,0,0,0.55), 0 0 0 3px rgba(255,255,255,0.12); }
+.mahav img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; }
+.mahav svg { position: absolute; top: 50%; left: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px; }
+.mahtx { min-width: 0; -webkit-flex: 1 1 0; flex: 1 1 0; }
+.mahk { font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.65); }
+.mahname { font-family: Unbounded, sans-serif; font-size: 44px; font-weight: 800; line-height: 1.05; margin: 6px 0 8px; color: #fff; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.mahsub { color: rgba(255,255,255,0.72); font-size: 15px; }
+.mahbtns { margin-top: 18px; }
+.mahbtns .btn { margin: 0 10px 8px 0; display: inline-flex; vertical-align: middle; }
+.mahbtns .btn svg { margin-right: 6px; }
+.mahbtns .btn.pri { background: #FFDB4D; color: #17131D; border-color: transparent; }
+.mahbtns .btn.pri:focus, html.mac .mahbtns .btn.pri:hover { box-shadow: 0 0 0 3px #fff, 0 0 30px rgba(255,219,77,0.6); }
+.mrank { width: 28px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 8px; text-align: center; font-size: 17px; font-weight: 700; color: rgba(255,255,255,0.55); font-variant-numeric: tabular-nums; }
+.mplc { font-style: normal; margin-left: 10px; color: rgba(255,255,255,0.5); white-space: nowrap; }
+.mplc svg { width: 10px; height: 10px; margin-right: 3px; vertical-align: -1px; }
+.macard .macv img { object-position: center 25%; }
+
+/* ===== The year in music ===== */
+.mwr { padding-bottom: 60px; }
+.wrchip { background: linear-gradient(135deg, rgba(255,120,200,0.22), rgba(120,140,255,0.22)) !important; }
+.wrhero { position: relative; overflow: hidden; border-radius: 28px; padding: 34px 32px; margin-bottom: 18px; background: radial-gradient(ellipse at 15% 0%, rgba(255,92,190,0.55), rgba(255,92,190,0) 60%), radial-gradient(ellipse at 100% 100%, rgba(92,140,255,0.55), rgba(92,140,255,0) 60%), #1C1428; }
+.wrk { display: block; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: rgba(255,255,255,0.7); }
+.wrhi { font-family: Unbounded, sans-serif; font-size: 46px; font-weight: 800; color: #fff; margin: 8px 0 6px; }
+.wrhero p { margin: 0; font-size: 17px; color: rgba(255,255,255,0.82); max-width: 640px; }
+.wrbig { border-radius: 28px; padding: 28px 32px; margin-bottom: 14px; background: linear-gradient(135deg, #FFDB4D, #FF8A5C); color: #1A1220; }
+.wrnum { font-family: Unbounded, sans-serif; font-size: 72px; font-weight: 800; line-height: 1; }
+.wrlbl { font-size: 19px; font-weight: 600; margin-top: 8px; }
+.wrtiles { display: -webkit-flex; display: flex; margin: 0 -6px 14px; }
+.wrtile { -webkit-flex: 1 1 0; flex: 1 1 0; margin: 0 6px; border-radius: 22px; padding: 18px 20px; background: rgba(255,255,255,0.07); }
+.wrtile b { display: block; font-family: Unbounded, sans-serif; font-size: 30px; color: #fff; }
+.wrtile span { display: block; font-size: 14px; color: rgba(255,255,255,0.65); margin-top: 4px; }
+.wrstar { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; width: 100%; box-sizing: border-box; border: 0; border-radius: 28px; padding: 22px; margin-bottom: 6px; color: #fff; text-align: left; font: inherit; cursor: pointer;
+  background: linear-gradient(135deg, rgba(160,110,255,0.35), rgba(255,110,200,0.25)); }
+.wrstar:focus, html.mac .wrstar:hover { outline: none; box-shadow: 0 0 0 3px #fff; }
+.wrsimg { position: relative; display: block; width: 130px; height: 130px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 22px; border-radius: 50%; overflow: hidden; color: rgba(255,255,255,0.5); box-shadow: 0 16px 40px rgba(0,0,0,0.45); }
+.wrsimg img { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 25%; }
+.wrsimg svg { position: absolute; top: 50%; left: 50%; width: 40px; height: 40px; margin: -20px 0 0 -20px; }
+.wrstx { display: block; min-width: 0; }
+.wrsn { display: block; font-family: Unbounded, sans-serif; font-size: 32px; font-weight: 800; margin: 6px 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.wrss { display: block; color: rgba(255,255,255,0.75); font-size: 15px; }
+.wrmonth { border-radius: 24px; padding: 22px 26px; margin: 18px 0 10px; background: rgba(92,200,255,0.12); }
+.wrmonth b { display: block; font-family: Unbounded, sans-serif; font-size: 30px; color: #fff; margin: 6px 0 2px; }
+.wrmonth span:last-child { color: rgba(255,255,255,0.7); }
+.wrend { margin-top: 18px; text-align: center; }
+.wrend .btn svg { margin-right: 6px; }
+@media (max-width: 700px) {
+  .mahero, .mahin { min-height: 0; }
+  .mahin { display: block; padding: 26px 20px 20px; text-align: center; }
+  .mahav { width: 120px; height: 120px; margin: 0 auto 14px; }
+  .mahname { font-size: 30px; }
+  .mahbtns .btn { margin: 0 4px 8px; }
+  .mahsh { background: linear-gradient(0deg, rgba(10,8,14,0.95) 0%, rgba(10,8,14,0.55) 70%, rgba(10,8,14,0.35) 100%); }
+  .wrhero { padding: 26px 22px; }
+  .wrhi { font-size: 32px; }
+  .wrnum { font-size: 54px; }
+  .wrbig { padding: 24px 22px; }
+  .wrtile { padding: 14px 12px; border-radius: 18px; }
+  .wrtile b { font-size: 22px; }
+  .wrtile span { font-size: 12px; }
+  .wrsimg { width: 90px; height: 90px; margin-right: 16px; }
+  .wrsn { font-size: 22px; }
+}
