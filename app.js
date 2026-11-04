@@ -1252,7 +1252,7 @@
   function books() {
     var list = abList();
     var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('books');
-    if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Создай на Google Диске в папке с фильмами папку «аудиокниги», а в ней — по папке на каждую книгу с mp3-файлами. После «Обновить» книги появятся здесь.</p></div>';
+    if (!list.length && !(S.ytChannels || []).length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Создай на Google Диске в папке с фильмами папку «аудиокниги», а в ней — по папке на каждую книгу с mp3-файлами. После «Обновить» книги появятся здесь.</p></div>';
     var cur = AU && AU.getAttribute('data-book');
     // tabs on top: everything, plain books, meditations and any other subfolder
     var cats = ['Все', 'Книги', 'Медитации'];
