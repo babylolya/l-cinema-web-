@@ -166,7 +166,7 @@
   var I = {
     chev: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
     phones: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
-    repeat: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l4 4-4 4"/><path d="M3 11V9a3 3 0 0 1 3-3h15"/><path d="M7 22l-4-4 4-4"/><path d="M21 13v2a3 3 0 0 1-3 3H3"/><text x="12" y="15.5" font-size="7" text-anchor="middle" fill="currentColor" stroke="none" font-weight="700">1</text></svg>',
+    repeat: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/><path d="M11 10.5l1.5-1v5" stroke-width="1.8"/></svg>',
     note: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l11-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="17" cy="16" r="3"/></svg>',
     shuffle: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5"/><path d="M4 20L21 3"/><path d="M21 16v5h-5"/><path d="M15 15l6 6"/><path d="M4 4l5 5"/></svg>',
     book: '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 14v-2a9 9 0 0 1 18 0v2"/><rect x="2.5" y="14" width="5" height="7" rx="2"/><rect x="16.5" y="14" width="5" height="7" rx="2"/></svg>',
@@ -1095,10 +1095,11 @@
       })(t);
     }
   }
+  var MU_BIG = { mfcv: 1, mfbg: 1, mbg: 1, mpcv: 1, mbig: 1 };
   function muCoverImg(t, cls) {
-    var hue = hash(t.uid || t.title || '') % 360, u = muCoverUrl(t);
+    var hue = hash(t.uid || t.title || '') % 360, u = (MU_BIG[cls] && t.hq) || muCoverUrl(t);
     return '<span class="' + cls + '" style="background:linear-gradient(150deg,hsl(' + hue + ',60%,38%),hsl(' + ((hue + 70) % 360) + ',65%,16%))">' + I.note +
-      '<img data-mc="' + esc(t.uid) + '" alt=""' + (u ? ' src="' + esc(u) + '"' : ' style="display:none"') + ' onerror="this.style.display=\'none\'"></span>';
+      '<img' + (MU_BIG[cls] && t.hq ? '' : ' data-mc="' + esc(t.uid) + '"') + ' alt=""' + (u ? ' src="' + esc(u) + '"' : ' style="display:none"') + ' onerror="this.style.display=\'none\'"></span>';
   }
   // new posts show up at once: the app peeks at the bot's fresh updates itself (the GitHub job saves them later)
   var muLiveAt = 0, muLiveBusy = false, muExtra = [];
@@ -1188,6 +1189,12 @@
     return '<span class="' + cls + '" style="background:linear-gradient(150deg,hsl(' + hue + ',55%,34%),hsl(' + ((hue + 70) % 360) + ',60%,14%))">' + I.note +
       '<img alt="" src="' + esc(u) + '" onerror="this.style.display=\'none\'"></span>';
   }
+  // the length Telegram gives with the post is exact; Safari guesses wrong on some MP3s (a 3-minute song showed as 6)
+  function muDur(t) {
+    var d = MU && isFinite(MU.duration) && MU.duration > 0 ? MU.duration : 0;
+    if (t && t.dur > 0) return d && Math.abs(d - t.dur) < 3 ? d : t.dur;
+    return d;
+  }
   function muNow() { return muPos >= 0 ? muQueue[muPos] : null; }
   function muEnsure() {
     if (MU) return MU;
@@ -1226,8 +1233,8 @@
     var ms = navigator.mediaSession;
     if (!ms || !window.MediaMetadata || !t) return;
     try {
-      var cu = muCoverUrl(t), ic = location.href.replace(/[#?].*$/, '').replace(/[^\/]*$/, '') + 'icon-512.png';
-      var art = cu ? [{ src: cu, sizes: '320x320', type: 'image/jpeg' }, { src: cu, sizes: '512x512', type: 'image/jpeg' }] : [{ src: ic, sizes: '512x512', type: 'image/png' }];
+      var cu = t.hq || muCoverUrl(t), ic = location.href.replace(/[#?].*$/, '').replace(/[^\/]*$/, '') + 'icon-512.png';
+      var art = cu ? (t.hq ? [{ src: cu, sizes: '1000x1000', type: 'image/jpeg' }] : [{ src: cu, sizes: '320x320', type: 'image/jpeg' }, { src: cu, sizes: '512x512', type: 'image/jpeg' }]) : [{ src: ic, sizes: '512x512', type: 'image/png' }];
       ms.metadata = new MediaMetadata({ title: t.title || '', artist: t.artist || '', album: (muData().channel || {}).title || 'L-CINEMA · Музыка', artwork: art });
       var hs = {
         play: function () { if (MU) { var p = MU.play(); if (p && p.catch) p.catch(function () {}); } },
@@ -1246,7 +1253,7 @@
     if (!ms || !ms.setPositionState || !MU) return;
     if (!now && Date.now() - muPosAt < 4000) return;
     muPosAt = Date.now();
-    var t = muNow(), dur = isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
+    var t = muNow(), dur = muDur(t);
     if (!dur) return;
     try { ms.setPositionState({ duration: dur, playbackRate: MU.playbackRate || 1, position: Math.min(dur, Math.max(0, MU.currentTime || 0)) }); } catch (e) {}
     try { ms.playbackState = MU.paused ? 'paused' : 'playing'; } catch (e) {}
@@ -1269,7 +1276,7 @@
     if (mm && (!muMiniOn() || mm.getAttribute('data-uid') !== (t && t.uid))) { if (mm.contains(document.activeElement)) mm = null; else { mm.parentNode.removeChild(mm); mm = null; } }
     if (!mm && muMiniOn()) { var d0 = document.createElement('div'); d0.innerHTML = muMini(); if (d0.firstChild) root.appendChild(d0.firstChild); }
     // a stream from Telegram may not tell its length to old browsers (Infinity): the length from the post is used then
-    var dur = MU && isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
+    var dur = muDur(t);
     var mf = document.getElementById('mm-fill'); if (mf && MU) mf.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
     var tl = document.querySelector('.mftl.drag');
     var f = tl ? null : document.getElementById('mu-fill'); if (f && MU) f.style.width = (dur ? Math.min(100, MU.currentTime / dur * 100) : 0).toFixed(2) + '%';
@@ -1374,7 +1381,7 @@
     });
   })();
   function muSeekTo(frac) {
-    if (!MU) return; var t = muNow(), dur = isFinite(MU.duration) && MU.duration > 0 ? MU.duration : (t ? t.dur : 0);
+    if (!MU) return; var t = muNow(), dur = muDur(t);
     if (!dur) return; try { MU.currentTime = Math.max(0, Math.min(dur - 0.5, frac * dur)); } catch (e) {} muUi(); muPosState(true);
   }
   function muSeekBy(sec) { if (!MU) return; try { MU.currentTime = Math.max(0, (MU.currentTime || 0) + sec); } catch (e) {} muUi(); muPosState(true); }

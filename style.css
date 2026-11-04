@@ -1475,3 +1475,10 @@ html.web .macard:focus { background: none; }
 .mallbtn:focus, html.mac .mallbtn:hover { outline: none; background: rgba(255,95,219,0.16); box-shadow: 0 0 0 2px #FF7FE3; }
 html.web .mallbtn:focus { box-shadow: none; background: rgba(255,255,255,0.07); }
 html:not(.web) .mallb { max-width: 520px; }
+/* phone sheet: one even shade from top to bottom (no lighter strip under the card) */
+@media (max-width: 700px) {
+  .mfull .mfcard { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .mfsh { background: linear-gradient(to bottom, rgba(8,6,12,0.25), rgba(8,6,12,0.55)); }
+  .mfull { height: 100vh; height: 100dvh; }
+  .mfull .mfbg { top: -120px; bottom: -120px; }
+}
