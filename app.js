@@ -490,13 +490,20 @@
   // Christmas: a wide header where the films' own pictures change by themselves, then the films on a background of lights
   var xmTimer = null, xmIdx = 0;
   function xmasPage(c, list, seen) {
+    // each slide: the film's own poster, whole and sharp, over a soft blurred copy of its picture (nothing stretched or cut)
+    var lite = document.documentElement.classList.contains('lite');
+    var hi = function (u, w) { return String(u || '').replace(/\/t\/p\/w\d+\//, '/t/p/' + w + '/'); };
     var pics = [];
-    list.forEach(function (f) { var u = (f.backdrops && f.backdrops[0]) || f.backdrop; if (u && pics.length < 8) pics.push({ u: u, f: f }); });
-    if (!pics.length) list.forEach(function (f) { if (f.poster && pics.length < 6) pics.push({ u: f.poster, f: f, poster: true }); });
+    list.forEach(function (f) {
+      if (pics.length >= 8 || (!f.poster && !f.backdrop)) return;
+      var bd = (f.backdrops && f.backdrops[0]) || f.backdrop;
+      pics.push({ f: f, poster: f.poster ? hi(f.poster, lite ? 'w500' : 'w780') : '', bg: bd ? hi(bd, lite ? 'w780' : 'w1280') : hi(f.poster, 'w342') });
+    });
     if (xmIdx >= pics.length) xmIdx = 0;
     var cur = pics[xmIdx];
     var h = '<div class="xmbg"><i class="xg1"></i><i class="xg2"></i></div>' +
-      '<section class="xmhero"><div class="ctop xmctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' + pics.map(function (p, i) { return '<img class="xs' + (p.poster ? ' xsp' : '') + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '" src="' + esc(p.u) + '" alt="" onerror="this.style.display=\'none\'">'; }).join('') +
+      '<section class="xmhero"><div class="ctop xmctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' + pics.map(function (p, i) { return '<div class="xs' + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '"><img class="xsb" src="' + esc(p.bg) + '" alt="" onerror="this.style.display=\'none\'">' +
+        (p.poster ? '<img class="xsp" src="' + esc(p.poster) + '" alt="" onerror="this.style.display=\'none\'">' : '') + '</div>'; }).join('') +
         '<span class="xmhsh"></span>' +
         '<div class="xmhtop"><h1 class="xmtitle">Christmas is coming</h1>' +
           '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div></div>' +
