@@ -2261,7 +2261,7 @@
   function act(a) {
     var parts = a.split(':');
     var cmd = parts[0], arg = parts.slice(1).join(':');
-    if (cmd !== 'rm') confirmKey = null;
+    if (cmd !== 'rm' && cmd !== 'mupldel') confirmKey = null;
     if (cmd === 'play' || cmd === 'restart' || cmd === 'saver') { if (AU && !AU.paused) AU.pause(); }
     if (abAct(cmd, arg)) return;
     switch (cmd) {
@@ -2303,7 +2303,7 @@
       case 'muplshare': { var sp = view.pl === 'fav' ? 'Избранное' : ((muPl(view.pl) || {}).name || 'Плейлист'); muShare(sp, muView()); return; }
       case 'muplren': view.rename = true; render('pl-in', true); try { var ri = document.getElementById('pl-name'); if (ri) { ri.focus(); ri.select(); } } catch (e) {} return;
       case 'muplsave': { var ps = muPl(view.pl), ri2 = document.getElementById('pl-name'); if (ps && ri2 && ri2.value.trim()) { ps.name = ri2.value.trim().slice(0, 40); muPlSave(ps); } view.rename = false; render('pl-play', true); return; }
-      case 'mupldel': { if (confirmKey !== 'pl-del') { confirmKey = 'pl-del'; render('pl-del', true); return; } confirmKey = null; muSet('mpl', view.pl, { del: true }); app.back(); return; }
+      case 'mupldel': { if (confirmKey !== 'pl-del') { confirmKey = 'pl-del'; render('pl-del', true); return; } confirmKey = null; muSet('mpl', view.pl, { del: true }); if (stack.length) app.back(); else { view = { name: 'music' }; render('pl-new', false); } return; }
       case 'muopen': muFull = true; render('mu-play', true); return;
       case 'muclose': muPick = false; muCloseFull(); return;
       case 'muallshuf': muShuffle = true; muStart(shuffled(arg === 'pl' ? muView() : muTracks()), 0); return;
