@@ -497,19 +497,21 @@
     list.forEach(function (f) {
       if (pics.length >= 8 || (!f.poster && !f.backdrop)) return;
       var bd = (f.backdrops && f.backdrops[0]) || f.backdrop;
-      pics.push({ f: f, poster: f.poster ? hi(f.poster, lite ? 'w500' : 'w780') : '', bg: bd ? hi(bd, lite ? 'w780' : 'w1280') : hi(f.poster, 'w342') });
+      // a wide still of the film (no titles on it) shown whole in its own frame; a poster only when there is no still
+      pics.push({ f: f, wide: !!bd, poster: bd ? hi(bd, lite ? 'w780' : 'w1280') : hi(f.poster, lite ? 'w500' : 'w780'), bg: bd ? hi(bd, 'w780') : hi(f.poster, 'w342') });
     });
     if (xmIdx >= pics.length) xmIdx = 0;
     var cur = pics[xmIdx];
     var h = '<div class="xmbg"><i class="xg1"></i><i class="xg2"></i></div>' +
       '<section class="xmhero"><div class="ctop xmctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' + pics.map(function (p, i) { return '<div class="xs' + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '"><img class="xsb" src="' + esc(p.bg) + '" alt="" onerror="this.style.display=\'none\'">' +
-        (p.poster ? '<img class="xsp" src="' + esc(p.poster) + '" alt="" onerror="this.style.display=\'none\'">' : '') + '</div>'; }).join('') +
+        (p.poster ? '<img class="xsp' + (p.wide ? ' wide' : '') + '" src="' + esc(p.poster) + '" alt="" onerror="this.style.display=\'none\'">' : '') + '</div>'; }).join('') +
         '<span class="xmhsh"></span>' +
         '<div class="xmhtop"><h1 class="xmtitle">Christmas is coming</h1>' +
-          '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div></div>' +
+          '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div>' +
+          (pics.length > 1 ? '<div class="xmdots">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '') +
+          '</div>' +
         '<div class="xmhbot">' +
           (cur ? '<button class="xmnow" data-f data-key="xm-now" data-act="film:' + esc(cur.f.id) + '"><span class="xmnk">Сейчас на экране</span><span class="xmnt" id="xm-nt">' + esc(cur.f.title) + '</span><span class="xmna">Открыть →</span></button>' : '<span></span>') +
-          (pics.length > 1 ? '<div class="xmdots">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '') +
         '</div>' +
       '</section>';
     if (!list.length) return h + '<div class="empty glass"><h1>Скоро здесь будет кино</h1><p>Скажи Claude, какие фильмы положить в «' + esc(c.title) + '», и они появятся здесь.</p></div>';

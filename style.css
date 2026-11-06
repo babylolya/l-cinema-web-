@@ -1844,3 +1844,22 @@ html.lite .xmhero .xsb { -webkit-filter: brightness(0.5); filter: brightness(0.5
   html.web .xmhbot { width: auto; right: 18px; bottom: 96px; }
   html.web .xmhero .xmhsh { background: linear-gradient(180deg, rgba(10,6,20,0.65) 0%, rgba(10,6,20,0.1) 30%, rgba(10,6,20,0.1) 70%, rgba(10,6,20,0.7) 100%); }
 }
+
+/* slides, take three: a wide still in its own rounded frame, clear of the title and the buttons */
+.xmhero .xsp.wide { top: 86px; right: 40px; left: auto; width: 50%; height: auto; max-width: none; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 20px; }
+html:not(.web) .xmhbot, .xmhbot { width: calc(50% - 80px); }
+@media (max-width: 900px) {
+  html.web .xmhero { height: calc(env(safe-area-inset-top) + 560px); min-height: 0; max-height: none; }
+  html.web .xmhero .xsp.wide { left: 18px; right: 18px; top: calc(env(safe-area-inset-top) + 200px); width: calc(100% - 36px); height: auto; max-width: none;
+    -webkit-transform: scale(0.98); transform: scale(0.98); }
+  html.web .xmhero .xs.on .xsp.wide { -webkit-transform: none; transform: none; }
+  html.web .xmhero .xsp:not(.wide) { top: calc(env(safe-area-inset-top) + 196px); height: calc(100% - env(safe-area-inset-top) - 196px - 170px); }
+  html.web .xmhbot { width: auto; }
+  html.web .xmhero .xmhsh { background: linear-gradient(180deg, rgba(10,6,20,0.55) 0%, rgba(10,6,20,0.2) 40%, rgba(10,6,20,0.55) 100%); }
+}
+/* the dots: top right, on the line of the chips */
+.xmhtop .xmdots { position: absolute; right: 0; left: auto; top: auto; bottom: 8px; padding: 6px 10px; border-radius: 999px; background: rgba(10,6,20,0.4); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.xmhtop .xmdots i { width: 6px; height: 6px; margin: 0 3px; }
+.xmhtop .xmdots i.on { width: 16px; }
+html:not(.web) .xmhtop { right: calc(50% + 40px); }
+html.web .xmhtop .xmdots, html:not(.web) .xmhtop .xmdots { top: auto; bottom: 8px; right: 0; left: auto; }
