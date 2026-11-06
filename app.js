@@ -1291,6 +1291,7 @@
   }
   function shuffled(l) { var a = l.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
   function muUi() {
+    muNative();
     var t = muNow();
     var bt = document.getElementById('mu-pp'); if (bt) bt.innerHTML = MU && !MU.paused ? I.pause : I.play;
     var mb = document.getElementById('mm-pp'); if (mb) mb.innerHTML = MU && !MU.paused ? I.pause : I.play;
@@ -1310,6 +1311,17 @@
     var nv = document.querySelector('[data-key="nav-music"]'); if (nv) nv.classList.toggle('live', (!!MU && !MU.paused) || (!!AU && !AU.paused));
   }
   setInterval(function () { if (MU && !MU.paused) muUi(); }, 1000);
+  // projector: tell Android what plays, so the Bluetooth speaker's buttons come to this player
+  var muSent = '', muSentAt = 0;
+  function muNative() {
+    if (!A || !A.mediaState) return;
+    var t = muNow();
+    if (!t || !MU) { if (muSent) { muSent = ''; try { A.mediaOff(); } catch (e) {} } return; }
+    var key = t.uid + (MU.paused ? 'p' : 'r');
+    if (key === muSent && Date.now() - muSentAt < 15000) return;
+    muSent = key; muSentAt = Date.now();
+    try { A.mediaState(!MU.paused, t.title || '', t.artist || '', Math.round((MU.currentTime || 0) * 1000), Math.round(muDur(t) * 1000)); } catch (e) {}
+  }
 
   // «Музыка» has two tabs: the channel's tracks and the audiobooks (with meditations inside)
   function listenTabs(cur) {
@@ -2292,6 +2304,22 @@
       if (where.indexOf('film:') === 0) { view = { name: 'home' }; go({ name: 'film', id: where.slice(5) }); return; }
       view = { name: where || 'home' };
       render(where === 'tv' ? null : 'nav-' + where, false);
+    },
+    // buttons of a Bluetooth speaker / headphones (from Android)
+    media: function (c) {
+      var book = AU && !AU.paused && !(MU && !MU.paused) || (AU && AU.src && !(MU && muNow()));
+      if (book) {
+        if (c === 'play' || (c === 'toggle' && AU.paused)) { var pa = AU.play(); if (pa && pa.catch) pa.catch(function () {}); }
+        else if (c === 'pause' || c === 'toggle') AU.pause();
+        return;
+      }
+      if (c === 'play') { if (!MU || MU.paused) muToggle(); }
+      else if (c === 'pause') { if (MU && !MU.paused) MU.pause(); }
+      else if (c === 'toggle') muToggle();
+      else if (c === 'next') muStep(1);
+      else if (c === 'prev') { if (MU && MU.currentTime > 4) { MU.currentTime = 0; muUi(); } else muStep(-1); }
+      else if (c.indexOf('seek:') === 0 && MU) { try { MU.currentTime = (+c.slice(5) || 0) / 1000; } catch (e) {} muUi(); }
+      muNative();
     },
     back: function () {
       if (rateFor) { rateFor = ''; render('f-play', false); return true; }
