@@ -1583,3 +1583,94 @@ html.lite .mpcard { background: rgba(34,30,44,0.97); }
 .plbackbtn { display: inline-flex; }
 .plbackbtn svg { margin-right: 4px; }
 .plnote { display: inline-block; margin: 2px 0 8px; padding: 6px 12px; border-radius: 999px; background: rgba(120,255,190,0.16); color: #B6FFD9; font-size: 14px; font-weight: 600; }
+
+/* ===== One round back button everywhere ===== */
+.rback { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; -webkit-flex-shrink: 0; flex-shrink: 0; width: 48px; height: 48px; padding: 0; border-radius: 50%; cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.16); background: rgba(30,26,40,0.55); -webkit-backdrop-filter: blur(18px) saturate(1.5); backdrop-filter: blur(18px) saturate(1.5); color: #fff; box-shadow: 0 6px 18px rgba(0,0,0,0.3); transition: transform .1s ease-out, box-shadow .15s, background .15s; }
+.rback svg { width: 22px; height: 22px; margin-left: -2px; }
+.rback:active { -webkit-transform: scale(0.92); transform: scale(0.92); }
+.rback:focus, html.mac .rback:hover { outline: none; background: rgba(255,255,255,0.2); box-shadow: 0 0 0 3px #fff, 0 0 24px rgba(255,255,255,0.3); }
+html.web .rback:focus { box-shadow: 0 6px 18px rgba(0,0,0,0.3); background: rgba(30,26,40,0.55); }
+html.lite .rback { background: rgba(30,26,40,0.95); }
+.rbar { margin: 0 0 14px; }
+
+/* ===== Collections on the home screen: one wide Christmas tile, Halloween and Любимое small ===== */
+.cwrap { padding-top: 6px; }
+.xmtile { position: relative; display: block; width: 100%; height: 280px; margin: 0 0 14px; padding: 0; border: 0; border-radius: 28px; overflow: hidden; cursor: pointer; text-align: left; color: #fff; font: inherit; background: #0B1440;
+  box-shadow: 0 18px 50px rgba(10,20,80,0.55), inset 0 1px 0 rgba(255,255,255,0.25); transition: transform .12s ease-out, box-shadow .2s; }
+.xmimg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: center 30%; }
+.xmsh { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(6,10,40,0.85) 0%, rgba(6,10,40,0.45) 45%, rgba(6,10,40,0) 75%); }
+.xmtx { position: absolute; z-index: 2; left: 34px; bottom: 30px; top: 30px; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: flex-end; justify-content: flex-end; }
+.xmk { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.8); }
+.xmt { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 46px; line-height: 1.02; letter-spacing: -0.025em; margin: 8px 0 14px; text-shadow: 0 4px 30px rgba(0,0,0,0.5), 0 0 24px rgba(255,214,120,0.35); }
+.xmgo { display: -webkit-inline-flex; display: inline-flex; -webkit-align-items: center; align-items: center; -webkit-align-self: flex-start; align-self: flex-start; padding: 10px 16px; border-radius: 999px; font-size: 15px; font-weight: 700;
+  background: rgba(255,255,255,0.18); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.3); }
+.xmgo svg { width: 14px; height: 14px; margin-left: 8px; fill: currentColor; }
+.xmtile:active { -webkit-transform: scale(0.985); transform: scale(0.985); }
+.xmtile:focus, html.mac .xmtile:hover { outline: none; box-shadow: 0 0 0 3px #fff, 0 18px 50px rgba(255,200,120,0.35); }
+html.web .xmtile:focus { box-shadow: 0 18px 50px rgba(10,20,80,0.55); }
+.cmini { display: -webkit-flex; display: flex; margin: 0 -7px; }
+.cmtile { -webkit-flex: 1 1 0; flex: 1 1 0; min-width: 0; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; height: 84px; margin: 0 7px; padding: 0 18px; border: 1px solid rgba(255,255,255,0.14); border-radius: 22px; color: #fff; text-align: left; font: inherit; cursor: pointer; transition: transform .1s ease-out, box-shadow .15s; }
+.cmtile.th-halloween { background: linear-gradient(135deg, rgba(90,26,134,0.7), rgba(242,106,27,0.55)); }
+.cmtile.th-love { background: linear-gradient(135deg, rgba(91,22,201,0.65), rgba(255,79,216,0.55)); }
+.cmtile.th-default { background: rgba(255,255,255,0.07); }
+.cmic { width: 46px; height: 46px; -webkit-flex-shrink: 0; flex-shrink: 0; margin-right: 14px; border-radius: 14px; background: rgba(0,0,0,0.22); display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; font-size: 22px; }
+.cmtx { display: block; min-width: 0; }
+.cmt { display: block; font-size: 17px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cms { display: block; font-size: 13px; opacity: 0.75; margin-top: 2px; }
+.cmtile:active { -webkit-transform: scale(0.97); transform: scale(0.97); }
+.cmtile:focus, html.mac .cmtile:hover { outline: none; box-shadow: 0 0 0 3px #fff; }
+html.web .cmtile:focus { box-shadow: none; }
+@media (max-width: 700px) {
+  .xmtile { height: 210px; border-radius: 24px; }
+  .xmtx { left: 20px; bottom: 20px; }
+  .xmt { font-size: 30px; margin: 6px 0 10px; }
+  .xmgo { font-size: 13px; padding: 8px 13px; }
+  .cmtile { height: 72px; padding: 0 12px; border-radius: 18px; }
+  .cmic { width: 40px; height: 40px; margin-right: 10px; font-size: 19px; }
+  .cmt { font-size: 15px; }
+}
+/* the puff of snow */
+.snowburst { position: fixed; z-index: 200; width: 0; height: 0; pointer-events: none; }
+.snowburst i { position: absolute; left: 0; top: 0; border-radius: 50%; background: #fff; box-shadow: 0 0 6px rgba(255,255,255,0.9); opacity: 1; transition: transform .9s cubic-bezier(.15,.7,.3,1), opacity .9s ease-in; }
+.snowburst i.fl { border-radius: 2px; background: none; box-shadow: none; }
+.snowburst i.fl::before, .snowburst i.fl::after { content: ''; position: absolute; left: 50%; top: 0; width: 2px; height: 100%; margin-left: -1px; background: #fff; border-radius: 1px; }
+.snowburst i.fl::after { -webkit-transform: rotate(90deg); transform: rotate(90deg); }
+@media (prefers-reduced-motion: reduce) { .snowburst { display: none; } }
+
+/* ===== Inside Christmas: red shimmer with gold glitter, the Grinch up top ===== */
+.xmbg { position: fixed; z-index: 0; top: 0; left: 0; right: 0; bottom: 0; pointer-events: none; background: url(stk/xmas-candy.jpg) center / cover no-repeat, #6d0614; }
+.xmbg::before { content: ''; position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(180deg, rgba(60,0,8,0.55) 0%, rgba(90,4,16,0.72) 45%, rgba(30,0,6,0.9) 100%); }
+.xmbg i { position: absolute; top: 0; left: 0; right: 0; bottom: 0; opacity: .7; }
+.xmbg .xg1 { background-image: radial-gradient(circle, rgba(255,215,120,0.95) 0 1.2px, transparent 1.8px); background-size: 46px 46px; -webkit-animation: xmglit 3.2s ease-in-out infinite alternate; animation: xmglit 3.2s ease-in-out infinite alternate; }
+.xmbg .xg2 { background-image: radial-gradient(circle, rgba(255,240,190,0.9) 0 1px, transparent 1.6px); background-size: 73px 61px; background-position: 20px 30px; -webkit-animation: xmglit 4.1s ease-in-out 1.3s infinite alternate; animation: xmglit 4.1s ease-in-out 1.3s infinite alternate; }
+@keyframes xmglit { from { opacity: .15; } to { opacity: .85; } }
+html.lite .xmbg i { -webkit-animation: none; animation: none; opacity: .45; }
+@media (prefers-reduced-motion: reduce) { .xmbg i { -webkit-animation: none; animation: none; opacity: .45; } }
+#main > :not(.xmbg) { position: relative; z-index: 1; }
+.grinch { position: relative; height: 340px; margin: 14px 0 22px; border-radius: 30px; overflow: hidden; background: #10183A; box-shadow: 0 24px 70px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,215,120,0.25); }
+.grimg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; object-position: 70% 50%; }
+.grsh { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(90deg, rgba(8,10,30,0.88) 0%, rgba(8,10,30,0.55) 40%, rgba(8,10,30,0) 70%); }
+.grtx { position: absolute; z-index: 2; left: 34px; top: 0; bottom: 30px; max-width: 46%; display: -webkit-flex; display: flex; -webkit-flex-direction: column; flex-direction: column; -webkit-justify-content: flex-end; justify-content: flex-end; }
+.grk { font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: rgba(255,255,255,0.75); }
+.grlogo { font-family: Unbounded, sans-serif; font-weight: 900; font-size: 76px; line-height: 1; letter-spacing: -0.03em; margin: 6px 0 10px; color: #7CF25A;
+  text-shadow: 0 2px 0 #2f8a1e, 0 6px 0 #1c5a12, 0 12px 30px rgba(0,0,0,0.55), 0 0 30px rgba(124,242,90,0.45); -webkit-transform: rotate(-3deg); transform: rotate(-3deg); -webkit-transform-origin: left bottom; transform-origin: left bottom; }
+.grsub { font-size: 15px; color: rgba(255,255,255,0.85); margin-bottom: 16px; }
+.grbtns .btn { margin: 0 10px 6px 0; display: inline-flex; }
+.grbtns .btn svg { margin-right: 6px; }
+.grbtns .grbtn { background: #fff; color: #15121A; box-shadow: 0 8px 22px rgba(0,0,0,0.35); border: 0; }
+.grbtns .grbtn svg { fill: #15121A; }
+.grbtns .grbtn2 { background: rgba(255,255,255,0.16); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border: 1px solid rgba(255,255,255,0.3); color: #fff; box-shadow: none; }
+.xmhead { margin: 0 0 16px; }
+.xmtitle { font-family: Unbounded, sans-serif; font-weight: 800; font-size: 38px; letter-spacing: -0.02em; margin: 0 0 10px; color: #FFE7B0; text-shadow: 0 0 24px rgba(255,200,90,0.45), 0 2px 18px rgba(0,0,0,0.5); }
+@media (max-width: 700px) {
+  .grinch { height: 300px; border-radius: 24px; }
+  .grimg { object-position: 72% 50%; }
+  .grsh { background: linear-gradient(0deg, rgba(8,10,30,0.92) 0%, rgba(8,10,30,0.5) 50%, rgba(8,10,30,0.05) 100%); }
+  .grtx { left: 18px; right: 18px; bottom: 18px; max-width: none; }
+  .grlogo { font-size: 52px; }
+  .grsub { font-size: 14px; margin-bottom: 12px; }
+  .xmtitle { font-size: 26px; }
+}
+.grinch, .xmhead, .xmtile, .cwrap, .rbar { -webkit-flex-shrink: 0; flex-shrink: 0; }
+.xmar { font-style: normal; margin-left: 8px; }

@@ -388,14 +388,49 @@
   function collTiles() {
     var cs = (S.collections || []).filter(function (c) { return !c.brand; });
     if (!cs.length) return '';
-    var h = '<section class="section"><div class="head"><h2 class="h2">Подборки</h2></div><div class="ctiles">';
-    for (var i = 0; i < cs.length; i++) {
-      var c = cs[i], n = collFilms(c).length;
-      h += '<button class="ctile th-' + esc(c.theme || 'default') + '" data-f data-key="coll-' + esc(c.id) + '" data-act="coll:' + esc(c.id) + '">' + stickers(c.theme) +
-        '<span class="cchip">' + (n ? n + ' ' + plural(n, 'фильм', 'фильма', 'фильмов') : (c.auto === 'liked' ? 'ставь ♥' : 'скоро')) + '</span>' +
-        '<span class="ctitle">' + esc(c.title) + '</span><span class="csub">' + esc(c.subtitle || '') + '</span></button>';
+    var xm = cs.filter(function (c) { return c.theme === 'christmas'; })[0], rest = cs.filter(function (c) { return c !== xm; });
+    var h = '<section class="section"><div class="head"><h2 class="h2">Подборки</h2></div><div class="cwrap">';
+    if (xm) {
+      var xn = collFilms(xm).length;
+      // one wide tile: the Grinch over Whoville, «Christmas is coming», a puff of snow when pressed
+      h += '<button class="xmtile" data-f data-key="coll-' + esc(xm.id) + '" data-act="xmas:' + esc(xm.id) + '"><img class="xmimg" src="stk/xmas-hill.jpg" alt=""><span class="xmsh"></span>' +
+        '<span class="xmtx"><span class="xmk">' + esc(xm.title) + (xn ? ' · ' + xn + ' ' + plural(xn, 'фильм', 'фильма', 'фильмов') : '') + '</span>' +
+        '<span class="xmt">Christmas<br>is coming</span><span class="xmgo">Смотреть подборку ' + I.next + '</span></span></button>';
+    }
+    if (rest.length) {
+      h += '<div class="cmini">';
+      rest.forEach(function (c) {
+        var n = collFilms(c).length, ic = c.theme === 'halloween' ? '🎃' : (c.theme === 'love' ? '♥' : '✦');
+        h += '<button class="cmtile th-' + esc(c.theme || 'default') + '" data-f data-key="coll-' + esc(c.id) + '" data-act="coll:' + esc(c.id) + '"><span class="cmic">' + ic + '</span>' +
+          '<span class="cmtx"><span class="cmt">' + esc(c.title) + '</span><span class="cms">' + (n ? n + ' ' + plural(n, 'фильм', 'фильма', 'фильмов') : (c.auto === 'liked' ? 'ставь ♥' : 'скоро')) + '</span></span></button>';
+      });
+      h += '</div>';
     }
     return h + '</div></section>';
+  }
+  // pressing the Christmas tile: small snow flies out in every direction, then the collection opens
+  function snowBurst(el, then) {
+    try {
+      var r = el.getBoundingClientRect(), box = document.createElement('div'); box.className = 'snowburst';
+      box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + r.height / 2) + 'px';
+      var n = document.documentElement.classList.contains('lite') ? 18 : 42, fl = [];
+      for (var i = 0; i < n; i++) {
+        var f = document.createElement('i'), sz = 3 + Math.random() * 7;
+        f.style.width = f.style.height = sz.toFixed(1) + 'px';
+        if (Math.random() < 0.35) f.className = 'fl';
+        box.appendChild(f); fl.push(f);
+      }
+      document.body.appendChild(box);
+      requestAnimationFrame(function () { requestAnimationFrame(function () {
+        fl.forEach(function (f) {
+          var ang = Math.random() * Math.PI * 2, d = (0.35 + Math.random() * 0.75) * Math.max(r.width, r.height) * 0.75;
+          f.style.transform = 'translate(' + (Math.cos(ang) * d).toFixed(0) + 'px,' + (Math.sin(ang) * d * 0.8 + 30).toFixed(0) + 'px) rotate(' + (Math.random() * 360).toFixed(0) + 'deg)';
+          f.style.opacity = '0';
+        });
+      }); });
+      setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1100);
+    } catch (e) {}
+    setTimeout(then, 380);
   }
 
   // decorative 3D stickers that pop out of a collection tile on hover / remote focus
@@ -448,8 +483,26 @@
     for (var i = 0; i < cs.length; i++) if (DECO[cs[i].theme] && collFilms(cs[i]).indexOf(f) >= 0) return cs[i].theme;
     return '';
   }
+  // one round back button for every screen
+  function backBtn(key, cls, style) { return '<button class="rback' + (cls ? ' ' + cls : '') + '" data-f data-key="' + key + '" data-act="back" aria-label="Назад"' + (style ? ' style="' + style + '"' : '') + '>' + I.back + '</button>'; }
   function plural(n, one, few, many) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many); }
 
+  function xmasPage(c, list, seen) {
+    var grinch = list.filter(function (f) { return /гринч|grinch/i.test((f.title || '') + ' ' + (f.original || '') + ' ' + (f.id || '')); })[0];
+    var h = '<div class="xmbg"><i class="xg1"></i><i class="xg2"></i></div>' +
+      '<div class="ctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' +
+      '<section class="grinch"><img class="grimg" src="stk/xmas-town.jpg" alt=""><span class="grsh"></span>' +
+        '<div class="grtx"><span class="grk">Рождество · главный фильм</span><span class="grlogo">Гринч</span>' +
+        '<span class="grsub">Самый уютный зелёный ворчун и город, где всё в огоньках</span>' +
+        '<div class="grbtns">' + (grinch ? '<button class="btn pri grbtn" data-f data-key="gr-play" data-act="film:' + esc(grinch.id) + '">' + I.play + ' Смотреть сейчас</button>' : '') +
+          '<button class="btn grbtn2" data-f data-key="gr-all" data-act="xmgrid">Смотреть подборку</button></div></div></section>' +
+      '<div class="xmhead"><h1 class="xmtitle">Christmas is coming</h1><div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') +
+        (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div></div>';
+    if (!list.length) return h + '<div class="empty glass"><h1>Скоро здесь будет кино</h1><p>Скажи Claude, какие фильмы положить в «' + esc(c.title) + '», и они появятся здесь.</p></div>';
+    var grid = '<div class="grid">';
+    for (var i = 0; i < list.length; i++) grid += card(list[i], 'coll');
+    return h + grid + '</div>';
+  }
   function collection() {
     var c = collById(view.id);
     if (!c) return emptyScreen();
@@ -457,7 +510,8 @@
     var seen = list.filter(watched).length;
     var stk = PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '';
     // a banner card: back button on top, then a glass card in the collection's colours with the big sticker peeking out
-    var h = '<div class="ctop"><button class="btn small cback" data-f data-key="c-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
+    if (c.theme === 'christmas') return xmasPage(c, list, seen);
+    var h = '<div class="ctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' +
       '<section class="chead th-' + esc(c.theme || 'default') + '">' + stk +
       '<div class="cinfo"><span class="ckick">Подборка</span><h1 class="coll-title">' + esc(c.title) + '</h1>' +
       (c.subtitle ? '<div class="csubt">' + esc(c.subtitle) + '</div>' : '') +
@@ -874,10 +928,10 @@
     var bds = one ? [one] : [];
     var imgs = one ? '<img class="fbimg on" src="' + esc(one) + '" alt="" onerror="this.remove()">' : '';
     var banner = bds.length ? '<section class="fbanner" data-bds="' + bds.length + '">' + imgs + '<div class="fshade"></div>' +
-      '<button class="btn small fback" data-f data-key="f-back" data-act="back">' + I.back + ' Назад</button></section>' : '';
+      backBtn('f-back', 'fback') + '</section>' : '';
     var deco = bds.length ? decoHtml(filmTheme(f)) : '';
     if (deco) banner = '<div class="fbwrap">' + banner + deco + '</div>';
-    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + (deco ? ' th-' + filmTheme(f) : '') + '"><div class="fpost">' + (bds.length ? '' : '<button class="btn small" data-f data-key="f-back" data-act="back" style="margin-bottom:14px">' + I.back + ' Назад</button>') + big + '</div>' +
+    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + (deco ? ' th-' + filmTheme(f) : '') + '"><div class="fpost">' + (bds.length ? '' : backBtn('f-back', '', 'margin-bottom:14px')) + big + '</div>' +
       '<div class="body"><div class="chips">' + tags + '</div><h1>' + esc(f.title) + '</h1>' +
       (f.original && f.original !== f.title ? '<div class="sub">' + esc(f.original) + '</div>' : '') +
       '<div class="meta">' + esc(filmMeta(f)) + '</div>' +
@@ -1034,7 +1088,7 @@
 
   function tvPage() {
     var web = document.documentElement.classList.contains('web');
-    var h = '<div class="ctop"><button class="btn small" data-f data-key="tv-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
+    var h = '<div class="ctop">' + backBtn('tv-back') + statusLine() + '</div>' +
       '<section class="tvhead glass"><span class="hchip">Live</span><h1>TV</h1>' +
       '<p>Прямой эфир российских каналов. За границей СТС, ТНТ и Пятница закрыты, поэтому они идут через VPN' +
       (web ? ' — включи его перед тем, как открыть канал.' : ': при нажатии откроется VPN — нажми «Подключить» и «Назад», эфир включится сам. Когда вернёшься, VPN откроется снова, чтобы его выключить.') + '</p></section>' +
@@ -1567,7 +1621,8 @@
   function music() {
     muLive();
     var m = muData(), all = muTracks(), list = muView(), ch = m.channel || {};
-    var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
+    var sub = !!(view.artist || view.pl || view.wrap);
+    var h = (sub ? '<div class="rbar">' + backBtn(view.pl ? 'pl-back' : (view.wrap ? 'wr-back' : 'ma-back')) + '</div>' : '') + '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
     if (view.artist && !list.length && all.length) { view = { name: 'music' }; list = all; }
     if (view.wrap) return h + '<div class="mwrap"><section class="mlist mwr">' + muWrapped(view.wrap) + '</section></div>';
     if (!all.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
@@ -1580,7 +1635,6 @@
       var ai = muArtInfo(view.artist) || {}, col = ai.color || muNameColor(view.artist);
       h += '<div class="yahero">' + muArtImg(view.artist, list[0], 'yaimg', true) +
         '<span class="yagrad" style="background:linear-gradient(to bottom,' + hexA(col, 0) + ' 30%,' + hexA(col, 0.55) + ' 62%,' + col + ' 100%)"></span>' +
-        '<button class="yaback" data-f data-key="ma-back" data-act="back" aria-label="Назад">' + I.back + '</button>' +
         '<div class="yain"><div class="yaname">' + esc(view.artist) + '</div>' +
           '<span class="yacap">' + I.phones + (ap ? fmtNum(ap) + ' ' + plural(ap, 'прослушивание', 'прослушивания', 'прослушиваний') : 'ещё не слушала') + ' · ' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span>' +
           '<div class="yabtns"><button class="btn pri" data-f data-key="ma-play" data-act="muartplay">' + I.play + ' Слушать</button>' +
@@ -1592,8 +1646,7 @@
       var isFav = view.pl === 'fav', pl0 = isFav ? null : muPl(view.pl);
       if (!isFav && !pl0) { view = { name: 'music' }; return music(); }
       var nm = isFav ? 'Избранное' : pl0.name;
-      h += '<div class="plbar"><button class="btn small plbackbtn" data-f data-key="pl-back" data-act="back">' + I.back + ' Моя музыка</button></div>' +
-        '<div class="plhero' + (isFav ? ' isfav' : '') + '">' + (isFav ? '<span class="plbig favbig">' + I.heartOn + '</span>' : muPlArt(list, 'plbig')) +
+      h += '<div class="plhero' + (isFav ? ' isfav' : '') + '">' + (isFav ? '<span class="plbig favbig">' + I.heartOn + '</span>' : muPlArt(list, 'plbig')) +
         '<div class="plin">' +
         '<div class="plk">' + (isFav ? 'Мои любимые' : 'Плейлист') + '</div>' +
         (view.rename && !isFav ? '<div class="plren"><input id="pl-name" class="mpin" data-f data-key="pl-in" data-enter="muplsave" maxlength="40" value="' + esc(nm) + '" autocomplete="off"><button class="mpmk" data-f data-key="pl-ok" data-act="muplsave">' + I.check + 'Готово</button></div>'
@@ -1734,7 +1787,7 @@
   function authorPage() {
     var a = view.id, list = abList().filter(function (b) { return b.author === a; });
     var cur = AU && AU.getAttribute('data-book');
-    return '<div class="ctop"><button class="btn small" data-f data-key="au-back" data-act="back">' + I.back + ' Назад</button>' + statusLine() + '</div>' +
+    return '<div class="ctop">' + backBtn('au-back') + statusLine() + '</div>' +
       '<section class="auhead glass">' + authorPic(a, 'aubig') + '<div class="auinfo"><span class="hchip">Автор</span><h1>' + esc(a) + '</h1>' +
       '<div class="aucount2">' + list.length + ' ' + plural(list.length, 'книга', 'книги', 'книг') + '</div>' +
       (authorBio[a] ? '<p class="aubio">' + esc(authorBio[a]) + '</p>' : '') + '</div></section>' + bookGrid(list, cur);
@@ -1779,7 +1832,7 @@
     var paused = !playingThis || AU.paused;
     var h = '<section class="abstage"><i class="ablight l1"></i><i class="ablight l2"></i><i class="ablight l3"></i><i class="abdust"></i></section>' +
       '<div class="abplayer">' +
-      '<div class="abtop"><button class="btn small" data-f data-key="ab-back" data-act="back">' + I.back + ' Назад</button></div>' +
+      '<div class="abtop">' + backBtn('ab-back') + '</div>' +
       '<div class="abmain">' + abCover(b, 'abbig') +
       '<div class="abinfo"><span class="hchip">' + (b.series ? esc(b.series) : 'Аудиокнига') + '</span><h1>' + esc(b.title || '') + '</h1>' + (b.author ? '<div class="abauth2">' + esc(b.author) + '</div>' : '') +
       '<div class="abst" id="abst" style="display:none"></div><div class="abdrive" id="abdrive" style="display:none"></div>' +
@@ -2200,6 +2253,8 @@
       case 'hero': showHero(parseInt(arg, 10), true); return;
       case 'update': A.installUpdate(); return;
       case 'coll': go({ name: 'coll', id: arg }); return;
+      case 'xmas': { var xt = document.querySelector('.xmtile'); if (xt) snowBurst(xt, function () { go({ name: 'coll', id: arg }); }); else go({ name: 'coll', id: arg }); return; }
+      case 'xmgrid': { var gr = document.querySelector('#main .grid'), mm = document.getElementById('main'); if (gr && mm) { mm.scrollTop += gr.getBoundingClientRect().top - 90; var c0 = gr.querySelector('[data-f]'); if (c0) focusEl(c0); } return; }
       case 'url': if (A.openUrl) A.openUrl(arg); return;
       case 'mkhome': if (A.homeSettings) A.homeSettings(); return;
       case 'openhome': if (A.openHome) A.openHome(); return;
