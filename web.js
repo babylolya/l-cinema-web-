@@ -135,7 +135,7 @@
     });
     return {
       films: out, platform: 'web', noDownloads: true, syncedAt: P.syncedAt || '', syncing: syncing, error: lastError,
-      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), music: MUSIC, ytChannels: YTCH, plays: P.plays || {}, collections: LIB.collections || [],
+      free: 0, total: 0, hasToken: true, version: 'iPhone', screensavers: screensavers(), audiobooks: audiobooks(), music: MUSIC, ytChannels: YTCH, plays: P.plays || {}, mfav: P.mfav || {}, mpl: P.mpl || {}, collections: LIB.collections || [],
       scanReport: 'список файлов приходит с проектора и Mac' + (syncNote ? ' · ' + syncNote : ''), update: ''
     };
   }
@@ -143,7 +143,7 @@
   // ---------- sync ----------
   function mergeUser(local, remote) {
     var out = { v: 1 }, lc = false, rc = false;
-    ['films', 'progress', 'last', 'plays'].forEach(function (sec) {
+    ['films', 'progress', 'last', 'plays', 'mfav', 'mpl'].forEach(function (sec) {
       var l = local[sec] || {}, r = remote[sec] || {}, m = {}, keys = {};
       Object.keys(l).forEach(function (k) { keys[k] = 1; }); Object.keys(r).forEach(function (k) { keys[k] = 1; });
       Object.keys(keys).forEach(function (k) {
@@ -160,8 +160,8 @@
     var sha = null, remote = {};
     if (g.status === 200) { var j = await g.json(); sha = j.sha; try { remote = JSON.parse(unb64(j.content)); } catch (e) { remote = {}; } }
     else if (g.status !== 404) { syncNote = 'синхронизация: код ' + g.status; return; }
-    var m = mergeUser({ films: P.local, progress: P.progress, last: P.last, plays: P.plays || {} }, remote);
-    if (m.localChanged) { P.local = m.out.films; P.progress = m.out.progress; P.last = m.out.last; P.plays = m.out.plays; saveP(); }
+    var m = mergeUser({ films: P.local, progress: P.progress, last: P.last, plays: P.plays || {}, mfav: P.mfav || {}, mpl: P.mpl || {} }, remote);
+    if (m.localChanged) { P.local = m.out.films; P.progress = m.out.progress; P.last = m.out.last; P.plays = m.out.plays; P.mfav = m.out.mfav; P.mpl = m.out.mpl; saveP(); }
     if (m.remoteChanged) {
       var body = { message: 'Синхронизация с iPhone', content: b64(JSON.stringify(m.out)) };
       if (sha) body.sha = sha;
@@ -321,6 +321,10 @@
       });
     },
     openUrl: function (u) { window.open(u, '_blank'); },
+    muSet: function (sec, key, value) {
+      if (sec !== 'mfav' && sec !== 'mpl') return;
+      try { P[sec] = P[sec] || {}; P[sec][key] = JSON.parse(value); saveP(); pushSoon(); } catch (e) { }
+    },
     addPlay: function (uid, n, sec, ym) {
       if (!uid || !ym || (n <= 0 && sec <= 0)) return;
       P.plays = P.plays || {};

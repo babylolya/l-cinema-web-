@@ -186,6 +186,13 @@
   // ---------- icons ----------
 
   var I = {
+    close: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
+    heart: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.5 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.5 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>',
+    heartOn: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.5 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.5 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>',
+    plus: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+    check: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+    trash: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg>',
+    pen: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16v4z"/></svg>',
     chev: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
     phones: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>',
     repeat: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 2l3 3-3 3"/><path d="M4 11V9a4 4 0 0 1 4-4h12"/><path d="M7 22l-3-3 3-3"/><path d="M20 13v2a4 4 0 0 1-4 4H4"/><path d="M11 10.5l1.5-1v5" stroke-width="1.8"/></svg>',
@@ -1162,7 +1169,36 @@
     return order.map(function (k) { return map[k]; }).sort(function (a, b) { return (b.p || 0) - (a.p || 0) || b.n - a.n || a.name.localeCompare(b.name, 'ru'); });
   }
   // the list on screen: all tracks, or one artist's
-  function muView() { return view.artist ? muByPlays(muByArtist(view.artist)) : muTracks(); }
+  // ---------- favourites and playlists (shared through sync/state.json, every device) ----------
+  var muLoc = { mfav: {}, mpl: {} }; // what was changed here, until the platform's state has it too
+  function muSecGet(sec) {
+    var a = S[sec] || {}, b = muLoc[sec], o = {}, k;
+    for (k in a) o[k] = a[k];
+    for (k in b) if (!o[k] || (b[k].t || 0) >= (o[k].t || 0)) o[k] = b[k];
+    return o;
+  }
+  function muSet(sec, key, val) { val.t = Date.now(); muLoc[sec][key] = val; try { if (A && A.muSet) A.muSet(sec, key, JSON.stringify(val)); } catch (e) {} }
+  function muIsFav(uid) { var f = muSecGet('mfav')[uid]; return !!(f && f.on); }
+  function muFavList() { var f = muSecGet('mfav'); return muTracks().filter(function (t) { return f[t.uid] && f[t.uid].on; }).sort(function (a, b) { return (f[b.uid].t || 0) - (f[a.uid].t || 0); }); }
+  function muPls() { var p = muSecGet('mpl'), out = []; for (var k in p) if (p[k] && !p[k].del) out.push({ id: k, name: p[k].name || 'Плейлист', tracks: p[k].tracks || [], c: p[k].c || 0 }); return out.sort(function (a, b) { return a.c - b.c; }); }
+  function muPl(id) { var p = muSecGet('mpl')[id]; return p && !p.del ? { id: id, name: p.name || 'Плейлист', tracks: p.tracks || [], c: p.c || 0 } : null; }
+  function muPlTracks(pl) { var by = {}; muTracks().forEach(function (t) { by[t.uid] = t; }); return (pl.tracks || []).map(function (u) { return by[u]; }).filter(Boolean); }
+  function muPlSave(pl) { muSet('mpl', pl.id, { name: pl.name, tracks: pl.tracks, c: pl.c }); }
+  function muPlNew(name, firstUid) {
+    var n = muPls().length + 1, pl = { id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), name: name || 'Плейлист ' + n, tracks: firstUid ? [firstUid] : [], c: Date.now() };
+    muPlSave(pl); return pl;
+  }
+  function muView() {
+    if (view.pl === 'fav') return muFavList();
+    if (view.pl) { var pl = muPl(view.pl); return pl ? muPlTracks(pl) : []; }
+    return view.artist ? muByPlays(muByArtist(view.artist)) : muTracks();
+  }
+  // a little picture for a playlist: the covers of its first four tracks
+  function muPlArt(list, cls) {
+    if (!list.length) return '<span class="' + cls + ' plempty">' + I.note + '</span>';
+    if (list.length < 4) return '<span class="' + cls + '">' + muCoverImg(list[0], 'plone') + '</span>';
+    return '<span class="' + cls + ' plquad">' + list.slice(0, 4).map(function (t) { return muCoverImg(t, 'plq'); }).join('') + '</span>';
+  }
   // ---------- plays: counted on every device, summed from sync/state.json ----------
   var muPC = { s: null, all: null };
   function muPlays(year) {
@@ -1366,7 +1402,9 @@
         '<button class="mfclose" data-f data-key="mf-close" data-act="muclose" aria-label="Свернуть">' + I.chev + '</button>' +
         muCoverImg(t, 'mfcv') +
         '<div class="mfinfo">' +
-          (who.length ? '<button class="mppill mfpill" data-f data-key="mf-art" data-act="muartist:' + esc(who[0]) + '">' + muArtImg(who[0], t, 'mpav') + '<span class="mpwho"><b>' + esc(t.artist) + '</b><small>Исполнитель</small></span></button>' : '') +
+          '<div class="mfhead">' + (who.length ? '<button class="mppill mfpill" data-f data-key="mf-art" data-act="muartist:' + esc(who[0]) + '">' + muArtImg(who[0], t, 'mpav') + '<span class="mpwho"><b>' + esc(t.artist) + '</b><small>Исполнитель</small></span></button>' : '<span></span>') +
+            '<span class="mfacts"><button class="mfround' + (muIsFav(t.uid) ? ' fav' : '') + '" data-f data-key="mf-fav" data-act="mufav" aria-label="В избранное">' + (muIsFav(t.uid) ? I.heartOn : I.heart) + '</button>' +
+            '<button class="mfround" data-f data-key="mf-add" data-act="mupick" aria-label="В плейлист">' + I.plus + '</button></span></div>' +
           '<div class="mftt">' + esc(t.title) + '</div>' +
           '<div class="abst" id="mu-err" style="display:none"></div>' +
           '<div class="mftl" tabindex="0" data-f data-key="mf-tl" aria-label="Перемотка"><div class="mfbar"><i class="mffill" id="mu-fill"><b></b></i></div></div>' +
@@ -1377,7 +1415,23 @@
             '<button class="mfb mfplay" id="mu-pp" data-f data-key="mu-play" data-act="mutoggle" aria-label="Играть">' + (playing ? I.pause : I.play) + '</button>' +
             '<button class="mfb" data-f data-key="mu-next" data-act="munext" aria-label="Следующий трек">' + I.next + '</button>' +
             '<button class="mpround' + (muRepeat ? ' on' : '') + '" data-f data-key="mu-rep" data-act="murepeat" aria-label="Повторять трек">' + I.repeat + '</button>' +
-          '</div></div></div></div>';
+          '</div></div></div>' + muPickHtml(t) + '</div>';
+  }
+  // «В плейлист»: a list of playlists with ticks; tap to put the track in or take it out; or make a new one
+  var muPick = false;
+  function muPickHtml(t) {
+    if (!muPick || !t) return '';
+    var h = '<div class="mpick"><div class="mpcard"><div class="mphd"><b>Добавить в плейлист</b><button class="mfround" data-f data-key="mp-close" data-act="mupickclose" aria-label="Закрыть">' + I.close + '</button></div><div class="mpls">';
+    var fav = muIsFav(t.uid);
+    h += '<button class="mprow' + (fav ? ' on' : '') + '" data-f data-key="mp-fav" data-act="mufav">' + '<span class="mpic favic">' + I.heartOn + '</span><span class="mpnm">Избранное</span><span class="mpck">' + (fav ? I.check : '') + '</span></button>';
+    muPls().forEach(function (pl) {
+      var on = pl.tracks.indexOf(t.uid) >= 0;
+      h += '<button class="mprow' + (on ? ' on' : '') + '" data-f data-key="mp-' + esc(pl.id) + '" data-act="mupladd:' + esc(pl.id) + '">' + muPlArt(muPlTracks(pl), 'mpic') +
+        '<span class="mpnm">' + esc(pl.name) + '<small>' + pl.tracks.length + ' ' + plural(pl.tracks.length, 'трек', 'трека', 'треков') + '</small></span><span class="mpck">' + (on ? I.check : '') + '</span></button>';
+    });
+    h += '</div><div class="mpnew"><input id="mp-name" class="mpin" data-f data-key="mp-in" data-enter="muplnew" maxlength="40" placeholder="Новый плейлист" autocomplete="off">' +
+      '<button class="mpmk" data-f data-key="mp-mk" data-act="muplnew">' + I.plus + 'Создать</button></div></div></div>';
+    return h;
   }
   // the sheet leaves the way it came: down into the bar
   function muCloseFull(fromY) {
@@ -1434,6 +1488,7 @@
   // ---------- the year in music («Хей, Лоля! В этом году ты послушала…») ----------
   var MONTHS_N = ['Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь', 'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь'];
   function fmtNum(n) { return String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ' '); }
+  function muLen(l) { var sec = 0; l.forEach(function (t) { sec += t.dur || 0; }); var m = Math.round(sec / 60); return m >= 60 ? Math.floor(m / 60) + ' ч ' + (m % 60) + ' мин' : m + ' мин'; }
   function muWrapYear() { var d = new Date(); return d.getMonth() === 0 ? d.getFullYear() - 1 : d.getFullYear(); }
   function muYearStats(year) {
     var pc = muPlays(year), byUid = {}, tr = [], arts = {}, sec = 0, n = 0, months = {};
@@ -1515,7 +1570,31 @@
         '</div></div>' +
         '<div class="h2 masub">Популярные треки</div>';
     }
+    else if (view.pl) {
+      var isFav = view.pl === 'fav', pl0 = isFav ? null : muPl(view.pl);
+      if (!isFav && !pl0) { view = { name: 'music' }; return music(); }
+      var nm = isFav ? 'Избранное' : pl0.name;
+      h += '<div class="plhero' + (isFav ? ' isfav' : '') + '">' + (isFav ? '<span class="plbig favbig">' + I.heartOn + '</span>' : muPlArt(list, 'plbig')) +
+        '<div class="plin"><button class="yaback plback" data-f data-key="pl-back" data-act="back" aria-label="Назад">' + I.back + '</button>' +
+        '<div class="plk">' + (isFav ? 'Мои любимые' : 'Плейлист') + '</div>' +
+        (view.rename && !isFav ? '<div class="plren"><input id="pl-name" class="mpin" data-f data-key="pl-in" data-enter="muplsave" maxlength="40" value="' + esc(nm) + '" autocomplete="off"><button class="mpmk" data-f data-key="pl-ok" data-act="muplsave">' + I.check + 'Готово</button></div>'
+          : '<div class="plname">' + esc(nm) + '</div>') +
+        '<div class="plsub">' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + (list.length ? ' · ' + muLen(list) : '') + '</div>' +
+        '<div class="yabtns plbtns">' + (list.length ? '<button class="btn pri" data-f data-key="pl-play" data-act="muplay:0">' + I.play + ' Слушать</button><button class="btn" data-f data-key="pl-shuf" data-act="muallshuf:pl">' + I.shuffle + ' Вперемешку</button>' : '') +
+          (isFav ? '' : '<button class="btn" data-f data-key="pl-ren" data-act="muplren">' + I.pen + ' Название</button><button class="btn' + (confirmKey === 'pl-del' ? ' warn' : '') + '" data-f data-key="pl-del" data-act="mupldel">' + I.trash + (confirmKey === 'pl-del' ? ' Точно удалить?' : ' Удалить') + '</button>') +
+        '</div></div></div>';
+      if (!list.length) h += '<div class="plnone">' + (isFav ? 'Нажми ♡ в плеере, и трек появится здесь.' : 'Пока пусто. Открой плеер и нажми «+», чтобы добавить сюда трек.') + '</div>';
+    }
     else {
+      // «Моя музыка»: favourites and playlists
+      var pls = muPls(), favs = muFavList();
+      h += '<div class="h2 masub">Моя музыка</div><div class="marow row plrow" data-row="pl">' +
+        '<button class="pltile" data-f data-key="pl-fav" data-act="muplopen:fav"><span class="plart favbig">' + I.heartOn + '</span><span class="man">Избранное</span><span class="mac">' + favs.length + ' ' + plural(favs.length, 'трек', 'трека', 'треков') + '</span></button>';
+      pls.forEach(function (pl) {
+        var pt = muPlTracks(pl);
+        h += '<button class="pltile" data-f data-key="pl-' + esc(pl.id) + '" data-act="muplopen:' + esc(pl.id) + '">' + muPlArt(pt, 'plart') + '<span class="man">' + esc(pl.name) + '</span><span class="mac">' + pt.length + ' ' + plural(pt.length, 'трек', 'трека', 'треков') + '</span></button>';
+      });
+      h += '<button class="pltile" data-f data-key="pl-new" data-act="muplmake"><span class="plart plnew">' + I.plus + '</span><span class="man">Новый плейлист</span><span class="mac">&nbsp;</span></button></div>';
       var arts = muArtistList();
       if (arts.length > 1) {
         h += '<div class="h2 masub">Исполнители</div><div class="marow row" data-row="ma">';
@@ -1529,7 +1608,7 @@
     for (var i = 0; i < list.length; i++) {
       var x = list[i];
       h += '<button class="mrow' + (t && t.uid === x.uid ? ' cur' : '') + '" data-uid="' + esc(x.uid) + '" data-f data-key="mt-' + esc(x.uid) + '" data-act="muplay:' + i + '">' +
-        (view.artist ? '<span class="mrank">' + (i + 1) + '</span>' : '') + muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + (muCount(x.uid) ? '<i class="mplc">' + I.play + muCount(x.uid) + '</i>' : '') + '</span></span>' +
+        (view.artist ? '<span class="mrank">' + (i + 1) + '</span>' : '') + muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + (muIsFav(x.uid) ? '<i class="mfavi">' + I.heartOn + '</i>' : '') + (muCount(x.uid) ? '<i class="mplc">' + I.play + muCount(x.uid) + '</i>' : '') + '</span></span>' +
         '<span class="mdur">' + (t && t.uid === x.uid && playing ? '<i class="eq"><b></b><b></b><b></b></i>' : fmtT(x.dur)) + '</span></button>';
     }
     return h + '</section></div>';
@@ -2112,10 +2191,20 @@
       case 'muprev': if (MU && MU.currentTime > 5) { MU.currentTime = 0; } else muStep(-1); return;
       case 'mushuffle': muShuffle = !muShuffle; if (muShuffle && muQueue.length) { var cur = muNow(); muQueue = shuffled(muView()); muPos = Math.max(0, muQueue.indexOf(cur)); } render('mu-shuf', true); return;
       case 'murepeat': muRepeat = !muRepeat; if (MU) MU.loop = muRepeat; try { localStorage.setItem('muRepeat', muRepeat ? '1' : '0'); } catch (e) {} render('mu-rep', true); return;
-      case 'muartist': muFull = false; if (arg) go({ name: 'music', artist: arg }, 'ma-play'); else { view = { name: 'music' }; render('mu-play', false); } return;
+      case 'muartist': muFull = false; muPick = false; if (arg) go({ name: 'music', artist: arg }, 'ma-play'); else { view = { name: 'music' }; render('mu-play', false); } return;
+      case 'mufav': { var tf = muNow(); if (!tf) return; var nf = !muIsFav(tf.uid); muSet('mfav', tf.uid, { on: nf }); render(muPick ? 'mp-fav' : 'mf-fav', true); return; }
+      case 'mupick': muPick = true; render('mp-fav', true); return;
+      case 'mupickclose': muPick = false; render('mf-add', true); return;
+      case 'mupladd': { var ta = muNow(), pa = muPl(arg); if (!ta || !pa) return; var ix = pa.tracks.indexOf(ta.uid); if (ix >= 0) pa.tracks.splice(ix, 1); else pa.tracks.push(ta.uid); muPlSave(pa); render('mp-' + arg, true); return; }
+      case 'muplnew': { var tn = muNow(), inp = document.getElementById('mp-name'), nm0 = inp ? inp.value.trim() : ''; var np = muPlNew(nm0, tn && tn.uid); render('mp-' + np.id, true); return; }
+      case 'muplmake': { var mk = muPlNew('', null); go({ name: 'music', pl: mk.id, rename: true }, 'pl-in'); return; }
+      case 'muplopen': go({ name: 'music', pl: arg }, 'pl-play'); return;
+      case 'muplren': view.rename = true; render('pl-in', true); try { var ri = document.getElementById('pl-name'); if (ri) { ri.focus(); ri.select(); } } catch (e) {} return;
+      case 'muplsave': { var ps = muPl(view.pl), ri2 = document.getElementById('pl-name'); if (ps && ri2 && ri2.value.trim()) { ps.name = ri2.value.trim().slice(0, 40); muPlSave(ps); } view.rename = false; render('pl-play', true); return; }
+      case 'mupldel': { if (confirmKey !== 'pl-del') { confirmKey = 'pl-del'; render('pl-del', true); return; } confirmKey = null; muSet('mpl', view.pl, { del: true }); app.back(); return; }
       case 'muopen': muFull = true; render('mu-play', true); return;
-      case 'muclose': muCloseFull(); return;
-      case 'muallshuf': muShuffle = true; muStart(shuffled(muTracks()), 0); return;
+      case 'muclose': muPick = false; muCloseFull(); return;
+      case 'muallshuf': muShuffle = true; muStart(shuffled(arg === 'pl' ? muView() : muTracks()), 0); return;
       case 'muartplay': muShuffle = false; muStart(muView(), 0); return;
       case 'muartshuf': muShuffle = true; muStart(shuffled(muView()), 0); return;
       case 'muwrap': if (view.wrap) app.back(); else go({ name: 'music', wrap: muWrapYear() }, 'lt-wrap'); return;
@@ -2208,7 +2297,7 @@
 
   function move(dir) {
     var cur = document.activeElement;
-    var all = Array.prototype.slice.call(document.querySelectorAll(muFull && document.querySelector('.mfull') ? '.mfull [data-f]' : '[data-f]'));
+    var all = Array.prototype.slice.call(document.querySelectorAll(muPick && document.querySelector('.mpick') ? '.mpick [data-f]' : (muFull && document.querySelector('.mfull') ? '.mfull [data-f]' : '[data-f]')));
     if (!cur || all.indexOf(cur) < 0) { focusEl(document.querySelector('#main [data-f]') || all[0]); return; }
     var r = cur.getBoundingClientRect();
     var cx = r.left + r.width / 2, cy = r.top + r.height / 2;
@@ -2253,6 +2342,12 @@
     var k = e.key, code = e.keyCode;
     var el = document.activeElement;
     var dir = null;
+    // typing a playlist name: letters and Backspace belong to the field; Enter saves; ↑ ↓ leave it
+    if (el && el.tagName === 'INPUT') {
+      if (k === 'Enter' || code === 13 || code === 66) { e.preventDefault(); var en = el.getAttribute('data-enter'); if (en) act(en); return; }
+      if (k === 'Escape' || code === 27) { e.preventDefault(); el.blur(); return; }
+      if (!(k === 'ArrowUp' || code === 38 || k === 'ArrowDown' || code === 40)) return;
+    }
     if (full >= 0) {
       e.preventDefault();
       if (k === 'ArrowLeft' || code === 37) stepImage(-1);
@@ -2323,6 +2418,7 @@
     },
     back: function () {
       if (rateFor) { rateFor = ''; render('f-play', false); return true; }
+      if (muPick) { muPick = false; render('mf-add', true); return true; }
       if (muFull) { muCloseFull(); return true; }
       if (full >= 0) { full = -1; render(null, true); return true; }
       if (confirmKey) { confirmKey = null; render(null, true); return true; }
