@@ -508,8 +508,8 @@
         '<span class="xmhsh"></span>' +
         '<div class="xmhtop"><h1 class="xmtitle">Christmas is coming</h1>' +
           '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div>' +
-          (pics.length > 1 ? '<div class="xmdots">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '') +
           '</div>' +
+          (pics.length > 1 ? '<div class="xmdots inframe">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '">❄</i>'; }).join('') + '</div>' : '') +
         '<div class="xmhbot">' +
           (cur ? '<button class="xmnow" data-f data-key="xm-now" data-act="film:' + esc(cur.f.id) + '"><span class="xmnk">Сейчас на экране</span><span class="xmnt" id="xm-nt">' + esc(cur.f.title) + '</span><span class="xmna">Открыть →</span></button>' : '<span></span>') +
         '</div>' +
@@ -520,7 +520,18 @@
     for (var i = 0; i < list.length; i++) grid += card(list[i], 'coll');
     return h + grid + '</div></section>';
   }
+  // the dots sit inside the picture's frame, at the bottom in the middle
+  function xmDots() {
+    var hero = document.querySelector('.xmhero'), d = hero && hero.querySelector('.xmdots'), im = hero && hero.querySelector('.xs.on .xsp');
+    if (!d || !im) return;
+    var hr = hero.getBoundingClientRect(), r = im.getBoundingClientRect();
+    if (!r.height) return;
+    d.style.left = (r.left - hr.left + r.width / 2) + 'px'; d.style.top = (r.bottom - hr.top - 30) + 'px'; d.style.visibility = 'visible';
+  }
+  window.addEventListener('resize', function () { setTimeout(xmDots, 50); });
+  document.addEventListener('load', function (e) { if (e.target && e.target.classList && e.target.classList.contains('xsp')) xmDots(); }, true);
   function xmStart(pics) {
+    setTimeout(xmDots, 30); setTimeout(xmDots, 600);
     clearInterval(xmTimer);
     if (pics.length < 2) return;
     xmTimer = setInterval(function () {
@@ -533,6 +544,7 @@
       var nt = document.getElementById('xm-nt'), bt = hero.querySelector('.xmnow');
       if (nt) nt.textContent = pics[xmIdx].f.title || '';
       if (bt) bt.setAttribute('data-act', 'film:' + pics[xmIdx].f.id);
+      xmDots();
     }, 5500);
   }
   function collection() {
