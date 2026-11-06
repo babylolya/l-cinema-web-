@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#09070F">
+<title>Плейлист</title>
+<style>
+@font-face { font-family: Unbounded; src: url(fonts/Unbounded.woff) format('woff'); font-weight: 200 900; font-display: swap; }
+@font-face { font-family: Manrope; src: url(fonts/Manrope.woff) format('woff'); font-weight: 200 800; font-display: swap; }
+:root { --bg: #09070F; --text: #F4F0FA; --dim: rgba(244,240,250,0.6); --pink: #FF7FE3; }
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+html, body { margin: 0; background: var(--bg); color: var(--text); font-family: Manrope, system-ui, sans-serif; }
+body { min-height: 100vh; background: radial-gradient(ellipse at 10% -10%, rgba(255,95,219,0.35), transparent 55%), radial-gradient(ellipse at 110% 30%, rgba(92,140,255,0.28), transparent 55%), var(--bg); background-attachment: fixed; }
+.wrap { max-width: 720px; margin: 0 auto; padding: calc(env(safe-area-inset-top) + 28px) 16px calc(env(safe-area-inset-bottom) + 40px); }
+.hero { display: flex; align-items: flex-end; gap: 22px; margin-bottom: 26px; }
+.art { width: 168px; height: 168px; flex-shrink: 0; border-radius: 24px; overflow: hidden; display: grid; grid-template-columns: 1fr 1fr; background: rgba(255,255,255,0.07); box-shadow: 0 24px 60px rgba(0,0,0,0.5); }
+.art.one { grid-template-columns: 1fr; }
+.art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.art .ph { display: flex; align-items: center; justify-content: center; font-size: 54px; background: linear-gradient(135deg, #FF5FDB, #C84BFF 55%, #5CC8FF); }
+.k { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--dim); }
+h1 { font-family: Unbounded, sans-serif; font-size: clamp(28px, 7vw, 44px); line-height: 1.06; letter-spacing: -0.025em; margin: 6px 0 8px; }
+.sub { color: var(--dim); font-size: 15px; }
+.svc { margin: 0 0 18px; }
+.svc .k { margin-bottom: 8px; }
+.seg { display: flex; flex-wrap: wrap; gap: 8px; }
+.seg button { height: 40px; padding: 0 16px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.14); background: rgba(255,255,255,0.06); color: var(--text); font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; transition: transform .1s ease-out, background .15s; }
+.seg button:active { transform: scale(0.95); }
+.seg button.on { background: #fff; color: #15121A; border-color: #fff; }
+.list { display: flex; flex-direction: column; gap: 6px; }
+.row { display: flex; align-items: center; gap: 14px; padding: 8px 10px; border-radius: 16px; background: rgba(255,255,255,0.04); color: inherit; text-decoration: none; transition: transform .1s ease-out, background .15s; }
+.row:active { transform: scale(0.98); background: rgba(255,255,255,0.09); }
+@media (hover: hover) { .row:hover { background: rgba(255,255,255,0.08); } }
+.n { width: 22px; text-align: center; color: var(--dim); font-weight: 700; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+.cv { width: 52px; height: 52px; border-radius: 11px; overflow: hidden; flex-shrink: 0; background: linear-gradient(150deg, #3A2A4A, #1A1424); display: flex; align-items: center; justify-content: center; color: rgba(255,255,255,0.45); font-size: 20px; }
+.cv img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.tx { min-width: 0; flex: 1; }
+.tt { font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ta { color: var(--dim); font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.go { color: var(--pink); font-size: 22px; flex-shrink: 0; }
+.foot { margin-top: 30px; text-align: center; color: rgba(244,240,250,0.35); font-size: 13px; }
+.bad { margin-top: 30vh; text-align: center; color: var(--dim); }
+@media (max-width: 520px) { .hero { display: block; text-align: center; } .art { margin: 0 auto 18px; width: 190px; height: 190px; } .seg { justify-content: center; } .svc { text-align: center; } }
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+(function () {
+  // the playlist travels inside the link itself (after #): names, artists, covers; nothing else is stored anywhere
+  var app = document.getElementById('app');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+  function unpack(u) { u = String(u || ''); if (u.indexOf('~d') === 0) return 'https://cdn-images.dzcdn.net/images/cover/' + u.slice(2); var m = /^~a(\d)(.*)$/.exec(u); if (m) return 'https://is' + m[1] + '-ssl.mzstatic.com/image/thumb/' + m[2]; return /^https:\/\//.test(u) ? u : ''; }
+  var doc = null;
+  try {
+    var b = location.hash.slice(1).replace(/-/g, '+').replace(/_/g, '/');
+    while (b.length % 4) b += '=';
+    doc = JSON.parse(decodeURIComponent(escape(atob(b))));
+  } catch (e) { doc = null; }
+  if (!doc || !doc.t || !doc.t.length) { app.innerHTML = '<div class="bad">Ссылка на плейлист не открылась. Попроси прислать её ещё раз.</div>'; return; }
+  document.title = (doc.n || 'Плейлист') + ' · плейлист';
+  var SVC = [
+    { id: 'ya', name: 'Яндекс Музыка', url: function (q) { return 'https://music.yandex.ru/search?text=' + encodeURIComponent(q); } },
+    { id: 'am', name: 'Apple Music', url: function (q) { return 'https://music.apple.com/search?term=' + encodeURIComponent(q); } },
+    { id: 'sp', name: 'Spotify', url: function (q) { return 'https://open.spotify.com/search/' + encodeURIComponent(q); } },
+    { id: 'yt', name: 'YouTube Music', url: function (q) { return 'https://music.youtube.com/search?q=' + encodeURIComponent(q); } }
+  ];
+  var cur = 'ya'; try { cur = localStorage.getItem('shareSvc') || 'ya'; } catch (e) {}
+  var tracks = doc.t.map(function (x) { return { title: x[0] || '', artist: x[1] || '', cover: unpack(x[2]), dur: +x[3] || 0 }; });
+  var mins = Math.round(tracks.reduce(function (a, t) { return a + t.dur; }, 0) / 60);
+  function render() {
+    var svc = SVC.filter(function (s) { return s.id === cur; })[0] || SVC[0];
+    var covers = tracks.filter(function (t) { return t.cover; }).slice(0, 4);
+    var art = covers.length >= 4 ? '<div class="art">' + covers.map(function (t) { return '<img alt="" src="' + esc(t.cover) + '">'; }).join('') + '</div>'
+      : covers.length ? '<div class="art one"><img alt="" src="' + esc(covers[0].cover) + '"></div>' : '<div class="art one"><div class="ph">♫</div></div>';
+    var h = '<div class="hero">' + art + '<div><div class="k">Плейлист</div><h1>' + esc(doc.n || 'Плейлист') + '</h1><div class="sub">' + tracks.length + ' ' + plural(tracks.length, 'трек', 'трека', 'треков') + (mins ? ' · ' + mins + ' мин' : '') + '</div></div></div>';
+    h += '<div class="svc"><div class="k">Слушать в</div><div class="seg">' + SVC.map(function (s) { return '<button data-s="' + s.id + '" class="' + (s.id === svc.id ? 'on' : '') + '">' + s.name + '</button>'; }).join('') + '</div></div><div class="list">';
+    tracks.forEach(function (t, i) {
+      h += '<a class="row" target="_blank" rel="noopener" href="' + esc(svc.url(t.artist + ' ' + t.title)) + '"><span class="n">' + (i + 1) + '</span><span class="cv">' + (t.cover ? '<img alt="" loading="lazy" src="' + esc(t.cover) + '">' : '♪') + '</span>' +
+        '<span class="tx"><div class="tt">' + esc(t.title) + '</div><div class="ta">' + esc(t.artist) + '</div></span><span class="go">›</span></a>';
+    });
+    app.innerHTML = h + '</div><div class="foot">Собрано в L-CINEMA</div>';
+  }
+  function plural(n, a, b, c) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c; }
+  app.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-s]'); if (!b) return; cur = b.getAttribute('data-s'); try { localStorage.setItem('shareSvc', cur); } catch (x) {} render(); });
+  render();
+})();
+</script>
+</body>
+</html>

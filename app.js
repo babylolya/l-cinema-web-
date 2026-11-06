@@ -186,6 +186,7 @@
   // ---------- icons ----------
 
   var I = {
+    share: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
     close: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>',
     heart: '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.5 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.5 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>',
     heartOn: '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 20.5s-7.5-4.6-9.3-9.2C1.4 8 3.5 4.5 7 4.5c2 0 3.4 1.1 5 3 1.6-1.9 3-3 5-3 3.5 0 5.6 3.5 4.3 6.8-1.8 4.6-9.3 9.2-9.3 9.2z"/></svg>',
@@ -1188,6 +1189,23 @@
     var n = muPls().length + 1, pl = { id: 'p' + Date.now().toString(36) + Math.floor(Math.random() * 1e4).toString(36), name: name || 'Плейлист ' + n, tracks: firstUid ? [firstUid] : [], c: Date.now() };
     muPlSave(pl); return pl;
   }
+  var SHARE_BASE = 'https://babylolya.github.io/l-cinema-web-/share.html';
+  function b64u(str) {
+    var bin = unescape(encodeURIComponent(str));
+    return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+  function muShareUrl(name, list) {
+    var pack = function (u) { return String(u || '').replace('https://cdn-images.dzcdn.net/images/cover/', '~d').replace(/^https:\/\/is(\d)-ssl\.mzstatic\.com\/image\/thumb\//, '~a$1'); };
+    var doc = { n: name, t: list.slice(0, 120).map(function (t) { return [t.title || '', t.artist || '', pack(t.hq), t.dur || 0]; }) };
+    return SHARE_BASE + '#' + b64u(JSON.stringify(doc));
+  }
+  var shareNote = '';
+  function muShare(name, list) {
+    var url = muShareUrl(name, list), done = function (m) { shareNote = m; render('pl-share', true); setTimeout(function () { shareNote = ''; if (view.pl) render(null, true); }, 3500); };
+    if (navigator.share) { navigator.share({ title: name, text: 'Плейлист «' + name + '»', url: url }).catch(function () {}); return; }
+    if (navigator.clipboard && navigator.clipboard.writeText) { navigator.clipboard.writeText(url).then(function () { done('Ссылка скопирована'); }, function () { done('Не получилось скопировать'); }); return; }
+    done('Поделиться можно с айфона или Mac');
+  }
   function muView() {
     if (view.pl === 'fav') return muFavList();
     if (view.pl) { var pl = muPl(view.pl); return pl ? muPlTracks(pl) : []; }
@@ -1550,9 +1568,9 @@
     muLive();
     var m = muData(), all = muTracks(), list = muView(), ch = m.channel || {};
     var h = '<div class="topline"><h1 class="title-glow">Музыка</h1>' + statusLine() + '</div>' + listenTabs('music');
-    if (view.artist && !list.length) { view = { name: 'music' }; list = all; }
+    if (view.artist && !list.length && all.length) { view = { name: 'music' }; list = all; }
     if (view.wrap) return h + '<div class="mwrap"><section class="mlist mwr">' + muWrapped(view.wrap) + '</section></div>';
-    if (!list.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
+    if (!all.length) return h + '<div class="empty glass"><h1>Пока пусто</h1><p>Новые треки из канала' + (ch.username ? ' @' + esc(ch.username) : '') +
       ' появятся здесь сами, в течение получаса после публикации. Старые треки перешли из канала боту в личку — он их тоже заберёт.</p></div>';
     var t = muNow(), playing = MU && !MU.paused;
     h += '<div class="mwrap">';
@@ -1574,13 +1592,16 @@
       var isFav = view.pl === 'fav', pl0 = isFav ? null : muPl(view.pl);
       if (!isFav && !pl0) { view = { name: 'music' }; return music(); }
       var nm = isFav ? 'Избранное' : pl0.name;
-      h += '<div class="plhero' + (isFav ? ' isfav' : '') + '">' + (isFav ? '<span class="plbig favbig">' + I.heartOn + '</span>' : muPlArt(list, 'plbig')) +
-        '<div class="plin"><button class="yaback plback" data-f data-key="pl-back" data-act="back" aria-label="Назад">' + I.back + '</button>' +
+      h += '<div class="plbar"><button class="btn small plbackbtn" data-f data-key="pl-back" data-act="back">' + I.back + ' Моя музыка</button></div>' +
+        '<div class="plhero' + (isFav ? ' isfav' : '') + '">' + (isFav ? '<span class="plbig favbig">' + I.heartOn + '</span>' : muPlArt(list, 'plbig')) +
+        '<div class="plin">' +
         '<div class="plk">' + (isFav ? 'Мои любимые' : 'Плейлист') + '</div>' +
         (view.rename && !isFav ? '<div class="plren"><input id="pl-name" class="mpin" data-f data-key="pl-in" data-enter="muplsave" maxlength="40" value="' + esc(nm) + '" autocomplete="off"><button class="mpmk" data-f data-key="pl-ok" data-act="muplsave">' + I.check + 'Готово</button></div>'
           : '<div class="plname">' + esc(nm) + '</div>') +
+        (shareNote ? '<div class="plnote">' + esc(shareNote) + '</div>' : '') +
         '<div class="plsub">' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + (list.length ? ' · ' + muLen(list) : '') + '</div>' +
         '<div class="yabtns plbtns">' + (list.length ? '<button class="btn pri" data-f data-key="pl-play" data-act="muplay:0">' + I.play + ' Слушать</button><button class="btn" data-f data-key="pl-shuf" data-act="muallshuf:pl">' + I.shuffle + ' Вперемешку</button>' : '') +
+          (list.length ? '<button class="btn" data-f data-key="pl-share" data-act="muplshare">' + I.share + ' Поделиться</button>' : '') +
           (isFav ? '' : '<button class="btn" data-f data-key="pl-ren" data-act="muplren">' + I.pen + ' Название</button><button class="btn' + (confirmKey === 'pl-del' ? ' warn' : '') + '" data-f data-key="pl-del" data-act="mupldel">' + I.trash + (confirmKey === 'pl-del' ? ' Точно удалить?' : ' Удалить') + '</button>') +
         '</div></div></div>';
       if (!list.length) h += '<div class="plnone">' + (isFav ? 'Нажми ♡ в плеере, и трек появится здесь.' : 'Пока пусто. Открой плеер и нажми «+», чтобы добавить сюда трек.') + '</div>';
@@ -2199,6 +2220,7 @@
       case 'muplnew': { var tn = muNow(), inp = document.getElementById('mp-name'), nm0 = inp ? inp.value.trim() : ''; var np = muPlNew(nm0, tn && tn.uid); render('mp-' + np.id, true); return; }
       case 'muplmake': { var mk = muPlNew('', null); go({ name: 'music', pl: mk.id, rename: true }, 'pl-in'); return; }
       case 'muplopen': go({ name: 'music', pl: arg }, 'pl-play'); return;
+      case 'muplshare': { var sp = view.pl === 'fav' ? 'Избранное' : ((muPl(view.pl) || {}).name || 'Плейлист'); muShare(sp, muView()); return; }
       case 'muplren': view.rename = true; render('pl-in', true); try { var ri = document.getElementById('pl-name'); if (ri) { ri.focus(); ri.select(); } } catch (e) {} return;
       case 'muplsave': { var ps = muPl(view.pl), ri2 = document.getElementById('pl-name'); if (ps && ri2 && ri2.value.trim()) { ps.name = ri2.value.trim().slice(0, 40); muPlSave(ps); } view.rename = false; render('pl-play', true); return; }
       case 'mupldel': { if (confirmKey !== 'pl-del') { confirmKey = 'pl-del'; render('pl-del', true); return; } confirmKey = null; muSet('mpl', view.pl, { del: true }); app.back(); return; }
