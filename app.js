@@ -2276,8 +2276,11 @@
     render(focusKey || null, false);
     var main = document.getElementById('main');
     if (main) main.scrollTop = 0;
+    // on the iPhone the whole page scrolls, not the inside: a new screen starts from the top
+    try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch (e) {}
     var first = focusKey ? null : (main.querySelector('.btn.pri') || main.querySelector('[data-f]'));
     if (first) focusEl(first);
+    if (document.documentElement.className.indexOf('web') >= 0) { try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) {} }
   }
 
   function act(a) {
