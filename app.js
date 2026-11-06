@@ -659,6 +659,7 @@
     next.classList.add('fade');
     sec.parentNode.replaceChild(next, sec);
     if (focusDot) { var d = document.querySelector('[data-key="dot-' + n + '"]'); if (d) d.focus(); }
+    heroPreload();
   }
 
   /** The top panel turns to the next new film every few seconds (not while the remote is on its buttons). */
@@ -700,6 +701,18 @@
     var raf = requestAnimationFrame(step);
     return function () { cancelAnimationFrame(raf); };
   }
+  // the films on both sides of the top panel are loaded ahead, so a swipe never shows an empty dark frame
+  var heroPre = {};
+  function heroPreload() {
+    if (heroList.length < 2) return;
+    [1, -1, 2].forEach(function (d) {
+      var f = byId(heroList[(heroIdx + d + heroList.length * 2) % heroList.length]); if (!f) return;
+      var u = pickBd(f) || f.poster; if (!u || heroPre[u]) return;
+      var im = new Image(); im.decoding = 'async'; im.src = u; heroPre[u] = im;
+      if (im.decode) im.decode().catch(function () {});
+    });
+  }
+  setInterval(function () { if (view.name === 'home') heroPreload(); }, 3000);
   var sw = null, swStop = null;
   function heroSec() { return document.querySelector('section.hero'); }
   // the frame stays put; only the picture and the text inside it slide
@@ -737,6 +750,7 @@
     // grab it where it is right now (it may still be settling)
     var cur = parseFloat(sec.getAttribute('data-x') || '0') || 0;
     sw = { x0: t.clientX - cur, y0: t.clientY, dir: null, hist: [{ x: cur, t: Date.now() }], sec: sec };
+    heroPreload();
   }, { passive: true });
   document.addEventListener('touchmove', function (e) {
     if (!sw) return;
