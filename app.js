@@ -45,6 +45,7 @@
   var view = { name: 'home' };    // current screen
   // the iPhone page: the screen lives in the address (#…), so pulling down to reload stays on the same screen
   var WEB_URL = /^https?:/.test(location.protocol);
+  try { if ('scrollRestoration' in history) history.scrollRestoration = 'manual'; } catch (e) {}
   var restoreScroll = null;
   if (WEB_URL) {
     try {
@@ -2280,7 +2281,12 @@
     try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch (e) {}
     var first = focusKey ? null : (main.querySelector('.btn.pri') || main.querySelector('[data-f]'));
     if (first) focusEl(first);
-    if (document.documentElement.className.indexOf('web') >= 0) { try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); window.scrollTo(0, 0); } catch (e) {} }
+    if (document.documentElement.className.indexOf('web') >= 0) {
+      try { if (document.activeElement && document.activeElement.blur) document.activeElement.blur(); } catch (e) {}
+      // Safari ignores a jump while the finger's scroll is still gliding, and re-anchors when pictures load: say it a few times
+      var top0 = function () { try { window.scrollTo(0, 0); document.documentElement.scrollTop = 0; document.body.scrollTop = 0; } catch (e) {} };
+      top0(); requestAnimationFrame(top0); setTimeout(top0, 80); setTimeout(top0, 250); setTimeout(top0, 600);
+    }
   }
 
   function act(a) {
