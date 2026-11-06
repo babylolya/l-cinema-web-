@@ -393,9 +393,9 @@
     if (xm) {
       var xn = collFilms(xm).length;
       // one wide tile: the Grinch over Whoville, «Christmas is coming», a puff of snow when pressed
-      h += '<button class="xmtile" data-f data-key="coll-' + esc(xm.id) + '" data-act="xmas:' + esc(xm.id) + '"><img class="xmimg" src="stk/xmas-hill.jpg" alt=""><span class="xmsh"></span>' +
+      h += '<button class="xmtile" data-f data-key="coll-' + esc(xm.id) + '" data-act="xmas:' + esc(xm.id) + '"><img class="xmimg" src="stk/xmas-hill.jpg" alt=""><span class="xmsh"></span><div class="frost xmfrost"><img src="stk/frost.webp" alt=""></div>' +
         '<span class="xmtx"><span class="xmk">' + esc(xm.title) + (xn ? ' · ' + xn + ' ' + plural(xn, 'фильм', 'фильма', 'фильмов') : '') + '</span>' +
-        '<span class="xmt">Christmas<br>is coming</span><span class="xmgo">Смотреть подборку ' + I.next + '</span></span></button>';
+        '<span class="xmt">Christmas <br>is coming</span><span class="xmgo xmgo1">Смотреть подборку <i class="xmar">→</i></span></span><span class="xmgo xmgo2">Смотреть подборку <i class="xmar">→</i></span></button>';
     }
     if (rest.length) {
       h += '<div class="cmini">';
