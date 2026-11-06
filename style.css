@@ -1482,3 +1482,4 @@ html:not(.web) .mallb { max-width: 520px; }
   .mfull { height: 100vh; height: 100dvh; }
   .mfull .mfbg { top: -120px; bottom: -120px; }
 }
+.mfull.still, .mfull.still .mfcard { -webkit-animation: none !important; animation: none !important; }

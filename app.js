@@ -1329,7 +1329,7 @@
     var n = parseInt(m[1], 16); return 'rgba(' + (n >> 16 & 255) + ',' + (n >> 8 & 255) + ',' + (n & 255) + ',' + al + ')';
   }
   // the glass bar at the bottom while a track is on (phone: every screen; TV and Mac: in «Музыка»)
-  var muFull = false;
+  var muFull = false, muFullShown = false;
   function muMiniOn() { return !!(muNow() && MU) && !muFull && (document.documentElement.className.indexOf('web') >= 0 || view.name === 'music'); }
   function muMini() {
     var t = muNow();
@@ -1345,9 +1345,11 @@
   // tap the bar: the wide player opens (cover, artist, timeline you can drag, all the buttons)
   function muFullHtml() {
     var t = muNow();
-    if (!muFull || !t) return '';
+    if (!muFull || !t) { muFullShown = false; return ''; }
     var who = muArtists(t), playing = MU && !MU.paused;
-    return '<div class="mfull">' + muCoverImg(t, 'mfbg') + '<span class="mfsh"></span>' +
+    // drawn again for the next track: no fade-in this time, or the list behind flashes through for a moment
+    var still = muFullShown; muFullShown = true;
+    return '<div class="mfull' + (still ? ' still' : '') + '">' + muCoverImg(t, 'mfbg') + '<span class="mfsh"></span>' +
       '<div class="mfcard">' +
         '<button class="mfclose" data-f data-key="mf-close" data-act="muclose" aria-label="Свернуть">' + I.chev + '</button>' +
         muCoverImg(t, 'mfcv') +
