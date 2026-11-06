@@ -811,13 +811,21 @@
     var seen = films.filter(watched).sort(function (a, b) { return String(b.watchedOn || '').localeCompare(String(a.watchedOn || '')); }).slice(0, 15);
     var downloading = films.filter(function (f) { return dlSummary(f).running > 0; });
 
-    // top panel: new films one after another (or, if nothing is new, what you want to watch)
-    var pool = (fresh.length ? fresh : (want.length ? want : films)).slice(0, 12);
-    // the film you stopped last comes first, as «Продолжить» — until you pick something else instead
+    // top panel: anything new comes first; after it, other films in a new random order each time the app opens.
+    // When nothing new was added, the film you stopped last leads as «Продолжить» (until you pick something else)
+    var shuf = function (l) { return l.slice().sort(function (x, y) { return hash(x.id + SEED) - hash(y.id + SEED); }); };
+    var pics = function (f) { return !!(f.backdrop || (f.backdrops && f.backdrops.length) || f.poster); };
     var skip = heroSkips();
     heroCont = null;
-    for (var ci = 0; ci < cont.length && !heroCont; ci++) if (skip[cont[ci].id] !== String(cont[ci].lastAt || 0)) heroCont = cont[ci];
-    if (heroCont) pool = [heroCont].concat(pool.filter(function (f) { return f.id !== heroCont.id; })).slice(0, 12);
+    var pool;
+    if (fresh.length) {
+      var fid = {}; fresh.forEach(function (f) { fid[f.id] = 1; });
+      pool = fresh.concat(shuf(films.filter(function (f) { return !fid[f.id] && pics(f) && !watched(f); }))).slice(0, 12);
+    } else {
+      for (var ci = 0; ci < cont.length && !heroCont; ci++) if (skip[cont[ci].id] !== String(cont[ci].lastAt || 0)) heroCont = cont[ci];
+      var rest = shuf(films.filter(function (f) { return pics(f) && (!heroCont || f.id !== heroCont.id); }));
+      pool = (heroCont ? [heroCont] : []).concat(rest).slice(0, 12);
+    }
     var ids = pool.map(function (f) { return f.id; });
     if (ids.join('|') !== heroList.join('|')) { heroList = ids; heroIdx = 0; }
     if (heroIdx >= heroList.length) heroIdx = 0;
