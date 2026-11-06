@@ -1080,7 +1080,7 @@
     if (!ch.length) return S.screensavers || [];
     if (svCache.k === S.ytChannels) return svCache.v;
     var out = [];
-    ch.forEach(function (c) { c.videos.forEach(function (v) { out.push({ id: 'yt-' + v.id, title: svTitle(v.title), full: v.title, url: 'https://www.youtube.com/watch?v=' + v.id, type: 'youtube', yt: v.id, thumb: 'https://i.ytimg.com/vi/' + v.id + '/maxresdefault.jpg' }); }); });
+    ch.forEach(function (c) { c.videos.forEach(function (v) { if (/#shorts/i.test(v.title || '')) return; out.push({ id: 'yt-' + v.id, title: svTitle(v.title), full: v.title, url: 'https://www.youtube.com/watch?v=' + v.id, type: 'youtube', yt: v.id, thumb: 'https://i.ytimg.com/vi/' + v.id + '/maxresdefault.jpg' }); }); });
     svCache = { k: S.ytChannels, v: out };
     return out;
   }
