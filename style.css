@@ -1794,3 +1794,33 @@ html:not(.web) .mmini .mmb { width: 48px; height: 48px; margin-left: 8px; }
 html:not(.web) .mmini .mmpp { width: 54px; height: 54px; }
 .mmini .mmfav:focus, html.mac .mmini .mmfav:hover { box-shadow: 0 0 0 3px #fff; }
 html.web .mmini .mmb:focus { box-shadow: none; }
+
+/* ===== Christmas header, take three: title on top, one tidy row at the bottom, the films in a glass panel ===== */
+.xmhtop { position: absolute; z-index: 2; left: 28px; right: 28px; top: 84px; }
+.xmhtop .xmtitle { margin: 0 0 12px; font-size: 64px; }
+.xmhtop .hchip { background: rgba(10,6,20,0.35); border-color: rgba(255,255,255,0.25); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); }
+.xmhbot { position: absolute; z-index: 2; left: 28px; right: 28px; bottom: 76px; display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; }
+.xmhbot .xmnow { margin: 0; -webkit-flex: 0 1 auto; flex: 0 1 auto; min-width: 0; max-width: 70%; background: rgba(10,6,20,0.45); }
+.xmhbot .xmnt { -webkit-flex: 1 1 auto; flex: 1 1 auto; }
+.xmhbot .xmdots { position: static; margin-left: auto; padding-left: 16px; -webkit-flex-shrink: 0; flex-shrink: 0; }
+.xmhsh { background: linear-gradient(180deg, rgba(10,6,20,0.75) 0%, rgba(10,6,20,0.15) 38%, rgba(10,6,20,0) 55%, rgba(10,6,20,0.7) 100%); }
+/* the films sit in a glass panel that slides over the bottom of the pictures, so there is no visible seam */
+.xmpanel { position: relative; z-index: 2; -webkit-flex-shrink: 0; flex-shrink: 0; margin: -70px 0 0; padding: 20px 18px 22px; border-radius: 30px;
+  background: rgba(14,9,26,0.62); -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
+  border: 1px solid rgba(255,231,176,0.22); box-shadow: 0 -10px 40px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.12); }
+.xmph { display: -webkit-flex; display: flex; -webkit-align-items: baseline; align-items: baseline; margin: 0 4px 14px; }
+.xmph .h2 { margin-right: 10px; }
+.xmpanel .grid { margin: 0; }
+html.lite .xmpanel { background: rgba(14,9,26,0.92); }
+@media (max-width: 900px) {
+  html.web .xmhtop { left: 18px; right: 18px; top: calc(env(safe-area-inset-top) + 76px); }
+  html.web .xmhtop .xmtitle { font-size: 42px; margin-bottom: 10px; }
+  html.web .xmhbot { left: 18px; right: 18px; bottom: 92px; }
+  html.web .xmhbot .xmnow { max-width: 74%; padding: 9px 14px; }
+  html.web .xmnt { font-size: 15px; }
+  html.web .xmna { font-size: 13px; margin-left: 10px; }
+  html.web .xmhbot .xmdots i { width: 6px; height: 6px; margin: 0 0 0 5px; }
+  html.web .xmhbot .xmdots i.on { width: 16px; }
+  html.web .xmhsh { background: linear-gradient(180deg, rgba(10,6,20,0.8) 0%, rgba(10,6,20,0.2) 40%, rgba(10,6,20,0) 58%, rgba(10,6,20,0.75) 100%); }
+  html.web .xmpanel { margin: -64px -6px 0; padding: 16px 12px 18px; border-radius: 26px; }
+}

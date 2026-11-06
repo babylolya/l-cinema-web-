@@ -498,17 +498,18 @@
     var h = '<div class="xmbg"><i class="xg1"></i><i class="xg2"></i></div>' +
       '<section class="xmhero"><div class="ctop xmctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' + pics.map(function (p, i) { return '<img class="xs' + (p.poster ? ' xsp' : '') + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '" src="' + esc(p.u) + '" alt="" onerror="this.style.display=\'none\'">'; }).join('') +
         '<span class="xmhsh"></span>' +
-        '<div class="xmhtx"><h1 class="xmtitle">Christmas is coming</h1>' +
-          '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div>' +
-          (cur ? '<button class="xmnow" data-f data-key="xm-now" data-act="film:' + esc(cur.f.id) + '"><span class="xmnk">Сейчас на экране</span><span class="xmnt" id="xm-nt">' + esc(cur.f.title) + '</span><span class="xmna">Открыть →</span></button>' : '') +
+        '<div class="xmhtop"><h1 class="xmtitle">Christmas is coming</h1>' +
+          '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div></div>' +
+        '<div class="xmhbot">' +
+          (cur ? '<button class="xmnow" data-f data-key="xm-now" data-act="film:' + esc(cur.f.id) + '"><span class="xmnk">Сейчас на экране</span><span class="xmnt" id="xm-nt">' + esc(cur.f.title) + '</span><span class="xmna">Открыть →</span></button>' : '<span></span>') +
+          (pics.length > 1 ? '<div class="xmdots">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '') +
         '</div>' +
-        (pics.length > 1 ? '<div class="xmdots">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '') +
       '</section>';
     if (!list.length) return h + '<div class="empty glass"><h1>Скоро здесь будет кино</h1><p>Скажи Claude, какие фильмы положить в «' + esc(c.title) + '», и они появятся здесь.</p></div>';
     xmStart(pics);
-    var grid = '<div class="grid">';
+    var grid = '<section class="xmpanel"><div class="xmph"><span class="h2">Все фильмы</span><span class="mallc">' + list.length + '</span></div><div class="grid">';
     for (var i = 0; i < list.length; i++) grid += card(list[i], 'coll');
-    return h + grid + '</div>';
+    return h + grid + '</div></section>';
   }
   function xmStart(pics) {
     clearInterval(xmTimer);
