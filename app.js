@@ -1069,8 +1069,23 @@
     var m = /drive\.google\.com\/(?:file\/d\/|open\?id=|uc\?(?:export=download&)?id=)([A-Za-z0-9_-]{10,})/.exec(u || '');
     return m ? 'https://drive.usercontent.google.com/download?id=' + m[1] + '&export=download&confirm=t' : '';
   }
+  // screensavers: the videos of her own channel (Glowpix) with their own covers; the old list only while that is not loaded yet
+  var svCache = { k: null, v: null };
+  function svTitle(t) {
+    var s0 = String(t || '').split(/\s[|·•–—-]\s|[\u2600-\u27BF]|[\uD83C-\uDBFF][\uDC00-\uDFFF]/)[0].trim();
+    return s0 || String(t || '');
+  }
+  function svList() {
+    var ch = (S.ytChannels || []).filter(function (c) { return c.section === 'Заставки' && (c.videos || []).length; });
+    if (!ch.length) return S.screensavers || [];
+    if (svCache.k === S.ytChannels) return svCache.v;
+    var out = [];
+    ch.forEach(function (c) { c.videos.forEach(function (v) { out.push({ id: 'yt-' + v.id, title: svTitle(v.title), full: v.title, url: 'https://www.youtube.com/watch?v=' + v.id, type: 'youtube', yt: v.id, thumb: 'https://i.ytimg.com/vi/' + v.id + '/maxresdefault.jpg' }); }); });
+    svCache = { k: S.ytChannels, v: out };
+    return out;
+  }
   function savers() {
-    var list = S.screensavers || [];
+    var list = svList();
     if (!list.length) return '<div class="topline"><h1 class="title-glow">Заставки</h1>' + statusLine() + '</div><div class="empty glass"><h1>Пока пусто</h1><p>Пришли Claude ссылки на свои фоны с Google Диска — они появятся здесь.</p></div>';
     if (svPick < 0 || svPick >= list.length) svPick = Math.floor(Math.random() * list.length);
     var p = list[svPick];
@@ -1078,7 +1093,7 @@
     var vid = p.type === 'video' ? svDirect(p.url) : '';
     var h = '<div class="ctop"><span></span>' + statusLine() + '</div>' +
       '<section class="svhero">' +
-      (big ? '<img class="svbg" src="' + esc(big) + '" alt="" onerror="this.remove()">' : '') +
+      (big ? '<img class="svbg" src="' + esc(big) + '" alt="" onerror="if(this.src.indexOf(\'maxresdefault\')>0){this.src=this.src.replace(\'maxresdefault\',\'hqdefault\')}else{this.remove()}">' : '') +
       (vid ? '<video class="svvid" data-src="' + esc(vid) + '" src="' + esc(vid) + '" muted autoplay loop playsinline preload="auto" onplaying="this.classList.add(\'on\')" onerror="this.remove()"></video>' : '') +
       '<div class="svshade"></div>' +
       '<div class="svinfo"><span class="hchip">' + list.length + ' ' + plural(list.length, 'заставка', 'заставки', 'заставок') + '</span>' +
@@ -1088,7 +1103,7 @@
     h += '<div class="savers">';
     for (var i = 0; i < list.length; i++) {
       var sv = list[i];
-      var img = sv.thumb ? '<img src="' + esc(sv.thumb) + '" alt="" onerror="this.remove()">' : '';
+      var img = sv.thumb ? '<img src="' + esc(sv.thumb) + '" alt="" onerror="if(this.src.indexOf(\'maxresdefault\')>0){this.src=this.src.replace(\'maxresdefault\',\'hqdefault\')}else{this.remove()}">' : '';
       h += '<div class="tile' + (i === svPick ? ' cur' : '') + '" data-f tabindex="0" data-key="sv-' + i + '" data-act="saver:' + i + '">' +
         '<div class="thumb' + (sv.pixel === false ? '' : ' px') + '">' + img + '<span class="kind">' + (sv.type === 'image' ? 'картинка' : I.play) + '</span></div>' +
         '<div class="ct">' + esc(sv.title || ('Заставка ' + (i + 1))) + '</div></div>';
@@ -1097,14 +1112,14 @@
   }
 
   function fullScreen() {
-    var list = S.screensavers || [];
+    var list = svList();
     var sv = list[full];
     if (!sv) return '';
     return '<div class="full' + (sv.pixel === false ? '' : ' px') + '"><img src="' + esc(sv.url) + '" alt=""></div>';
   }
 
   function openSaver(i) {
-    var list = S.screensavers || [];
+    var list = svList();
     var sv = list[i];
     if (!sv) return;
     if (sv.type === 'image') { full = i; render(null, true); }
@@ -1113,7 +1128,7 @@
   }
 
   function stepImage(delta) {
-    var list = S.screensavers || [], n = list.length;
+    var list = svList(), n = list.length;
     for (var t = 1; t <= n; t++) {
       var j = (full + delta * t + n * 10) % n;
       if (list[j].type === 'image') { full = j; render(null, true); return; }
@@ -1821,7 +1836,7 @@
   function ytShelves(section) {
     var out = '';
     (S.ytChannels || []).forEach(function (c) {
-      if (section && c.section !== section) return;
+      if ((section && c.section !== section) || (!section && c.section === 'Заставки')) return;
       var v = (c.videos || []).slice();
       // a course («Day 1, Day 2…») goes in its order; everything else newest first, as YouTube lists it
       var day = function (x) { var m = /Day\s*(\d+)/i.exec(x.title || ''); return m ? +m[1] : 0; };
