@@ -487,21 +487,44 @@
   function backBtn(key, cls, style) { return '<button class="rback' + (cls ? ' ' + cls : '') + '" data-f data-key="' + key + '" data-act="back" aria-label="Назад"' + (style ? ' style="' + style + '"' : '') + '>' + I.back + '</button>'; }
   function plural(n, one, few, many) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? one : (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many); }
 
+  // Christmas: a wide header where the films' own pictures change by themselves, then the films on a background of lights
+  var xmTimer = null, xmIdx = 0;
   function xmasPage(c, list, seen) {
-    var grinch = list.filter(function (f) { return /гринч|grinch/i.test((f.title || '') + ' ' + (f.original || '') + ' ' + (f.id || '')); })[0];
+    var pics = [];
+    list.forEach(function (f) { var u = (f.backdrops && f.backdrops[0]) || f.backdrop; if (u && pics.length < 8) pics.push({ u: u, f: f }); });
+    if (!pics.length) list.forEach(function (f) { if (f.poster && pics.length < 6) pics.push({ u: f.poster, f: f, poster: true }); });
+    if (xmIdx >= pics.length) xmIdx = 0;
+    var cur = pics[xmIdx];
     var h = '<div class="xmbg"><i class="xg1"></i><i class="xg2"></i></div>' +
       '<div class="ctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' +
-      '<section class="grinch"><img class="grimg" src="stk/xmas-town.jpg" alt=""><span class="grsh"></span>' +
-        '<div class="grtx"><span class="grk">Рождество · главный фильм</span><span class="grlogo">Гринч</span>' +
-        '<span class="grsub">Самый уютный зелёный ворчун и город, где всё в огоньках</span>' +
-        '<div class="grbtns">' + (grinch ? '<button class="btn pri grbtn" data-f data-key="gr-play" data-act="film:' + esc(grinch.id) + '">' + I.play + ' Смотреть сейчас</button>' : '') +
-          '<button class="btn grbtn2" data-f data-key="gr-all" data-act="xmgrid">Смотреть подборку</button></div></div></section>' +
-      '<div class="xmhead"><h1 class="xmtitle">Christmas is coming</h1><div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') +
-        (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div></div>';
+      '<section class="xmhero">' + pics.map(function (p, i) { return '<img class="xs' + (p.poster ? ' xsp' : '') + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '" src="' + esc(p.u) + '" alt="" onerror="this.style.display=\'none\'">'; }).join('') +
+        '<span class="xmhsh"></span>' +
+        '<div class="xmhtx"><h1 class="xmtitle">Christmas is coming</h1>' +
+          '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div>' +
+          (cur ? '<button class="xmnow" data-f data-key="xm-now" data-act="film:' + esc(cur.f.id) + '"><span class="xmnk">Сейчас на экране</span><span class="xmnt" id="xm-nt">' + esc(cur.f.title) + '</span><span class="xmna">Открыть →</span></button>' : '') +
+        '</div>' +
+        (pics.length > 1 ? '<div class="xmdots">' + pics.map(function (p, i) { return '<i class="' + (i === xmIdx ? 'on' : '') + '"></i>'; }).join('') + '</div>' : '') +
+      '</section>';
     if (!list.length) return h + '<div class="empty glass"><h1>Скоро здесь будет кино</h1><p>Скажи Claude, какие фильмы положить в «' + esc(c.title) + '», и они появятся здесь.</p></div>';
+    xmStart(pics);
     var grid = '<div class="grid">';
     for (var i = 0; i < list.length; i++) grid += card(list[i], 'coll');
     return h + grid + '</div>';
+  }
+  function xmStart(pics) {
+    clearInterval(xmTimer);
+    if (pics.length < 2) return;
+    xmTimer = setInterval(function () {
+      var hero = document.querySelector('.xmhero');
+      if (!hero) { clearInterval(xmTimer); xmTimer = null; return; }
+      xmIdx = (xmIdx + 1) % pics.length;
+      var im = hero.querySelectorAll('.xs'), dots = hero.querySelectorAll('.xmdots i');
+      for (var i = 0; i < im.length; i++) im[i].classList.toggle('on', +im[i].getAttribute('data-i') === xmIdx);
+      for (var j = 0; j < dots.length; j++) dots[j].classList.toggle('on', j === xmIdx);
+      var nt = document.getElementById('xm-nt'), bt = hero.querySelector('.xmnow');
+      if (nt) nt.textContent = pics[xmIdx].f.title || '';
+      if (bt) bt.setAttribute('data-act', 'film:' + pics[xmIdx].f.id);
+    }, 5500);
   }
   function collection() {
     var c = collById(view.id);
