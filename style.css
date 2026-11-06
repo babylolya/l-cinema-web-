@@ -1767,3 +1767,30 @@ html.web #app { overflow-x: hidden; }
   html.web .xmdots { left: auto; right: 18px; top: auto; bottom: 74px; }
   html.web .xmhsh { background: linear-gradient(0deg, rgba(10,6,20,0.85) 0%, rgba(10,6,20,0.45) 35%, rgba(10,6,20,0) 60%), linear-gradient(180deg, rgba(10,6,20,0.55) 0%, rgba(10,6,20,0) 20%); }
 }
+
+.mfull, .mfull .mfcard { overflow: hidden; overflow: clip; }
+
+/* ===== The small player, finished: even sizes, a heart, the progress as a hairline along the bottom edge ===== */
+.mmini { height: 68px; padding: 0 8px 0 8px; border-radius: 22px; background: rgba(28,24,36,0.62); -webkit-backdrop-filter: blur(30px) saturate(1.8); backdrop-filter: blur(30px) saturate(1.8);
+  border: 1px solid rgba(255,255,255,0.1); border-top-color: rgba(255,255,255,0.2); box-shadow: 0 16px 40px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.06); }
+.mmini .mmtx { padding: 6px; }
+.mmini .mmcv { width: 48px; height: 48px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.35); }
+.mmini .mmt { margin-left: 12px; }
+.mmini .mtt { font-size: 15px; font-weight: 700; letter-spacing: -0.01em; }
+.mmini .mta { font-size: 13px; opacity: .6; margin-top: 1px; }
+.mmini .mmb { width: 40px; height: 40px; margin-left: 4px; background: none; }
+.mmini .mmb svg { width: 22px; height: 22px; }
+.mmini .mmpp { width: 44px; height: 44px; margin-left: 6px; background: #fff; color: #15121A; }
+.mmini .mmpp svg { width: 18px; height: 18px; }
+.mmini .mmfav { color: rgba(255,255,255,0.85); }
+.mmini .mmfav svg { fill: none; }
+.mmini .mmfav.fav { color: #FF6FE0; }
+.mmini .mmfav.fav svg { fill: currentColor; -webkit-animation: favPop .35s cubic-bezier(.3,1.5,.5,1); animation: favPop .35s cubic-bezier(.3,1.5,.5,1); }
+.mmini .mmline { left: 0; right: 0; bottom: 0; height: 2px; border-radius: 0; background: rgba(255,255,255,0.08); }
+.mmini .mmline i { border-radius: 0 2px 2px 0; background: linear-gradient(90deg, #FF7FE3, #fff); }
+html:not(.web) .mmini { height: 80px; }
+html:not(.web) .mmini .mmcv { width: 58px; height: 58px; }
+html:not(.web) .mmini .mmb { width: 48px; height: 48px; margin-left: 8px; }
+html:not(.web) .mmini .mmpp { width: 54px; height: 54px; }
+.mmini .mmfav:focus, html.mac .mmini .mmfav:hover { box-shadow: 0 0 0 3px #fff; }
+html.web .mmini .mmb:focus { box-shadow: none; }
