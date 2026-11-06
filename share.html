@@ -41,6 +41,20 @@ h1 { font-family: Unbounded, sans-serif; font-size: clamp(28px, 7vw, 44px); line
 .foot { margin-top: 30px; text-align: center; color: rgba(244,240,250,0.35); font-size: 13px; }
 .bad { margin-top: 30vh; text-align: center; color: var(--dim); }
 @media (max-width: 520px) { .hero { display: block; text-align: center; } .art { margin: 0 auto 18px; width: 190px; height: 190px; } .seg { justify-content: center; } .svc { text-align: center; } }
+
+.play { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 58px; margin: 0 0 14px; border: 0; border-radius: 18px; background: #fff; color: #15121A; font: inherit; font-size: 18px; font-weight: 800; cursor: pointer; transition: transform .1s ease-out; }
+.play:active { transform: scale(0.97); }
+.play svg { width: 20px; height: 20px; }
+.yp { position: sticky; top: calc(env(safe-area-inset-top) + 8px); z-index: 5; margin: 0 0 16px; border-radius: 20px; overflow: hidden; background: #000; box-shadow: 0 20px 50px rgba(0,0,0,0.5); display: none; }
+.yp.on { display: block; }
+.yp .fr { position: relative; width: 100%; aspect-ratio: 16 / 9; }
+.yp .fr > div, .yp iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.yp .bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; background: rgba(28,24,36,0.95); }
+.yp .bar b { flex: 1; min-width: 0; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.yp .bar button { width: 40px; height: 40px; border-radius: 50%; border: 0; background: rgba(255,255,255,0.1); color: #fff; font-size: 16px; cursor: pointer; }
+.row.cur { background: rgba(255,127,227,0.16); box-shadow: inset 0 0 0 1px rgba(255,127,227,0.5); }
+.row .go.pl { font-size: 18px; }
+.alt { margin-top: 26px; }
 </style>
 </head>
 <body>
@@ -66,7 +80,8 @@ h1 { font-family: Unbounded, sans-serif; font-size: clamp(28px, 7vw, 44px); line
     { id: 'yt', name: 'YouTube Music', url: function (q) { return 'https://music.youtube.com/search?q=' + encodeURIComponent(q); } }
   ];
   var cur = 'ya'; try { cur = localStorage.getItem('shareSvc') || 'ya'; } catch (e) {}
-  var tracks = doc.t.map(function (x) { return { title: x[0] || '', artist: x[1] || '', cover: unpack(x[2]), dur: +x[3] || 0 }; });
+  var tracks = doc.t.map(function (x) { return { title: String(x[0] || '').replace(/\s*[\(\[]?@\w+bot[\)\]]?/gi, '').trim(), artist: x[1] || '', cover: unpack(x[2]), dur: +x[3] || 0, yt: /^[\w-]{11}$/.test(x[4] || '') ? x[4] : '' }; });
+  var playable = tracks.filter(function (t) { return t.yt; }).length, curT = -1, yp = null;
   var mins = Math.round(tracks.reduce(function (a, t) { return a + t.dur; }, 0) / 60);
   function render() {
     var svc = SVC.filter(function (s) { return s.id === cur; })[0] || SVC[0];
@@ -74,15 +89,55 @@ h1 { font-family: Unbounded, sans-serif; font-size: clamp(28px, 7vw, 44px); line
     var art = covers.length >= 4 ? '<div class="art">' + covers.map(function (t) { return '<img alt="" src="' + esc(t.cover) + '">'; }).join('') + '</div>'
       : covers.length ? '<div class="art one"><img alt="" src="' + esc(covers[0].cover) + '"></div>' : '<div class="art one"><div class="ph">♫</div></div>';
     var h = '<div class="hero">' + art + '<div><div class="k">Плейлист</div><h1>' + esc(doc.n || 'Плейлист') + '</h1><div class="sub">' + tracks.length + ' ' + plural(tracks.length, 'трек', 'трека', 'треков') + (mins ? ' · ' + mins + ' мин' : '') + '</div></div></div>';
-    h += '<div class="svc"><div class="k">Слушать в</div><div class="seg">' + SVC.map(function (s) { return '<button data-s="' + s.id + '" class="' + (s.id === svc.id ? 'on' : '') + '">' + s.name + '</button>'; }).join('') + '</div></div><div class="list">';
+    if (playable) h += '<div class="yp' + (curT >= 0 ? ' on' : '') + '" id="yp"><div class="fr"><div id="ytp"></div></div><div class="bar"><button data-c="prev">⏮</button><b id="ypt">' + (curT >= 0 ? esc(tracks[curT].artist + ' · ' + tracks[curT].title) : '') + '</b><button data-c="next">⏭</button></div></div>' +
+      '<button class="play" id="pall"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l13 8-13 8z"/></svg>Слушать всё</button>';
+    h += '<div class="list">';
     tracks.forEach(function (t, i) {
-      h += '<a class="row" target="_blank" rel="noopener" href="' + esc(svc.url(t.artist + ' ' + t.title)) + '"><span class="n">' + (i + 1) + '</span><span class="cv">' + (t.cover ? '<img alt="" loading="lazy" src="' + esc(t.cover) + '">' : '♪') + '</span>' +
-        '<span class="tx"><div class="tt">' + esc(t.title) + '</div><div class="ta">' + esc(t.artist) + '</div></span><span class="go">›</span></a>';
+      var own = t.yt ? '<div class="row' + (i === curT ? ' cur' : '') + '" data-t="' + i + '"' : '<a class="row" target="_blank" rel="noopener" href="' + esc(svc.url(t.artist + ' ' + t.title)) + '"';
+      h += own + '><span class="n">' + (i + 1) + '</span><span class="cv">' + (t.cover ? '<img alt="" loading="lazy" src="' + esc(t.cover) + '">' : '♪') + '</span>' +
+        '<span class="tx"><div class="tt">' + esc(t.title) + '</div><div class="ta">' + esc(t.artist) + '</div></span><span class="go' + (t.yt ? ' pl' : '') + '">' + (t.yt ? '▶' : '›') + '</span>' + (t.yt ? '</div>' : '</a>');
     });
-    app.innerHTML = h + '</div><div class="foot">Собрано в L-CINEMA</div>';
+    h += '</div>';
+    h += '<div class="svc alt"><div class="k">' + (playable ? 'Или открыть в приложении' : 'Слушать в') + '</div><div class="seg">' + SVC.map(function (s) { return '<button data-s="' + s.id + '" class="' + (s.id === svc.id ? 'on' : '') + '">' + s.name + '</button>'; }).join('') + '</div></div>';
+    app.innerHTML = h + '<div class="foot">Собрано в L-CINEMA</div>';
+    if (curT >= 0) mount();
   }
   function plural(n, a, b, c) { var m10 = n % 10, m100 = n % 100; return m10 === 1 && m100 !== 11 ? a : m10 >= 2 && m10 <= 4 && (m100 < 10 || m100 >= 20) ? b : c; }
-  app.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-s]'); if (!b) return; cur = b.getAttribute('data-s'); try { localStorage.setItem('shareSvc', cur); } catch (x) {} render(); });
+  // full songs from YouTube, one after another (free, nothing to sign in to)
+  var apiReady = false, apiWait = [];
+  function api(cb) {
+    if (window.YT && YT.Player) return cb();
+    apiWait.push(cb);
+    if (apiWait.length > 1) return;
+    window.onYouTubeIframeAPIReady = function () { apiReady = true; apiWait.forEach(function (f) { f(); }); apiWait = []; };
+    var sc = document.createElement('script'); sc.src = 'https://www.youtube.com/iframe_api'; document.head.appendChild(sc);
+  }
+  function nextFrom(i, d) { for (var k = 1; k <= tracks.length; k++) { var j = (i + d * k + tracks.length * 4) % tracks.length; if (tracks[j].yt) return j; } return -1; }
+  function mount() {
+    api(function () {
+      var t = tracks[curT];
+      if (yp && document.getElementById('ytp') && yp.getIframe && document.body.contains(yp.getIframe())) { yp.loadVideoById(t.yt); return; }
+      yp = new YT.Player('ytp', { videoId: t.yt, playerVars: { autoplay: 1, playsinline: 1, rel: 0, modestbranding: 1 },
+        events: { onReady: function (e) { try { e.target.playVideo(); } catch (x) {} },
+          onStateChange: function (e) { if (e.data === 0) go(nextFrom(curT, 1)); },
+          onError: function () { go(nextFrom(curT, 1)); } } });
+    });
+  }
+  function go(i) {
+    if (i < 0) return; curT = i;
+    var box = document.getElementById('yp'); if (box) box.classList.add('on');
+    var bt = document.getElementById('ypt'); if (bt) bt.textContent = tracks[i].artist + ' · ' + tracks[i].title;
+    var rows = app.querySelectorAll('[data-t]'); for (var r = 0; r < rows.length; r++) rows[r].classList.toggle('cur', +rows[r].getAttribute('data-t') === i);
+    if (yp && yp.loadVideoById) yp.loadVideoById(tracks[i].yt); else mount();
+    try { box.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (x) {}
+  }
+  app.addEventListener('click', function (e) {
+    var el = e.target.closest ? e.target : null; if (!el) return;
+    if (el.closest('#pall')) { go(nextFrom(-1, 1)); return; }
+    var c = el.closest('[data-c]'); if (c) { go(nextFrom(curT, c.getAttribute('data-c') === 'next' ? 1 : -1)); return; }
+    var r = el.closest('[data-t]'); if (r) { go(+r.getAttribute('data-t')); return; }
+  });
+  app.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-s]'); if (!b) return; cur = b.getAttribute('data-s'); try { localStorage.setItem('shareSvc', cur); } catch (x) {} if (yp) { var svc = SVC.filter(function (s) { return s.id === cur; })[0]; app.querySelectorAll('[data-s]').forEach(function (x) { x.classList.toggle('on', x.getAttribute('data-s') === cur); }); app.querySelectorAll('a.row').forEach(function (a, k) { }); } else render(); });
   render();
 })();
 </script>

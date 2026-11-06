@@ -1282,7 +1282,7 @@
   }
   function muShareUrl(name, list) {
     var pack = function (u) { return String(u || '').replace('https://cdn-images.dzcdn.net/images/cover/', '~d').replace(/^https:\/\/is(\d)-ssl\.mzstatic\.com\/image\/thumb\//, '~a$1'); };
-    var doc = { n: name, t: list.slice(0, 120).map(function (t) { return [t.title || '', t.artist || '', pack(t.hq), t.dur || 0]; }) };
+    var doc = { n: name, t: list.slice(0, 120).map(function (t) { return [t.title || '', t.artist || '', pack(t.hq), t.dur || 0, t.yt || '']; }) };
     return SHARE_BASE + '#' + b64u(JSON.stringify(doc));
   }
   var shareNote = '';
