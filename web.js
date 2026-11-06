@@ -129,6 +129,7 @@
       if (!f.poster && t.poster) f.poster = t.poster;
       if (!f.backdrop && t.backdrop) f.backdrop = t.backdrop;
       if (!f.backdrops && t.backdrops) f.backdrops = t.backdrops;
+      if (!f.logo && t.logo) f.logo = t.logo;
       if (!f.lang && t.lang) f.lang = t.lang;
       f.last = (P.last[id] || {}).key || ''; f.lastAt = (P.last[id] || {}).t || 0;
       return f;

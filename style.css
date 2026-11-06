@@ -1874,3 +1874,10 @@ html.web .xmhtop .xmdots, html:not(.web) .xmhtop .xmdots { top: auto; bottom: 8p
   font-size: 12px; color: rgba(255,255,255,0.55); transition: font-size .3s, color .3s, text-shadow .3s; }
 .xmhero .xmdots.inframe i.on { font-size: 19px; color: #D98BFF; text-shadow: 0 0 8px rgba(200,75,255,0.9), 0 0 16px rgba(255,95,219,0.6); }
 html.web, html.web body { overflow-anchor: none; }
+
+/* film page: the title logo instead of the small poster */
+.film.has-bd .fpost .flogo { display: block; max-width: 340px; max-height: 150px; width: auto; height: auto; object-fit: contain; object-position: left bottom; margin: 0 0 6px; filter: drop-shadow(0 6px 24px rgba(0,0,0,0.6)); }
+html:not(.web) .film.haslogo .fpost { display: block; }
+.film.nopost .fpost { display: none; }
+@media (max-width: 900px) { html.web .film.has-bd .fpost .flogo { max-width: 72%; max-height: 120px; } }
+.film.haslogo .fpost { background: none !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; width: auto !important; height: auto !important; aspect-ratio: auto !important; }

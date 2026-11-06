@@ -548,10 +548,11 @@
       xmDots();
     }, 5500);
   }
+  function byYear(l) { return l.slice().sort(function (a, b) { return (a.year || 9999) - (b.year || 9999) || String(a.title || '').localeCompare(String(b.title || ''), 'ru'); }); }
   function collection() {
     var c = collById(view.id);
     if (!c) return emptyScreen();
-    var list = collFilms(c);
+    var list = byYear(collFilms(c));
     var seen = list.filter(watched).length;
     var stk = PAGE_STK[c.theme] ? '<img class="cstk" src="' + stkSrc(PAGE_STK[c.theme]) + '" alt="">' : '';
     // a banner card: back button on top, then a glass card in the collection's colours with the big sticker peeking out
@@ -976,7 +977,9 @@
       backBtn('f-back', 'fback') + '</section>' : '';
     var deco = bds.length ? decoHtml(filmTheme(f)) : '';
     if (deco) banner = '<div class="fbwrap">' + banner + deco + '</div>';
-    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + (deco ? ' th-' + filmTheme(f) : '') + '"><div class="fpost">' + (bds.length ? '' : backBtn('f-back', '', 'margin-bottom:14px')) + big + '</div>' +
+    // with a wide picture on top the small poster is not needed: the film's title logo stands there instead
+    if (bds.length) big = f.logo ? '<img class="flogo" src="' + esc(f.logo) + '" alt="' + esc(f.title) + '" onerror="this.remove()">' : '';
+    return banner + '<div class="film' + (bds.length ? ' has-bd' : '') + (bds.length && f.logo ? ' haslogo' : '') + (bds.length && !f.logo ? ' nopost' : '') + (deco ? ' th-' + filmTheme(f) : '') + '"><div class="fpost">' + (bds.length ? '' : backBtn('f-back', '', 'margin-bottom:14px')) + big + '</div>' +
       '<div class="body"><div class="chips">' + tags + '</div><h1>' + esc(f.title) + '</h1>' +
       (f.original && f.original !== f.title ? '<div class="sub">' + esc(f.original) + '</div>' : '') +
       '<div class="meta">' + esc(filmMeta(f)) + '</div>' +
