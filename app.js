@@ -716,7 +716,8 @@
   var sw = null, swStop = null;
   function heroSec() { return document.querySelector('section.hero'); }
   // the frame stays put; only the picture and the text inside it slide
-  function heroParts(sec) { return sec.querySelectorAll('.bg, .info, .bgblur, .pst'); }
+  // only the panel's own layers: the neighbour riding alongside (.hpeek) has the same layers and must not be moved twice
+  function heroParts(sec) { return Array.prototype.filter.call(sec.querySelectorAll('.bg, .info, .bgblur, .pst'), function (e) { return !(e.closest && e.closest('.hpeek')); }); }
   // the neighbouring film rides right next to the current one, so pictures follow each other without a gap
   function heroPeek(sec, dirn) {
     if (sec._peekDir === dirn && sec._peek) return sec._peek;
