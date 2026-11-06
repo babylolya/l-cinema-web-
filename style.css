@@ -1747,3 +1747,23 @@ html.web .xmnow:focus { box-shadow: none; }
 html.lite .xmhero .xs { transition: opacity .8s ease; -webkit-transform: none; transform: none; }
 .xmbg .xg1, .xmbg .xg2 { display: none; }
 @media (max-width: 700px) { .xmhero { height: 58vh; min-height: 380px; max-height: 500px; } }
+
+/* the snow lives in a clipped full-screen layer */
+.snowwrap { position: fixed; z-index: 200; top: 0; left: 0; width: 100%; height: 100%; overflow: hidden; pointer-events: none; }
+.snowwrap .snowburst { position: absolute; }
+html.web #app { overflow-x: hidden; }
+
+/* Christmas header: no card, the pictures run edge to edge and melt into the lights below */
+.xmhero { border-radius: 0; box-shadow: none; background: transparent; margin: -12px -20px 10px -8px; height: 470px;
+  -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%); mask-image: linear-gradient(180deg, #000 0%, #000 72%, transparent 100%); -webkit-transform: none; transform: none; }
+.xmhsh { background: linear-gradient(90deg, rgba(10,6,20,0.8) 0%, rgba(10,6,20,0.3) 50%, rgba(10,6,20,0) 75%), linear-gradient(180deg, rgba(10,6,20,0.55) 0%, rgba(10,6,20,0) 22%); }
+.xmctop { position: absolute; z-index: 3; top: 12px; left: 8px; right: 20px; }
+.xmhtx { left: 28px; bottom: 90px; }
+.xmdots { bottom: 96px; }
+@media (max-width: 900px) {
+  html.web .xmhero { margin: calc(-10px - env(safe-area-inset-top)) -14px 0; height: calc(64vh + env(safe-area-inset-top)); min-height: 440px; max-height: 620px; }
+  html.web .xmctop { top: calc(env(safe-area-inset-top) + 10px); left: 14px; right: 14px; }
+  html.web .xmhtx { left: 18px; right: 18px; bottom: 70px; }
+  html.web .xmdots { left: auto; right: 18px; top: auto; bottom: 74px; }
+  html.web .xmhsh { background: linear-gradient(0deg, rgba(10,6,20,0.85) 0%, rgba(10,6,20,0.45) 35%, rgba(10,6,20,0) 60%), linear-gradient(180deg, rgba(10,6,20,0.55) 0%, rgba(10,6,20,0) 20%); }
+}

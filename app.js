@@ -411,8 +411,8 @@
   // pressing the Christmas tile: small snow flies out in every direction, then the collection opens
   function snowBurst(el, then) {
     try {
-      var r = el.getBoundingClientRect(), box = document.createElement('div'); box.className = 'snowburst';
-      box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + r.height / 2) + 'px';
+      var r = el.getBoundingClientRect(), wrap = document.createElement('div'), box = document.createElement('div'); wrap.className = 'snowwrap'; box.className = 'snowburst';
+      box.style.left = (r.left + r.width / 2) + 'px'; box.style.top = (r.top + r.height / 2) + 'px'; wrap.appendChild(box);
       var n = document.documentElement.classList.contains('lite') ? 18 : 42, fl = [];
       for (var i = 0; i < n; i++) {
         var f = document.createElement('i'), sz = 3 + Math.random() * 7;
@@ -420,7 +420,7 @@
         if (Math.random() < 0.35) f.className = 'fl';
         box.appendChild(f); fl.push(f);
       }
-      document.body.appendChild(box);
+      document.body.appendChild(wrap);
       requestAnimationFrame(function () { requestAnimationFrame(function () {
         fl.forEach(function (f) {
           var ang = Math.random() * Math.PI * 2, d = (0.35 + Math.random() * 0.75) * Math.max(r.width, r.height) * 0.75;
@@ -428,7 +428,7 @@
           f.style.opacity = '0';
         });
       }); });
-      setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 1100);
+      setTimeout(function () { if (wrap.parentNode) wrap.parentNode.removeChild(wrap); }, 1100);
     } catch (e) {}
     setTimeout(then, 380);
   }
@@ -496,8 +496,7 @@
     if (xmIdx >= pics.length) xmIdx = 0;
     var cur = pics[xmIdx];
     var h = '<div class="xmbg"><i class="xg1"></i><i class="xg2"></i></div>' +
-      '<div class="ctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' +
-      '<section class="xmhero">' + pics.map(function (p, i) { return '<img class="xs' + (p.poster ? ' xsp' : '') + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '" src="' + esc(p.u) + '" alt="" onerror="this.style.display=\'none\'">'; }).join('') +
+      '<section class="xmhero"><div class="ctop xmctop">' + backBtn('c-back', 'cback') + statusLine() + '</div>' + pics.map(function (p, i) { return '<img class="xs' + (p.poster ? ' xsp' : '') + (i === xmIdx ? ' on' : '') + '" data-i="' + i + '" src="' + esc(p.u) + '" alt="" onerror="this.style.display=\'none\'">'; }).join('') +
         '<span class="xmhsh"></span>' +
         '<div class="xmhtx"><h1 class="xmtitle">Christmas is coming</h1>' +
           '<div class="hchips">' + (list.length ? '<span class="hchip">' + list.length + ' ' + plural(list.length, 'фильм', 'фильма', 'фильмов') + '</span>' : '') + (seen ? '<span class="hchip">посмотрела ' + seen + '</span>' : '') + '</div>' +
