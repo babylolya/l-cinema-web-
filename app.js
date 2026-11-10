@@ -1478,7 +1478,7 @@
   function muOffPump() {
     if (muOffBusy || !muOffQ.length) { if (!muOffQ.length && !muOffBusy && muOffAll) { muOffAll = false; muOffRefresh().then(function () { if (view.name === 'music') render(null, true); }); } return; }
     var t = muOffQ.shift(); muOffBusy = 1;
-    tgLink(t.file).then(function (u) { return muKeep(t, u); }).catch(function () {}).then(function () {
+    tgLink(t.file).catch(function (e) { if (t.gh && window.ghTrack) return window.ghTrack(t.uid); throw e; }).then(function (u) { return muKeep(t, u); }).catch(function () {}).then(function () {
       muOffBusy = 0; var b = document.getElementById('mu-offn'); if (b) b.textContent = muOffCount() + ' / ' + muTracks().length;
       setTimeout(muOffPump, (A && A.muSave) ? 2500 : 200);
     });
@@ -1494,7 +1494,11 @@
     // a kept copy plays first (no internet needed); otherwise a fresh link from Telegram, and the track is kept for next time
     muLocalUrl(uid).then(function (loc) {
       if (loc) return { u: loc, local: true };
-      return tgLink(t.file).then(function (u) { return { u: u }; });
+      return tgLink(t.file).then(function (u) { return { u: u }; }, function (e) {
+        // Telegram can't be reached from here: the copy kept on GitHub
+        if (t.gh && window.ghTrack) return window.ghTrack(t.uid).then(function (u) { return { u: u, blob: true }; });
+        throw e;
+      });
     }).then(function (res) {
       var u = res.u;
       var now = muNow(); if (!now || now.uid !== uid) return;

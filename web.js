@@ -42,6 +42,12 @@
     var h = Object.assign({ Authorization: 'Bearer ' + TOKEN, Accept: 'application/vnd.github+json' }, opts.headers || {});
     return fetch('https://api.github.com/repos/' + REPO + path, { method: opts.method || 'GET', headers: h, body: opts.body, cache: 'no-store' });
   }
+  // a track's copy in the repository, for when Telegram can't be reached from the phone
+  window.ghTrack = function (uid) {
+    return gh('/contents/music/files/' + encodeURIComponent(uid) + '.mp3?ref=media', { headers: { Accept: 'application/vnd.github.raw+json' } })
+      .then(function (r) { if (!r.ok) throw new Error('нет копии'); return r.blob(); })
+      .then(function (b) { return URL.createObjectURL(b.type ? b : new Blob([b], { type: 'audio/mpeg' })); });
+  };
   function nowIso() { var d = new Date(), p = function (n) { return String(n).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds()); }
   function b64(s) { return btoa(unescape(encodeURIComponent(s))); }
   function unb64(s) { return decodeURIComponent(escape(atob(String(s).replace(/\s/g, '')))); }
