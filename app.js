@@ -1547,7 +1547,9 @@
     if (MU.paused) { var p = MU.play(); if (p && p.catch) p.catch(function () {}); } else MU.pause();
   }
   function shuffled(l) { var a = l.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)); var x = a[i]; a[i] = a[j]; a[j] = x; } return a; }
+  var muErrSeen = '';
   function muUi() {
+    if (muErr && muErr !== muErrSeen && DIAG.errs.length < 20) { muErrSeen = muErr; DIAG.errs.push('music: ' + muErr + (MU && MU.error ? ' code ' + MU.error.code : '')); }
     muNative();
     var t = muNow();
     var bt = document.getElementById('mu-pp'); if (bt) bt.innerHTML = MU && !MU.paused ? I.pause : I.play;
