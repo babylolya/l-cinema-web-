@@ -1422,7 +1422,19 @@
     var muLast = 0;
     MU.addEventListener('timeupdate', function () { muTrack(); muPosState(false); if (Date.now() - muLast > 900) { muLast = Date.now(); muUi(); } });
     MU.addEventListener('play', function () { muPosState(true); }); MU.addEventListener('pause', function () { muFlush(); muPosState(true); }); MU.addEventListener('loadedmetadata', function () { muPosState(true); });
-    MU.addEventListener('error', function () { muErr = 'Не получилось включить трек — пробую следующий'; muUi(); setTimeout(function () { muStep(1); }, 1500); });
+    // a track that fails: first one more try with a fresh link, then the next track; after three failures in a row it stops and says so
+    var muFails = 0, muRetried = '';
+    MU.addEventListener('playing', function () { muFails = 0; });
+    MU.addEventListener('error', function () {
+      var t = muNow();
+      if (!t || !MU._want || MU._uid !== t.uid) return;          // an old or empty source, not the track asked for
+      if (MU.error && MU.error.code === 1) return;               // loading was stopped on purpose
+      if (muRetried !== t.uid) { muRetried = t.uid; muLoad(true); return; }
+      muFails++;
+      if (muFails >= 3) { muFails = 0; muErr = 'Треки не включаются — проверь интернет и нажми ▶ ещё раз'; try { MU.pause(); } catch (e) {} muUi(); return; }
+      muErr = 'Не получилось включить трек — включаю следующий'; muUi();
+      var was = t.uid; setTimeout(function () { var n = muNow(); if (n && n.uid === was) muStep(1); }, 1500);
+    });
     return MU;
   }
   function muStart(list, i) {
@@ -1433,10 +1445,12 @@
   function muLoad(autoplay) {
     var t = muNow(); if (!t) return;
     var a = muEnsure(); muErr = '';
-    a.removeAttribute('src');
+    try { a.pause(); } catch (e) {}
+    a._want = ''; // while the new link is fetched, a stray error of the old file must not skip anything
     var uid = t.uid;
     tgLink(t.file).then(function (u) {
       var now = muNow(); if (!now || now.uid !== uid) return;
+      a._want = u; a._uid = uid;
       a.src = u;
       if (autoplay) { var p = a.play(); if (p && p.catch) p.catch(function () { muErr = 'Нажми ▶, чтобы начать'; muUi(); }); }
     }).catch(function (e) { var m = (e && e.message) || ''; muErr = /fetch|network|load/i.test(m) || !m ? 'Нет связи с Telegram — проверь интернет' : m; muUi(); });
