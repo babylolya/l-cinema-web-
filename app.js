@@ -1442,18 +1442,67 @@
     muQueue = list.slice(); muPos = i;
     muLoad(true);
   }
+  // ---------- offline: every track you play is kept on the device; «Скачать всё» keeps the rest ----------
+  // projector and Mac keep files natively; the iPhone page keeps them in the browser's own storage (Cache)
+  var muOff = {}, muOffBusy = 0, muOffQ = [], muOffAll = false;
+  var MU_CACHE = 'lc-music-v1';
+  function muOffKey(uid) { return 'https://lc-offline/' + uid; }
+  function muOffRefresh() {
+    try {
+      if (A && A.muSaved) { var l = JSON.parse(A.muSaved() || '[]'); muOff = {}; l.forEach(function (u) { muOff[u] = 1; }); return Promise.resolve(); }
+    } catch (e) {}
+    if (!window.caches) return Promise.resolve();
+    return caches.open(MU_CACHE).then(function (c) { return c.keys(); }).then(function (ks) { muOff = {}; ks.forEach(function (r) { muOff[r.url.split('/').pop()] = 1; }); }).catch(function () {});
+  }
+  function muLocalUrl(uid) {
+    if (!muOff[uid]) return Promise.resolve('');
+    try { if (A && A.muLocal) return Promise.resolve(A.muLocal(uid) || ''); } catch (e) {}
+    if (!window.caches) return Promise.resolve('');
+    return caches.open(MU_CACHE).then(function (c) { return c.match(muOffKey(uid)); }).then(function (r) { return r ? r.blob() : null; })
+      .then(function (b) { return b ? URL.createObjectURL(b) : ''; }).catch(function () { return ''; });
+  }
+  function muKeep(t, url) {
+    if (!t || muOff[t.uid]) return Promise.resolve();
+    try { if (A && A.muSave) { A.muSave(t.uid, url); setTimeout(muOffRefresh, 8000); return Promise.resolve(); } } catch (e) {}
+    if (!window.caches) return Promise.resolve();
+    return fetch(url).then(function (r) { if (!r.ok) throw 0; return caches.open(MU_CACHE).then(function (c) { return c.put(muOffKey(t.uid), r); }); })
+      .then(function () { muOff[t.uid] = 1; }).catch(function () {});
+  }
+  // «Скачать всё»: one track after another, quietly in the background
+  function muKeepAll() {
+    muOffAll = true;
+    try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+    muOffQ = muTracks().filter(function (t) { return !muOff[t.uid]; });
+    muOffPump(); render(null, true);
+  }
+  function muOffPump() {
+    if (muOffBusy || !muOffQ.length) { if (!muOffQ.length && !muOffBusy && muOffAll) { muOffAll = false; muOffRefresh().then(function () { if (view.name === 'music') render(null, true); }); } return; }
+    var t = muOffQ.shift(); muOffBusy = 1;
+    tgLink(t.file).then(function (u) { return muKeep(t, u); }).catch(function () {}).then(function () {
+      muOffBusy = 0; var b = document.getElementById('mu-offn'); if (b) b.textContent = muOffCount() + ' / ' + muTracks().length;
+      setTimeout(muOffPump, (A && A.muSave) ? 2500 : 200);
+    });
+  }
+  function muOffCount() { var n = 0; muTracks().forEach(function (t) { if (muOff[t.uid]) n++; }); return n; }
+  setTimeout(muOffRefresh, 1500);
   function muLoad(autoplay) {
     var t = muNow(); if (!t) return;
     var a = muEnsure(); muErr = '';
     try { a.pause(); } catch (e) {}
     a._want = ''; // while the new link is fetched, a stray error of the old file must not skip anything
     var uid = t.uid;
-    tgLink(t.file).then(function (u) {
+    // a kept copy plays first (no internet needed); otherwise a fresh link from Telegram, and the track is kept for next time
+    muLocalUrl(uid).then(function (loc) {
+      if (loc) return { u: loc, local: true };
+      return tgLink(t.file).then(function (u) { return { u: u }; });
+    }).then(function (res) {
+      var u = res.u;
       var now = muNow(); if (!now || now.uid !== uid) return;
       a._want = u; a._uid = uid;
       a.src = u;
+      if (!res.local) setTimeout(function () { muKeep(t, u); }, 4000);
       if (autoplay) { var p = a.play(); if (p && p.catch) p.catch(function () { muErr = 'Нажми ▶, чтобы начать'; muUi(); }); }
-    }).catch(function (e) { var m = (e && e.message) || ''; muErr = /fetch|network|load/i.test(m) || !m ? 'Нет связи с Telegram — проверь интернет' : m; muUi(); });
+    }).catch(function (e) { var m = (e && e.message) || ''; muErr = /fetch|network|load/i.test(m) || !m ? 'Нет интернета, а этот трек ещё не сохранён на устройстве' : m; muUi(); });
     muMeta(t);
     if (view.name === 'music') render(null, true);
   }
@@ -1780,12 +1829,16 @@
       }
       h += '<div class="mallh"><span class="h2 masub">Все треки</span><span class="mallc">' + list.length + ' ' + plural(list.length, 'трек', 'трека', 'треков') + '</span></div>' +
         '<div class="mallb"><button class="mallbtn" data-f data-key="mu-all" data-act="muplay:0">' + I.play + 'Слушать</button>' +
-        '<button class="mallbtn" data-f data-key="mu-allshuf" data-act="muallshuf">' + I.shuffle + 'Вперемешку</button></div>';
+        '<button class="mallbtn" data-f data-key="mu-allshuf" data-act="muallshuf">' + I.shuffle + 'Вперемешку</button></div>' +
+        (function () { var all = muTracks().length, got = muOffCount();
+          if (muOffAll) return '<div class="muoff on">' + I.down + ' Сохраняю на устройство: <b id="mu-offn">' + got + ' / ' + all + '</b></div>';
+          if (got >= all) return '<div class="muoff done">' + I.check + ' Все треки сохранены, слушаются без интернета</div>';
+          return '<button class="muoff" data-f data-key="mu-off" data-act="muoffall">' + I.down + ' Сохранить всё для офлайна <span>' + got + ' / ' + all + '</span></button>'; })();
     }
     for (var i = 0; i < list.length; i++) {
       var x = list[i];
       h += '<button class="mrow' + (t && t.uid === x.uid ? ' cur' : '') + '" data-uid="' + esc(x.uid) + '" data-f data-key="mt-' + esc(x.uid) + '" data-act="muplay:' + i + '">' +
-        (view.artist ? '<span class="mrank">' + (i + 1) + '</span>' : '') + muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + (muIsFav(x.uid) ? '<i class="mfavi">' + I.heartOn + '</i>' : '') + (muCount(x.uid) ? '<i class="mplc">' + I.play + muCount(x.uid) + '</i>' : '') + '</span></span>' +
+        (view.artist ? '<span class="mrank">' + (i + 1) + '</span>' : '') + muCoverImg(x, 'mcv') + '<span class="mtx"><span class="mtt">' + esc(x.title) + '</span><span class="mta">' + esc(x.artist || '') + (muOff[x.uid] ? '<i class="moffi" title="Сохранён на устройстве">' + I.down + '</i>' : '') + (muIsFav(x.uid) ? '<i class="mfavi">' + I.heartOn + '</i>' : '') + (muCount(x.uid) ? '<i class="mplc">' + I.play + muCount(x.uid) + '</i>' : '') + '</span></span>' +
         '<span class="mdur">' + (t && t.uid === x.uid && playing ? '<i class="eq"><b></b><b></b><b></b></i>' : fmtT(x.dur)) + '</span></button>';
     }
     return h + '</section></div>';
@@ -2392,6 +2445,7 @@
       case 'mupldel': { if (confirmKey !== 'pl-del') { confirmKey = 'pl-del'; render('pl-del', true); return; } confirmKey = null; muSet('mpl', view.pl, { del: true }); if (stack.length) app.back(); else { view = { name: 'music' }; render('pl-new', false); } return; }
       case 'muopen': muFull = true; render('mu-play', true); return;
       case 'muclose': muPick = false; muCloseFull(); return;
+      case 'muoffall': muKeepAll(); return;
       case 'muallshuf': muShuffle = true; muStart(shuffled(arg === 'pl' ? muView() : muTracks()), 0); return;
       case 'muartplay': muShuffle = false; muStart(muView(), 0); return;
       case 'muartshuf': muShuffle = true; muStart(shuffled(muView()), 0); return;

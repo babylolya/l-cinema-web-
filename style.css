@@ -1881,3 +1881,15 @@ html:not(.web) .film.haslogo .fpost { display: block; }
 .film.nopost .fpost { display: none; }
 @media (max-width: 900px) { html.web .film.has-bd .fpost .flogo { max-width: 72%; max-height: 120px; } }
 .film.haslogo .fpost { background: none !important; box-shadow: none !important; border: 0 !important; padding: 0 !important; width: auto !important; height: auto !important; aspect-ratio: auto !important; }
+
+/* offline */
+.muoff { display: -webkit-flex; display: flex; -webkit-align-items: center; align-items: center; -webkit-justify-content: center; justify-content: center; width: 100%; height: 46px; margin: 0 0 14px; padding: 0 14px; box-sizing: border-box;
+  border: 1px dashed rgba(255,255,255,0.18); border-radius: 16px; background: none; color: rgba(255,255,255,0.8); font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; }
+.muoff svg { width: 18px; height: 18px; margin-right: 8px; }
+.muoff span { margin-left: 8px; opacity: .55; font-weight: 500; }
+.muoff.on { border-style: solid; border-color: rgba(200,75,255,0.4); color: #E9C8FF; }
+.muoff.done { border-style: solid; border-color: rgba(120,255,190,0.25); color: #B6FFD9; cursor: default; }
+.muoff:focus, html.mac .muoff:hover { outline: none; box-shadow: 0 0 0 2px #FF7FE3; }
+html.web .muoff:focus { box-shadow: none; }
+.moffi { font-style: normal; margin-left: 8px; color: #8EF0C0; }
+.moffi svg { width: 11px; height: 11px; vertical-align: -1px; }
